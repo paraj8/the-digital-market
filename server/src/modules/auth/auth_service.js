@@ -41,7 +41,11 @@ const registerUser = async ({ fullName, email, password }) => {
   });
 
   return {
-    user,
+    id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role,
+    isVerified: user.isVerified,
   };
 };
 
@@ -56,6 +60,10 @@ const verifyOTP = async ({ email, otp }) => {
     throw new Error("Invalid OTP");
   }
 
+  if (otpDoc.expiresAt < new Date()) {
+    throw new Error("OTP expired");
+  }
+
   const user = await User.findOne({ email });
 
   if (!user) {
@@ -66,10 +74,15 @@ const verifyOTP = async ({ email, otp }) => {
 
   await user.save();
 
-  // Delete all OTPs for this email
   await Otp.deleteMany({ email });
 
-  return user;
+  return {
+    id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role,
+    isVerified: user.isVerified,
+  };
 };
 
 module.exports = {
