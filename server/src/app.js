@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const authRoutes = require("./modules/auth");
+
 const app = express();
 
 app.use(
@@ -22,7 +22,5 @@ app.get("/", (req, res) => {
     message: "The Digital Market API Running 🚀",
   });
 });
-  
-app.use("/api/v1/auth", authRoutes);
 
 module.exports = app;
