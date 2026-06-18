@@ -2,6 +2,7 @@ const productService = require(
   "./products_service"
 );
 
+// Controller functions
 const createProduct = async (
   req,
   res
@@ -26,17 +27,22 @@ const createProduct = async (
   }
 };
 
+// New function to get all products with pagination and filtering
 const getAllProducts = async (
   req,
   res
 ) => {
   try {
-    const products =
-      await productService.getAllProducts();
+    const result =
+      await productService.getAllProducts(
+        req.query
+      );
 
     res.status(200).json({
       success: true,
-      data: products,
+      data: result.products,
+      pagination:
+        result.pagination,
     });
   } catch (error) {
     res.status(500).json({
@@ -46,6 +52,7 @@ const getAllProducts = async (
   }
 };
 
+// New function to get a product by ID
 const getProductById = async (
   req,
   res
@@ -68,8 +75,86 @@ const getProductById = async (
   }
 };
 
+// New functions for update and delete
+
+const updateProduct = async (
+  req,
+  res
+) => {
+  try {
+    const product =
+      await productService.updateProduct(
+        req.params.id,
+        req.body
+      );
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Product updated successfully",
+      data: product,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// New function for deleting a product
+
+const deleteProduct = async (
+  req,
+  res
+) => {
+  try {
+    const result =
+      await productService.deleteProduct(
+        req.params.id
+      );
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// New function to get a product by slug
+
+const getProductBySlug = async (
+  req,
+  res
+) => {
+  try {
+    const product =
+      await productService.getProductBySlug(
+        req.params.slug
+      );
+
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
+  } catch (error) {
+    res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   getAllProducts,
   getProductById,
+  updateProduct,
+  deleteProduct,
+  getProductBySlug,
 };

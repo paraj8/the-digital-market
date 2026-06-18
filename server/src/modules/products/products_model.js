@@ -13,6 +13,7 @@ const productSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
+      trim: true,
     },
 
     shortDescription: {
@@ -36,11 +37,13 @@ const productSchema = new mongoose.Schema(
       required: true,
       unique: true,
       uppercase: true,
+      trim: true,
     },
 
     brand: {
       type: String,
       default: "",
+      trim: true,
     },
 
     images: [
@@ -48,6 +51,13 @@ const productSchema = new mongoose.Schema(
         type: String,
       },
     ],
+
+    // Pricing
+    costPrice: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
     price: {
       type: Number,
@@ -58,74 +68,81 @@ const productSchema = new mongoose.Schema(
     salePrice: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     gstRate: {
       type: Number,
       default: 18,
+      min: 0,
+      max: 100,
     },
 
+    gstIncluded: {
+      type: Boolean,
+      default: true,
+    },
+
+    // Inventory
     stock: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
+    lowStockThreshold: {
+      type: Number,
+      default: 5,
+      min: 0,
+    },
+
+    trackInventory: {
+      type: Boolean,
+      default: true,
+    },
+
+    allowBackorder: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Shipping
     weight: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     length: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     width: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     height: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
-    isFeatured: {
-      type: Boolean,
-      default: false,
-    },
-
-    isActive: {
+    shippingRequired: {
       type: Boolean,
       default: true,
     },
 
-    tags: [
-      {
-        type: String,
-      },
-    ],
-
-    views: {
-      type: Number,
-      default: 0,
-    },
-
-    salesCount: {
-      type: Number,
-      default: 0,
-    },
-
-    seoTitle: {
+    shippingClass: {
       type: String,
-      default: "",
+      enum: ["light", "medium", "heavy"],
+      default: "light",
     },
 
-    seoDescription: {
-      type: String,
-      default: "",
-    },
-
+    // Product Type
     isDigital: {
       type: Boolean,
       default: false,
@@ -136,56 +153,107 @@ const productSchema = new mongoose.Schema(
       default: "",
     },
 
+    // Tax & Compliance
     hsnCode: {
-  type: String,
-  default: "",
-},
+      type: String,
+      default: "",
+    },
 
-shippingClass: {
-  type: String,
-  enum: [
-    "light",
-    "medium",
-    "heavy",
-  ],
-  default: "light",
-},
+    // Product Status
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
 
-returnable: {
-  type: Boolean,
-  default: false,
-},
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
 
-codAvailable: {
-  type: Boolean,
-  default: true,
-},
+    returnable: {
+      type: Boolean,
+      default: false,
+    },
 
-lowStockThreshold: {
-  type: Number,
-  default: 5,
-},
+    codAvailable: {
+      type: Boolean,
+      default: true,
+    },
 
-ratingsAverage: {
-  type: Number,
-  default: 0,
-},
+    // Tags
+    tags: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
 
-ratingsCount: {
-  type: Number,
-  default: 0,
-},
+    // Analytics
+    views: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
-shippingRequired: {
-  type: Boolean,
-  default: true,
-},
+    salesCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
+    // Ratings
+    ratingsAverage: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+
+    ratingsCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    // SEO
+    seoTitle: {
+      type: String,
+      default: "",
+    },
+
+    seoDescription: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Search Index
+productSchema.index({
+  title: "text",
+  description: "text",
+  brand: "text",
+});
+
+// Useful Query Indexes
+productSchema.index({
+  category: 1,
+});
+
+productSchema.index({
+  isFeatured: 1,
+});
+
+productSchema.index({
+  isActive: 1,
+});
+
+productSchema.index({
+  price: 1,
+});
 
 module.exports = mongoose.model(
   "Product",
