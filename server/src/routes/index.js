@@ -10,11 +10,12 @@ const categoryRoutes = require(
   "../modules/categories/categories_routes"
 );
 
-router.use("/auth", authRoutes);
-
-router.use(
-  "/categories",
-  categoryRoutes
+const productRoutes = require(
+  "../modules/products/products_routes"
 );
+
+router.use("/auth", authRoutes);
+router.use("/categories", categoryRoutes);
+router.use("/products", productRoutes);
 
 module.exports = router;
