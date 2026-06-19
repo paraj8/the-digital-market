@@ -15,12 +15,16 @@ const productRoutes = require(
 );
 
 const wishlistRoutes = require(
-  "../modules/wishlist"
+  "../modules/wishlist/wishlist_routes"
+);
+
+const cartRoutes = require(
+  "../modules/carts/cart_routes"
 );
 
 router.use("/auth", authRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/products", productRoutes);
 router.use("/wishlist", wishlistRoutes);
-
+router.use("/cart", cartRoutes);
 module.exports = router;
