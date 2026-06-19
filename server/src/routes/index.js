@@ -14,8 +14,13 @@ const productRoutes = require(
   "../modules/products/products_routes"
 );
 
+const wishlistRoutes = require(
+  "../modules/wishlist"
+);
+
 router.use("/auth", authRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/products", productRoutes);
+router.use("/wishlist", wishlistRoutes);
 
 module.exports = router;
