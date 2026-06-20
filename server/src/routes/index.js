@@ -22,9 +22,13 @@ const cartRoutes = require(
   "../modules/carts/cart_routes"
 );
 
+const addressRoutes =
+  require("../modules/address");
+
 router.use("/auth", authRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/products", productRoutes);
 router.use("/wishlist", wishlistRoutes);
 router.use("/cart", cartRoutes);
+router.use("/addresses", addressRoutes);
 module.exports = router;
