@@ -1,5 +1,5 @@
 const router = require(
-  "./wishlist_routes"
+  "./coupon_routes"
 );
 
 module.exports = router;

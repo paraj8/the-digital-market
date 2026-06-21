@@ -1,3 +1,5 @@
-module.exports = require(
+const router = require(
   "./cart_routes"
 );
+
+module.exports = router;
