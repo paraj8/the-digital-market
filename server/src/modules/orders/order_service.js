@@ -2,6 +2,7 @@ const Order = require("./order_model");
 const Cart = require("../carts/cart_model");
 const Address = require("../address/address_model");
 const Coupon = require("../coupons/coupon_model");
+const Product = require("../products/products_model");
 
 const createOrder = async (
   userId,
@@ -147,6 +148,26 @@ const createOrder = async (
     tax +
     shippingCharge;
 
+  // Validate Inventory
+
+for (const item of cartItems) {
+  const product = item.product;
+
+  if (product.stock <= 0) {
+    throw new Error(
+      `${product.title} is out of stock`
+    );
+  }
+
+  if (
+    item.quantity > product.stock
+  ) {
+    throw new Error(
+      `Only ${product.stock} units available for ${product.title}`
+    );
+  }
+}
+  
   // Create Order
 
   const order =
@@ -171,6 +192,21 @@ const createOrder = async (
       paymentMethod:
         paymentMethod || "cod",
     });
+
+  // Reduce Stock & Increase Sales
+
+  for (const item of cartItems) {
+    await Product.findByIdAndUpdate(
+      item.product._id,
+      {
+        $inc: {
+          stock: -item.quantity,
+          salesCount:
+            item.quantity,
+        },
+      }
+    );
+  }
 
   // Update Coupon Usage
 
