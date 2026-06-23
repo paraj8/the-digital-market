@@ -15,3 +15,13 @@ export const getProducts =
 
     return response.data.data;
   };
+
+  export const getProductBySlug = async (
+  slug: string
+) => {
+  const response = await api.get(
+    `/products/slug/${slug}`
+  );
+
+  return response.data.data;
+};

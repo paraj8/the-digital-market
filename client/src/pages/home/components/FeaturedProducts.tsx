@@ -3,6 +3,7 @@ import SectionHeader from "../../../components/common/SectionHeader";
 import ProductCardSkeleton from "../../../components/common/ProductCardSkeleton";
 
 import { useProducts } from "../../../hooks/useProducts";
+import type { Product } from "../../../types/product";
 
 function FeaturedProducts() {
   const {
@@ -12,35 +13,35 @@ function FeaturedProducts() {
   } = useProducts();
 
   if (isLoading) {
-  return (
-    <section className="px-4 py-6 lg:px-6">
-      <SectionHeader
-        title="Featured Products"
-        subtitle="Loading products..."
-      />
+    return (
+      <section className="px-4 py-6 lg:px-6">
+        <SectionHeader
+          title="Featured Products"
+          subtitle="Loading products..."
+        />
 
-      <div
-        className="
-          grid
-          grid-cols-2
-          gap-4
-          md:grid-cols-3
-          lg:grid-cols-4
-          xl:grid-cols-5
-          2xl:grid-cols-6
-        "
-      >
-        {Array.from({ length: 12 }).map(
-          (_, index) => (
-            <ProductCardSkeleton
-              key={index}
-            />
-          )
-        )}
-      </div>
-    </section>
-  );
-}
+        <div
+          className="
+            grid
+            grid-cols-2
+            gap-4
+            md:grid-cols-3
+            lg:grid-cols-4
+            xl:grid-cols-5
+            2xl:grid-cols-6
+          "
+        >
+          {Array.from({ length: 12 }).map(
+            (_, index) => (
+              <ProductCardSkeleton
+                key={index}
+              />
+            )
+          )}
+        </div>
+      </section>
+    );
+  }
 
   if (error) {
     return (
@@ -58,18 +59,18 @@ function FeaturedProducts() {
         actionText="View All"
       />
 
-        <div
-          className="
-            grid
-            grid-cols-2
-            gap-4
-            md:grid-cols-3
-            lg:grid-cols-4
-            xl:grid-cols-5
-            2xl:grid-cols-6
-          "
-        >
-        {data?.map((product) => (
+      <div
+        className="
+          grid
+          grid-cols-2
+          gap-4
+          md:grid-cols-3
+          lg:grid-cols-4
+          xl:grid-cols-5
+          2xl:grid-cols-6
+        "
+      >
+        {data?.map((product: Product) => (
           <ProductCard
             key={product._id}
             product={product}

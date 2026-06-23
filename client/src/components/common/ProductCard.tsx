@@ -2,6 +2,8 @@ import { FiHeart } from "react-icons/fi";
 
 import type { Product } from "../../types/product";
 
+import { Link } from "react-router-dom";
+
 interface ProductCardProps {
   product: Product;
 }
@@ -103,12 +105,13 @@ function ProductCard({
           )}
         </div>
 
-        <button
-          className="
-            mt-4
-            w-full
-            rounded-xl
-            bg-gradient-to-r
+        <Link to={`/product/${product.slug}`}>
+          <button
+            className="
+              mt-4
+              w-full
+              rounded-xl
+              bg-gradient-to-r
             from-violet-600
             to-blue-600
             py-1.5
@@ -117,7 +120,7 @@ function ProductCard({
           "
         >
           Add to Cart
-        </button>
+        </button> </Link>
       </div>
     </div>
   );

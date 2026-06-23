@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 
 import HomePage from "../pages/home/HomePage";
+import ProductDetailsPage from "../pages/product/ProductDetailsPage";
 
 function AppRoutes() {
   return (
@@ -11,6 +12,11 @@ function AppRoutes() {
         <Route
           path="/"
           element={<HomePage />}
+        />
+
+        <Route
+          path="/product/:slug"
+          element={<ProductDetailsPage />}
         />
       </Route>
     </Routes>
