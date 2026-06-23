@@ -1,28 +1,80 @@
 import ProductCard from "../../../components/common/ProductCard";
 import SectionHeader from "../../../components/common/SectionHeader";
+import ProductCardSkeleton from "../../../components/common/ProductCardSkeleton";
+
+import { useProducts } from "../../../hooks/useProducts";
 
 function FeaturedProducts() {
+  const {
+    data,
+    isLoading,
+    error,
+  } = useProducts();
+
+  if (isLoading) {
   return (
     <section className="px-4 py-6 lg:px-6">
       <SectionHeader
         title="Featured Products"
-        subtitle="Popular products chosen for you"
-        actionText="View All"
+        subtitle="Loading products..."
       />
 
       <div
         className="
           grid
-          gap-5
-          sm:grid-cols-2
+          grid-cols-2
+          gap-4
+          md:grid-cols-3
           lg:grid-cols-4
+          xl:grid-cols-5
+          2xl:grid-cols-6
         "
       >
-        {Array.from({ length: 8 }).map(
+        {Array.from({ length: 12 }).map(
           (_, index) => (
-            <ProductCard key={index} />
+            <ProductCardSkeleton
+              key={index}
+            />
           )
         )}
+      </div>
+    </section>
+  );
+}
+
+  if (error) {
+    return (
+      <div className="p-6">
+        Failed to load products
+      </div>
+    );
+  }
+
+  return (
+    <section className="px-4 py-6 lg:px-6">
+      <SectionHeader
+        title="Featured Products"
+        subtitle="Popular products for you"
+        actionText="View All"
+      />
+
+        <div
+          className="
+            grid
+            grid-cols-2
+            gap-4
+            md:grid-cols-3
+            lg:grid-cols-4
+            xl:grid-cols-5
+            2xl:grid-cols-6
+          "
+        >
+        {data?.map((product) => (
+          <ProductCard
+            key={product._id}
+            product={product}
+          />
+        ))}
       </div>
     </section>
   );

@@ -1,6 +1,23 @@
 import { FiHeart } from "react-icons/fi";
 
-function ProductCard() {
+import type { Product } from "../../types/product";
+
+interface ProductCardProps {
+  product: Product;
+}
+
+function ProductCard({
+  product,
+}: ProductCardProps) {
+  const displayPrice =
+    product.salePrice > 0
+      ? product.salePrice
+      : product.price;
+
+  const hasDiscount =
+    product.salePrice > 0 &&
+    product.salePrice < product.price;
+
   return (
     <div
       className="
@@ -9,24 +26,19 @@ function ProductCard() {
         border border-white/10
         bg-[#121826]
         transition
-        hover:border-violet-500/40
         hover:-translate-y-1
+        hover:border-violet-500/40
       "
     >
-      {/* Product Image */}
+      {/* Image */}
 
-      <div
-        className="
-          relative
-          aspect-square
-          bg-slate-800
-        "
-      >
+      <div className="relative aspect-square bg-slate-800">
         <button
           className="
             absolute
             right-3
             top-3
+            z-10
             rounded-full
             bg-black/40
             p-2
@@ -37,8 +49,11 @@ function ProductCard() {
         </button>
 
         <img
-          src="https://placehold.co/600x600"
-          alt="product"
+          src={
+            product.images?.[0] ||
+            "https://placehold.co/600x600"
+          }
+          alt={product.title}
           className="
             h-full
             w-full
@@ -49,40 +64,43 @@ function ProductCard() {
 
       {/* Content */}
 
-      <div className="p-4">
+      <div className="p-3">
         <h3
           className="
             line-clamp-2
+            text-sm
             font-medium
           "
         >
-          Wireless Gaming Mouse
+          {product.title}
         </h3>
 
         <p
           className="
             mt-2
-            text-sm
+            text-xs
             text-slate-400
           "
         >
-          Electronics
+          {product.brand}
         </p>
 
         <div className="mt-3 flex items-center gap-2">
-          <span className="text-lg font-bold">
-            ₹999
+          <span className="text-base font-bold">
+            ₹{displayPrice}
           </span>
 
-          <span
-            className="
-              text-sm
-              text-slate-500
-              line-through
-            "
-          >
-            ₹1499
-          </span>
+          {hasDiscount && (
+            <span
+              className="
+                text-xs
+                text-slate-500
+                line-through
+              "
+            >
+              ₹{product.price}
+            </span>
+          )}
         </div>
 
         <button
@@ -93,7 +111,8 @@ function ProductCard() {
             bg-gradient-to-r
             from-violet-600
             to-blue-600
-            py-2
+            py-1.5
+            text-sm
             font-medium
           "
         >
