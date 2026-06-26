@@ -7,17 +7,29 @@ export interface Product {
 
   shortDescription: string;
 
+  description: string;
+
+  brand: string;
+
+  sku: string;
+
+  images: string[];
+
   price: number;
 
   salePrice: number;
 
-  images: string[];
-
   stock: number;
-
-  brand: string;
 
   isFeatured: boolean;
 
-  category: string;
+  returnable: boolean;
+
+  codAvailable: boolean;
+
+  category: {
+    _id: string;
+    name: string;
+    slug: string;
+  };
 }

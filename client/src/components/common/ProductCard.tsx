@@ -1,8 +1,13 @@
 import { FiHeart } from "react-icons/fi";
+import { FaHeart } from "react-icons/fa";
+
+import { Link } from "react-router-dom";
+
+import { toast } from "react-hot-toast";
 
 import type { Product } from "../../types/product";
 
-import { Link } from "react-router-dom";
+import { useWishlist } from "../../hooks/useWishlist";
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +25,28 @@ function ProductCard({
     product.salePrice > 0 &&
     product.salePrice < product.price;
 
+  const {
+    isWishlisted,
+    toggleWishlist,
+  } = useWishlist(product._id);
+
+  const handleWishlist = (
+    e: React.MouseEvent
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const token =
+      localStorage.getItem("token");
+
+    if (!token) {
+      toast("Please login first");
+      return;
+    }
+
+    toggleWishlist();
+  };
+
   return (
     <div
       className="
@@ -36,6 +63,7 @@ function ProductCard({
 
       <div className="relative aspect-square bg-slate-800">
         <button
+          onClick={handleWishlist}
           className="
             absolute
             right-3
@@ -45,9 +73,17 @@ function ProductCard({
             bg-black/40
             p-2
             backdrop-blur
+            transition
+            hover:scale-110
           "
         >
-          <FiHeart />
+          {isWishlisted ? (
+            <FaHeart
+              className="text-red-500"
+            />
+          ) : (
+            <FiHeart />
+          )}
         </button>
 
         <img
@@ -112,15 +148,18 @@ function ProductCard({
               w-full
               rounded-xl
               bg-gradient-to-r
-            from-violet-600
-            to-blue-600
-            py-1.5
-            text-sm
-            font-medium
-          "
-        >
-          Add to Cart
-        </button> </Link>
+              from-violet-600
+              to-blue-600
+              py-1.5
+              text-sm
+              font-medium
+              transition
+              hover:opacity-90
+            "
+          >
+            View Product
+          </button>
+        </Link>
       </div>
     </div>
   );

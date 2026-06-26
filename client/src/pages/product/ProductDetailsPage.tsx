@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { useProduct } from "../../hooks/useProduct";
+import { addToCart } from "../../api/cartApi";
+import toast from "react-hot-toast";
+
+import RelatedProducts from "./components/RelatedProducts";
 
 function ProductDetailsPage() {
   const { slug } = useParams<{
@@ -15,7 +19,40 @@ function ProductDetailsPage() {
   } = useProduct(slug || "");
 
   const [selectedImage, setSelectedImage] =
-    useState(0);
+  useState(0);
+
+const [quantity, setQuantity] =
+  useState(1);
+
+const [addingToCart, setAddingToCart] =
+  useState(false);
+
+const handleAddToCart = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast("Please login to add items to cart", {
+        icon: "🔐",
+      });
+      return;
+    }
+
+    if (!data) return;
+
+    setAddingToCart(true);
+
+    await addToCart(data._id, quantity);
+
+    toast.success("Product added to cart 🛒");
+  } catch (error) {
+    console.error(error);
+
+    toast.error("Failed to add product to cart");
+  } finally {
+    setAddingToCart(false);
+  }
+};
 
   if (isLoading) {
     return (
@@ -247,17 +284,31 @@ function ProductDetailsPage() {
       bg-[#121826]
     "
   >
-    <button className="px-4 py-2">
-      -
-    </button>
+<button
+  onClick={() =>
+    setQuantity((prev) =>
+      Math.max(1, prev - 1)
+    )
+  }
+  className="px-4 py-2"
+>
+  -
+</button>
 
-    <span className="px-4">
-      1
-    </span>
+<span className="px-4">
+  {quantity}
+</span>
 
-    <button className="px-4 py-2">
-      +
-    </button>
+<button
+  onClick={() =>
+    setQuantity((prev) =>
+      prev + 1
+    )
+  }
+  className="px-4 py-2"
+>
+  +
+</button>
   </div>
 </div>
 
@@ -265,6 +316,8 @@ function ProductDetailsPage() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <button
+              onClick={handleAddToCart}
+              disabled={addingToCart}
               className="
                 flex-1
                 rounded-xl
@@ -275,9 +328,12 @@ function ProductDetailsPage() {
                 font-semibold
                 hover:scale-[1.02]
                 transition
+                disabled:opacity-50
               "
             >
-              Add To Cart
+              {addingToCart
+                ? "Adding..."
+                : "Add To Cart"}
             </button>
 
             <button
@@ -404,7 +460,18 @@ function ProductDetailsPage() {
   </p>
 </div>
 
+<RelatedProducts
+  categoryId={
+    data.category?._id
+  }
+  currentProductId={
+    data._id
+  }
+/>
+
 </section>
+
+
 
   );
 }
