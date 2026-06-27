@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const User = require("../users/users_model");
 const Otp = require("./otp_model");
 const sendEmail = require("../../services/email_service");
@@ -85,7 +86,59 @@ const verifyOTP = async ({ email, otp }) => {
   };
 };
 
+// Login User
+const loginUser = async ({
+  email,
+  password,
+}) => {
+  const user = await User.findOne({
+    email,
+  });
+
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
+
+  const isMatch =
+    await bcrypt.compare(
+      password,
+      user.password
+    );
+
+  if (!isMatch) {
+    throw new Error("Invalid credentials");
+  }
+
+  if (!user.isVerified) {
+    throw new Error(
+      "Please verify your account first"
+    );
+  }
+
+  const token = jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+
+  return {
+    token,
+    user: {
+      id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    },
+  };
+};
+
 module.exports = {
   registerUser,
   verifyOTP,
+  loginUser,
 };
