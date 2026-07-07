@@ -1,6 +1,6 @@
 import ProductCard from "../../../components/common/ProductCard";
 
-import { useRelatedProducts } from "../../../hooks/useRelatedProducts";
+import { useRelatedProducts } from "../../../hooks/products/useRelatedProducts";
 
 import type { Product } from "../../../types/product";
 

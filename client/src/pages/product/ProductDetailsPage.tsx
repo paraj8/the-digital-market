@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { FiHeart } from "react-icons/fi";
+import { FaHeart } from "react-icons/fa";
 
-import { useProduct } from "../../hooks/useProduct";
+import { useWishlist } from "../../hooks/wishlist/useWishlist";
+import { useAddToWishlist } from "../../hooks/wishlist/useAddToWishlist";
+import { useRemoveFromWishlist } from "../../hooks/wishlist/useRemoveFromWishlist";
+import { useProduct } from "../../hooks/products/useProduct";
 import { addToCart } from "../../api/cartApi";
 import toast from "react-hot-toast";
 
@@ -26,6 +31,16 @@ const [quantity, setQuantity] =
 
 const [addingToCart, setAddingToCart] =
   useState(false);
+
+  // Wishlist Hooks
+  const { data: wishlist = [] } =
+    useWishlist();
+
+  const addWishlist =
+    useAddToWishlist();
+
+  const removeWishlist =
+    useRemoveFromWishlist();
 
 const handleAddToCart = async () => {
   try {
@@ -70,6 +85,39 @@ const handleAddToCart = async () => {
     );
   }
 
+  const isWishlisted =
+    wishlist.some(
+      (item: {
+        product?: {
+          _id: string;
+        };
+      }) =>
+        item.product?._id ===
+        data._id
+    );
+
+  const handleWishlist = () => {
+    const token =
+      localStorage.getItem("token");
+
+    if (!token) {
+      toast("Please login first", {
+        icon: "🔒",
+      });
+      return;
+    }
+
+    if (isWishlisted) {
+      removeWishlist.mutate(
+        data._id
+      );
+    } else {
+      addWishlist.mutate(
+        data._id
+      );
+    }
+  };
+
   const displayPrice =
     data.salePrice > 0
       ? data.salePrice
@@ -84,6 +132,8 @@ const handleAddToCart = async () => {
             100
         )
       : 0;
+
+  
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8">
@@ -312,47 +362,80 @@ const handleAddToCart = async () => {
   </div>
 </div>
 
-          {/* Buttons */}
+{/* Buttons */}
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button
-              onClick={handleAddToCart}
-              disabled={addingToCart}
-              className="
-                flex-1
-                rounded-xl
-                bg-gradient-to-r
-                from-violet-600
-                to-blue-600
-                py-3
-                font-semibold
-                hover:scale-[1.02]
-                transition
-                disabled:opacity-50
-              "
-            >
-              {addingToCart
-                ? "Adding..."
-                : "Add To Cart"}
-            </button>
+<div className="mt-8 flex flex-col gap-3 sm:flex-row">
 
-            <button
-              className="
-                flex-1
-                rounded-xl
-                border
-                border-white/10
-                bg-[#121826]
-                py-3
-                font-semibold
-                hover:border-violet-500/50 hover:scale-[1.02] 
-                transition
-                
-              "
-            >
-              Buy Now
-            </button>
-          </div>
+  <button
+    onClick={handleAddToCart}
+    disabled={addingToCart}
+    className="
+      flex-1
+      rounded-xl
+      bg-gradient-to-r
+      from-violet-600
+      to-blue-600
+      py-3
+      font-semibold
+      transition
+      hover:scale-[1.02]
+      disabled:opacity-50
+    "
+  >
+    {addingToCart
+      ? "Adding..."
+      : "Add To Cart"}
+  </button>
+
+  <button
+    className="
+      flex-1
+      rounded-xl
+      border
+      border-white/10
+      bg-[#121826]
+      py-3
+      font-semibold
+      transition
+      hover:border-violet-500/50
+      hover:scale-[1.02]
+    "
+  >
+    Buy Now
+  </button>
+
+  <button
+    onClick={handleWishlist}
+    disabled={
+      addWishlist.isPending ||
+      removeWishlist.isPending
+    }
+    className="
+      flex
+      h-12
+      w-12
+      items-center
+      justify-center
+      rounded-xl
+      border
+      border-white/10
+      bg-[#121826]
+      transition
+      hover:border-pink-500
+      hover:bg-pink-500/10
+    "
+  >
+    {isWishlisted ? (
+      <FaHeart
+        className="text-pink-500"
+        size={20}
+      />
+    ) : (
+      <FiHeart size={20} />
+    )}
+  </button>
+
+</div>
 
           {/* Product Details */}
 

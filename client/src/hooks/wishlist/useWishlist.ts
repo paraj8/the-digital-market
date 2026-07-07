@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getWishlist } from "../api/wishlistApi";
+import { getWishlist } from "../../api/wishlistApi";
 import { useAddToWishlist } from "./useAddToWishlist";
 import { useRemoveFromWishlist } from "./useRemoveFromWishlist";
 

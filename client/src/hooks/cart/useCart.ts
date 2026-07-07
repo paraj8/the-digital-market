@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { getCart } from "../api/cartApi";
+import { getCart } from "../../api/cartApi";
 
 export const useCart = () => {
   return useQuery({

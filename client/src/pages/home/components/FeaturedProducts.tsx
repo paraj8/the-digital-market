@@ -2,7 +2,7 @@ import ProductCard from "../../../components/common/ProductCard";
 import SectionHeader from "../../../components/common/SectionHeader";
 import ProductCardSkeleton from "../../../components/common/ProductCardSkeleton";
 
-import { useProducts } from "../../../hooks/useProducts";
+import { useProducts } from "../../../hooks/products/useProducts";
 import type { Product } from "../../../types/product";
 
 function FeaturedProducts() {
@@ -10,7 +10,7 @@ function FeaturedProducts() {
     data,
     isLoading,
     error,
-  } = useProducts();
+  } = useProducts({featured: true, limit: 8,});
 
   if (isLoading) {
     return (
@@ -70,7 +70,7 @@ function FeaturedProducts() {
           2xl:grid-cols-6
         "
       >
-        {data?.map((product: Product) => (
+        {data?.data.map((product: Product) => (
           <ProductCard
             key={product._id}
             product={product}

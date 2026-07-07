@@ -8,7 +8,7 @@ import {
   updateCartItem,
   removeCartItem,
   clearCart,
-} from "../api/cartApi";
+} from "../../api/cartApi";
 
 export const useAddToCart =
   () => {

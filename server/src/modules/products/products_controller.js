@@ -150,10 +150,32 @@ const getProductBySlug = async (
   }
 };
 
+// New function to get filter options for products
+const getFilterOptions = async (
+  req,
+  res
+) => {
+  try {
+    const options =
+      await productService.getFilterOptions();
+
+    res.status(200).json({
+      success: true,
+      data: options,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createProduct,
   getAllProducts,
   getProductById,
+  getFilterOptions,
   updateProduct,
   deleteProduct,
   getProductBySlug,
