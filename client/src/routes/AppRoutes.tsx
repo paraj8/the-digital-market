@@ -15,6 +15,7 @@ import MessagesPage from "../pages/messages/MessagesPage";
 import AiAssistantPage from "../pages/ai/AiAssistantPage";
 import AddressesPage from "../pages/addresses/AddressesPage";
 import SettingsPage from "../pages/settings/SettingsPage";
+import ProductListingPage from "../pages/product/ProductListingPage";
 
 function AppRoutes() {
   return (
@@ -23,6 +24,11 @@ function AppRoutes() {
         <Route
           path="/"
           element={<HomePage />}
+        />
+
+        <Route
+          path="/products"
+          element={<ProductListingPage />}
         />
 
         <Route

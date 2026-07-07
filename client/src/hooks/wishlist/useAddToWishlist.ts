@@ -5,7 +5,7 @@ import {
 
 import { toast } from "react-hot-toast";
 
-import { addToWishlist } from "../api/wishlistApi";
+import { addToWishlist } from "../../api/wishlistApi";
 
 export const useAddToWishlist =
   () => {

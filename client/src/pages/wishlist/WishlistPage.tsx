@@ -4,11 +4,11 @@ import {
   FiTrash2,
 } from "react-icons/fi";
 
-import {useWishlist,} from "../../hooks/useWishlist";
+import {useWishlist,} from "../../hooks/wishlist/useWishlist";
 
 import type { WishlistItem } from "../../types/wishlist";
 
-import {useRemoveFromWishlist,} from "../../hooks/useRemoveFromWishlist";
+import {useRemoveFromWishlist,} from "../../hooks/wishlist/useRemoveFromWishlist";
 
 function WishlistPage() {
   const { data, isLoading } =

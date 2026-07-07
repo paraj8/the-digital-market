@@ -2,97 +2,116 @@ import {
   FiHome,
   FiGrid,
   FiPackage,
-  FiShoppingCart,
-  FiHeart,
-  FiUser,
+  FiTag,
+  FiZap,
+  FiStar,
   FiHelpCircle,
 } from "react-icons/fi";
+
+import { useNavigate } from "react-router-dom";
 
 const links = [
   {
     icon: <FiHome />,
     label: "Home",
-  },
-  {
-    icon: <FiGrid />,
-    label: "Categories",
+    path: "/",
   },
   {
     icon: <FiPackage />,
     label: "Products",
+    path: "/products",
   },
   {
-    icon: <FiShoppingCart />,
-    label: "Orders",
+    icon: <FiGrid />,
+    label: "Categories",
+    path: "/products",
   },
   {
-    icon: <FiHeart />,
-    label: "Wishlist",
+    icon: <FiTag />,
+    label: "Brands",
+    path: "/products",
   },
   {
-    icon: <FiUser />,
-    label: "Profile",
+    icon: <FiZap />,
+    label: "Deals",
+    path: "/products?deal=true",
+  },
+  {
+    icon: <FiStar />,
+    label: "New Arrivals",
+    path: "/products?sort=newest",
   },
 ];
 
 function SidebarContent() {
+  const navigate = useNavigate();
+
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="flex h-full flex-col">
       {/* Header */}
 
-      <div
-        className="
-          border-b border-white/10
-          p-5
-        "
-      >
+      <div className="border-b border-white/10 p-5">
         <h2 className="text-lg font-bold">
-          Hello, User
+          🛍 Shop
         </h2>
 
-        <p className="text-sm text-slate-400">
-          Welcome to TDM
+        <p className="mt-1 text-sm text-slate-400">
+          Discover amazing products
         </p>
       </div>
 
       {/* Navigation */}
 
-      <div className="p-3">
+      <div className="flex-1 overflow-y-auto p-3">
         {links.map((item) => (
           <button
             key={item.label}
+            onClick={() => navigate(item.path)}
             className="
-              flex w-full items-center
+              mb-2
+              flex
+              w-full
+              items-center
               gap-3
               rounded-xl
-              px-4 py-3
+              px-4
+              py-3
               text-left
-              hover:bg-white/10
               transition
+              hover:bg-white/10
+              hover:text-violet-400
             "
           >
-            {item.icon}
+            <span className="text-lg">
+              {item.icon}
+            </span>
 
-            <span>{item.label}</span>
+            <span className="font-medium">
+              {item.label}
+            </span>
           </button>
         ))}
       </div>
 
       {/* Footer */}
 
-      <div className="mt-4 border-t border-white/10 p-3">
+      <div className="border-t border-white/10 p-3">
         <button
           className="
-            flex w-full items-center
+            flex
+            w-full
+            items-center
             gap-3
             rounded-xl
-            px-4 py-3
+            px-4
+            py-3
+            transition
             hover:bg-white/10
           "
         >
           <FiHelpCircle />
 
-          Help Center
+          <span>Help Center</span>
         </button>
       </div>
     </div>

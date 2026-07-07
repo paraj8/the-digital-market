@@ -7,7 +7,7 @@ import { toast } from "react-hot-toast";
 
 import type { Product } from "../../types/product";
 
-import { useWishlist } from "../../hooks/useWishlist";
+import { useWishlist } from "../../hooks/wishlist/useWishlist";
 
 interface ProductCardProps {
   product: Product;
