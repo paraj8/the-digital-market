@@ -1,5 +1,3 @@
-import React from "react";
-
 interface ProductPaginationProps {
   page: number;
   totalPages: number;

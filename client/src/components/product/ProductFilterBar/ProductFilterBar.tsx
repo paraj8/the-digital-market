@@ -1,18 +1,18 @@
-import CategoryFilter from "./ProductFilterBar/filters/CategoryFilter";
-import BrandFilter from "./ProductFilterBar/filters/BrandFilter";
-import RatingFilter from "./ProductFilterBar/filters/RatingFilter";
-import AvailabilityFilter from "./ProductFilterBar/filters/AvailabilityFilter";
-import SortFilter from "./ProductFilterBar/filters/SortFilter";
+import CategoryFilter from "./filters/CategoryFilter";
+import BrandFilter from "./filters/BrandFilter";
+import RatingFilter from "./filters/RatingFilter";
+import AvailabilityFilter from "./filters/AvailabilityFilter";
+import SortFilter from "./filters/SortFilter";
 
-import PriceFilter from "./ProductFilterBar/PriceFilter";
-import ActiveFilters from "./ProductFilterBar/ActiveFilters";
-import ProductResultsInfo from "./ProductFilterBar/ProductResultsInfo";
+import PriceFilter from "./filters/PriceFilter";
+import ActiveFilters from "./ActiveFilters";
+import ProductResultsInfo from "./ProductResultsInfo";
 
 import type {
   FilterOptions,
   ProductFiltersState,
   ArrayFilterKey,
-} from "../../types/filter";
+} from "../../../types/filter";
 
 interface ProductFilterBarProps {
   options?: FilterOptions;

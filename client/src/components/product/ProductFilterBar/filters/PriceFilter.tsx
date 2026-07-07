@@ -1,40 +1,48 @@
 import { useEffect, useRef, useState } from "react";
+import { Range, getTrackBackground } from "react-range";
+import { FiDollarSign, FiChevronDown } from "react-icons/fi";
 
-interface PriceValue {
+
+export interface PriceValue {
   minPrice?: number;
   maxPrice?: number;
 }
 
 interface PriceFilterProps {
+  min: number;
+  max: number;
+
   value: PriceValue;
+
   onApply: (value: PriceValue) => void;
 }
 
+const STEP = 100;
+
 function PriceFilter({
+  min,
+  max,
   value,
   onApply,
 }: PriceFilterProps) {
   const [open, setOpen] = useState(false);
 
-  const [minPrice, setMinPrice] = useState(
-    value.minPrice?.toString() ?? ""
-  );
-
-  const [maxPrice, setMaxPrice] = useState(
-    value.maxPrice?.toString() ?? ""
-  );
-
   const dropdownRef =
     useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const [values, setValues] = useState([
+    value.minPrice ?? min,
+    value.maxPrice ?? max,
+  ]);
+
+    useEffect(() => {
     const handleOutside = (
-      e: MouseEvent
+      event: MouseEvent
     ) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(
-          e.target as Node
+          event.target as Node
         )
       ) {
         setOpen(false);
@@ -55,13 +63,10 @@ function PriceFilter({
 
   const handleOpen = () => {
     if (!open) {
-      setMinPrice(
-        value.minPrice?.toString() ?? ""
-      );
-
-      setMaxPrice(
-        value.maxPrice?.toString() ?? ""
-      );
+      setValues([
+        value.minPrice ?? min,
+        value.maxPrice ?? max,
+      ]);
     }
 
     setOpen((prev) => !prev);
@@ -69,21 +74,15 @@ function PriceFilter({
 
   const handleApply = () => {
     onApply({
-      minPrice: minPrice
-        ? Number(minPrice)
-        : undefined,
-
-      maxPrice: maxPrice
-        ? Number(maxPrice)
-        : undefined,
+      minPrice: values[0],
+      maxPrice: values[1],
     });
 
     setOpen(false);
   };
 
   const handleClear = () => {
-    setMinPrice("");
-    setMaxPrice("");
+    setValues([min, max]);
 
     onApply({
       minPrice: undefined,
@@ -93,7 +92,10 @@ function PriceFilter({
     setOpen(false);
   };
 
-  return (
+  const formatPrice = (price: number) =>
+  `₹${price.toLocaleString("en-IN")}`;
+
+    return (
     <div
       ref={dropdownRef}
       className="relative"
@@ -101,106 +103,206 @@ function PriceFilter({
       <button
         onClick={handleOpen}
         className="
+          flex
+          items-center
+          gap-2
+
           whitespace-nowrap
+
           rounded-xl
           border border-white/10
+
           bg-[#121826]
+
           px-4
           py-2
+
           text-sm
+
           transition
+
           hover:border-violet-500
         "
       >
-        Price ▼
+        <FiDollarSign />
+
+      <span>
+        {value.minPrice !== undefined ||
+        value.maxPrice !== undefined
+          ? `${formatPrice(values[0])} - ${formatPrice(values[1])}`
+          : "Price"}
+      </span>
+
+        <FiChevronDown
+          className={`transition ${
+            open ? "rotate-180" : ""
+          }`}
+        />
       </button>
 
-      {open && (
+{/*============ Dropdown ===============*/}
+            {open && (
         <div
           className="
             absolute
             left-0
             top-full
             z-50
+
             mt-2
-            w-72
+            w-80
+
             rounded-2xl
             border border-white/10
+
             bg-[#121826]
+
+            p-5
+
             shadow-2xl
           "
         >
-          <div className="space-y-4 p-4">
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">
-                Minimum Price
-              </label>
 
-              <input
-                type="number"
-                value={minPrice}
-                onChange={(e) =>
-                  setMinPrice(
-                    e.target.value
-                  )
-                }
-                placeholder="0"
-                className="
-                  w-full
-                  rounded-xl
-                  border border-white/10
-                  bg-[#1b2436]
-                  px-3
-                  py-2
-                  outline-none
-                "
-              />
+          {/* Header */}
+
+          <div className="mb-5">
+            <h3 className="text-sm font-semibold">
+              Price Range
+            </h3>
+
+            <p className="mt-1 text-xs text-slate-400">
+              Drag both handles to choose your budget.
+            </p>
+          </div>
+
+          {/* Current Values */}
+
+          <div className="mb-6 flex items-center justify-between">
+            <div className="rounded-lg bg-[#1b2436] px-3 py-2 text-sm font-medium">
+              {formatPrice(values[0])}
             </div>
 
-            <div>
-              <label className="mb-1 block text-xs text-slate-400">
-                Maximum Price
-              </label>
+            <span className="text-slate-500">—</span>
 
-              <input
-                type="number"
-                value={maxPrice}
-                onChange={(e) =>
-                  setMaxPrice(
-                    e.target.value
-                  )
-                }
-                placeholder="10000"
-                className="
-                  w-full
-                  rounded-xl
-                  border border-white/10
-                  bg-[#1b2436]
-                  px-3
-                  py-2
-                  outline-none
-                "
-              />
+            <div className="rounded-lg bg-[#1b2436] px-3 py-2 text-sm font-medium">
+              {formatPrice(values[1])}
             </div>
           </div>
 
+          {/* Slider */}
+
+          <div className="px-2 py-4">
+            <Range
+              values={values}
+              step={STEP}
+              min={min}
+              max={max}
+              onChange={setValues}
+                renderTrack={({ props, children }) => (
+                  <div
+                    {...props}
+                    style={{
+                      ...props.style,
+                      height: "36px",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div
+                      className="h-2 w-full rounded-full"
+                      style={{
+                        background: getTrackBackground({
+                          values,
+                          colors: [
+                            "#334155",
+                            "#7c3aed",
+                            "#334155",
+                          ],
+                          min,
+                          max,
+                        }),
+                      }}
+                    >
+                      {children}
+                    </div>
+                  </div>
+                )}
+                renderThumb={({ props }) => (
+                  <div
+                    {...props}
+                    style={props.style}
+                    tabIndex={0}
+                    className="
+                      h-5
+                      w-5
+
+                      rounded-full
+
+                      border-2
+                      border-violet-500
+
+                      bg-white
+
+                      shadow-lg
+
+                      cursor-pointer
+
+                      focus:outline-none
+                      focus:ring-2
+                      focus:ring-violet-500
+                      focus:ring-offset-2
+                      focus:ring-offset-[#121826]
+
+                      transition
+                    "
+                  />
+                )}
+            />
+          </div>
+
+          {/* Selected Range */}
+
+          <div className="mt-5 rounded-xl bg-[#1b2436] p-3 text-center">
+            <p className="text-xs text-slate-400">
+              Selected Range
+            </p>
+
+              <p className="mt-1 text-sm font-semibold">
+                {formatPrice(values[0])} — {formatPrice(values[1])}
+              </p>
+          </div>
+
+
+          {/* Footer */}
+
           <div
             className="
+              mt-6
               flex
               items-center
               justify-between
-              border-t border-white/10
-              p-3
+
+              border-t
+              border-white/10
+
+              pt-4
             "
           >
             <button
+              type="button"
               onClick={handleClear}
               className="
                 rounded-lg
-                border border-white/10
-                px-3
+                border
+                border-white/10
+
+                px-4
                 py-2
+
                 text-sm
+
+                transition
+
                 hover:bg-white/5
               "
             >
@@ -208,14 +310,24 @@ function PriceFilter({
             </button>
 
             <button
+              type="button"
               onClick={handleApply}
               className="
                 rounded-lg
-                bg-violet-600
-                px-4
+
+                bg-gradient-to-r
+                from-violet-600
+                to-blue-600
+
+                px-5
                 py-2
+
                 text-sm
-                hover:bg-violet-500
+                font-medium
+
+                transition
+
+                hover:opacity-90
               "
             >
               Apply
@@ -228,3 +340,4 @@ function PriceFilter({
 }
 
 export default PriceFilter;
+
