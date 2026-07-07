@@ -1,4 +1,4 @@
-import ProductCard from "../../../components/common/ProductCard";
+import ProductCard from "../../../components/product/ProductCard";
 
 import { useRelatedProducts } from "../../../hooks/products/useRelatedProducts";
 

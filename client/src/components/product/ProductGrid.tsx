@@ -1,4 +1,4 @@
-import ProductCard from "../common/ProductCard";
+import ProductCard from "./ProductCard";
 import ProductCardSkeleton from "../common/ProductCardSkeleton";
 
 import type { Product } from "../../types/product";

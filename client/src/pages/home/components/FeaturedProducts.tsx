@@ -1,4 +1,4 @@
-import ProductCard from "../../../components/common/ProductCard";
+import ProductCard from "../../../components/product/ProductCard";
 import SectionHeader from "../../../components/common/SectionHeader";
 import ProductCardSkeleton from "../../../components/common/ProductCardSkeleton";
 
