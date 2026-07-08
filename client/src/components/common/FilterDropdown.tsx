@@ -5,6 +5,8 @@ import {
   useState,
 } from "react";
 
+import { FiChevronDown } from "react-icons/fi";
+
 interface FilterDropdownProps<T> {
   title: string;
 
@@ -120,33 +122,49 @@ return (
   >
     {/* Trigger */}
 
-    <button
-      onClick={() => {
-        if (!open) {
-          setTempSelected(selected);
-          setSearch("");
-        }
+<button
+  onClick={() => {
+    if (!open) {
+      setTempSelected(selected);
+      setSearch("");
+    }
 
-        setOpen(!open);
-      }}
-      className="
-        whitespace-nowrap
-        rounded-xl
-        border border-white/10
-        bg-[#121826]
-        px-4
-        py-2
-        text-sm
-        transition
-        hover:border-violet-500
-      "
-    >
-      {title}
+    setOpen(!open);
+  }}
+  className="
+    flex
+    items-center
+    gap-2
 
-      {selected.length > 0 &&
-        ` (${selected.length})`}{" "}
-      ▼
-    </button>
+    whitespace-nowrap
+
+    rounded-xl
+    border border-white/10
+
+    bg-[#121826]
+
+    px-4
+    py-2
+
+    text-sm
+
+    transition
+
+    hover:border-violet-500
+  "
+>
+  <span>
+    {title}
+    {selected.length > 0 &&
+      ` (${selected.length})`}
+  </span>
+
+  <FiChevronDown
+    className={`transition ${
+      open ? "rotate-180" : ""
+    }`}
+  />
+</button>
 
     {open && (
       <div
