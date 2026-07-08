@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Range, getTrackBackground } from "react-range";
-import { FiDollarSign, FiChevronDown } from "react-icons/fi";
+import { FiChevronDown } from "react-icons/fi";
 
 
 export interface PriceValue {
@@ -17,7 +17,7 @@ interface PriceFilterProps {
   onApply: (value: PriceValue) => void;
 }
 
-const STEP = 100;
+const STEP = 10;
 
 function PriceFilter({
   min,
@@ -124,7 +124,6 @@ function PriceFilter({
           hover:border-violet-500
         "
       >
-        <FiDollarSign />
 
       <span>
         {value.minPrice !== undefined ||
@@ -197,66 +196,70 @@ function PriceFilter({
               step={STEP}
               min={min}
               max={max}
-              onChange={setValues}
-                renderTrack={({ props, children }) => (
+              allowOverlap={false}
+              onChange={(newValues) => setValues(newValues)}
+              renderTrack={({ props, children }) => (
+                <div
+                  style={{
+                    display: "flex",
+                    width: "100%",
+                    height: "36px",
+                    alignItems: "center",
+                  }}
+                >
                   <div
-                    {...props}
+                    ref={props.ref}
+                    onMouseDown={props.onMouseDown}
+                    onTouchStart={props.onTouchStart}
                     style={{
-                      ...props.style,
-                      height: "36px",
-                      display: "flex",
-                      alignItems: "center",
+                      height: "8px",
+                      width: "100%",
+                      borderRadius: "999px",
+                      background: getTrackBackground({
+                        values,
+                        colors: [
+                          "#334155",
+                          "#7c3aed",
+                          "#334155",
+                        ],
+                        min,
+                        max,
+                      }),
                     }}
                   >
-                    <div
-                      className="h-2 w-full rounded-full"
-                      style={{
-                        background: getTrackBackground({
-                          values,
-                          colors: [
-                            "#334155",
-                            "#7c3aed",
-                            "#334155",
-                          ],
-                          min,
-                          max,
-                        }),
-                      }}
-                    >
-                      {children}
-                    </div>
+                    {children}
                   </div>
-                )}
-                renderThumb={({ props }) => (
-                  <div
-                    {...props}
-                    style={props.style}
-                    tabIndex={0}
-                    className="
-                      h-5
-                      w-5
+                </div>
+              )}
+              renderThumb={({ props, index }) => (
+                <div
+                  {...props}
+                  key={index}
+                  className="
+                    h-5
+                    w-5
 
-                      rounded-full
+                    rounded-full
 
-                      border-2
-                      border-violet-500
+                    border-2
+                    border-violet-500
 
-                      bg-white
+                    bg-white
 
-                      shadow-lg
+                    shadow-lg
 
-                      cursor-pointer
+                    cursor-pointer
 
-                      focus:outline-none
-                      focus:ring-2
-                      focus:ring-violet-500
-                      focus:ring-offset-2
-                      focus:ring-offset-[#121826]
+                    transition
 
-                      transition
-                    "
-                  />
-                )}
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-violet-500
+                    focus:ring-offset-2
+                    focus:ring-offset-[#121826]
+                  "
+                />
+              )}
             />
           </div>
 
@@ -314,20 +317,13 @@ function PriceFilter({
               onClick={handleApply}
               className="
                 rounded-lg
-
-                bg-gradient-to-r
-                from-violet-600
-                to-blue-600
-
-                px-5
+                bg-violet-600
+                px-4
                 py-2
-
                 text-sm
                 font-medium
-
                 transition
-
-                hover:opacity-90
+                hover:bg-violet-500
               "
             >
               Apply

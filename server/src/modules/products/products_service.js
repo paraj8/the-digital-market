@@ -357,10 +357,13 @@ const getFilterOptions = async () => {
 
     priceRange:
       price.length > 0
-        ? price[0]
+        ? {
+            min: 100,
+            max: Math.min(price[0].max,50000),
+          }
         : {
-            min: 0,
-            max: 0,
+            min: 100,
+            max: 50000,
           },
 
     ratings: [4, 3, 2, 1],
