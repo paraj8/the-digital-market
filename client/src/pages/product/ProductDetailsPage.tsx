@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { FiHeart } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 import { useWishlist } from "../../hooks/wishlist/useWishlist";
 import { useAddToWishlist } from "../../hooks/wishlist/useAddToWishlist";
@@ -32,6 +33,8 @@ const [quantity, setQuantity] =
 const [addingToCart, setAddingToCart] =
   useState(false);
 
+const navigate = useNavigate();
+
   // Wishlist Hooks
   const { data: wishlist = [] } =
     useWishlist();
@@ -42,7 +45,31 @@ const [addingToCart, setAddingToCart] =
   const removeWishlist =
     useRemoveFromWishlist();
 
-const handleAddToCart = async () => {
+
+    // Navigation
+const handleBuyNow = () => {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    toast("Please login to continue", {
+      icon: "🔐",
+    });
+    return;
+  }
+
+  if (!data) return;
+
+  navigate("/checkout", {
+    state: {
+      mode: "buyNow",
+      productId: data._id,
+      quantity,
+    },
+  });
+};
+
+// Add to Cart Handler
+    const handleAddToCart = async () => {
   try {
     const token = localStorage.getItem("token");
 
@@ -387,22 +414,23 @@ const handleAddToCart = async () => {
       : "Add To Cart"}
   </button>
 
-  <button
-    className="
-      flex-1
-      rounded-xl
-      border
-      border-white/10
-      bg-[#121826]
-      py-3
-      font-semibold
-      transition
-      hover:border-violet-500/50
-      hover:scale-[1.02]
-    "
-  >
-    Buy Now
-  </button>
+<button
+  onClick={handleBuyNow}
+  className="
+    flex-1
+    rounded-xl
+    border
+    border-white/10
+    bg-[#121826]
+    py-3
+    font-semibold
+    transition
+    hover:border-violet-500/50
+    hover:scale-[1.02]
+  "
+>
+  Buy Now
+</button>
 
   <button
     onClick={handleWishlist}

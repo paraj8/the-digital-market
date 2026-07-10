@@ -1,0 +1,100 @@
+import CheckoutHeader from "../../components/checkout/CheckoutHeader";
+import CheckoutItems from "../../components/checkout/items/CheckoutItems";
+import CheckoutAddress from "../../components/checkout/CheckoutAddress";
+import CheckoutPayment from "../../components/checkout/CheckoutPayment";
+import CheckoutDelivery from "../../components/checkout/CheckoutDelivery";
+import CheckoutSummary from "../../components/checkout/CheckoutSummary";
+
+import { useLocation } from "react-router-dom";
+import { useCheckout } from "../../hooks/checkout/useCheckout";
+
+function CheckoutPage() {
+  const { state } = useLocation();
+
+  const {
+    items,
+    addresses,
+
+    selectedAddressId,
+    setSelectedAddressId,
+
+    paymentMethod,
+    setPaymentMethod,
+
+    summary,
+
+    placeOrder,
+  } = useCheckout(state);
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8">
+    
+     <CheckoutHeader
+  itemCount={items.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  )}
+/>
+
+      <div
+        className="
+          mt-8
+          grid
+          gap-8
+
+          lg:grid-cols-[2fr_1fr]
+        "
+      >
+        {/* LEFT */}
+
+        <div className="space-y-6">
+          <CheckoutItems
+            items={items}
+          />
+
+          <CheckoutAddress
+            addresses={addresses}
+            selectedAddressId={
+              selectedAddressId
+            }
+            onSelect={
+              setSelectedAddressId
+            }
+          />
+
+          <CheckoutPayment
+            paymentMethod={
+              paymentMethod
+            }
+            onChange={
+              setPaymentMethod
+            }
+          />
+
+          <CheckoutDelivery />
+        </div>
+
+        {/* RIGHT */}
+
+        <div
+          className="
+            h-fit
+            lg:sticky
+            lg:top-24
+          "
+        >
+        <CheckoutSummary
+        subtotal={summary.subtotal}
+        shipping={summary.shipping}
+        discount={summary.discount}
+        tax={summary.tax}
+        total={summary.total}
+        onPlaceOrder={placeOrder}
+        />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default CheckoutPage;
