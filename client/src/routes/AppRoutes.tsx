@@ -16,6 +16,7 @@ import AiAssistantPage from "../pages/ai/AiAssistantPage";
 import AddressesPage from "../pages/addresses/AddressesPage";
 import SettingsPage from "../pages/settings/SettingsPage";
 import ProductListingPage from "../pages/product/ProductListingPage";
+import CheckoutPage from "../pages/checkout/CheckoutPage";
 
 function AppRoutes() {
   return (
@@ -34,6 +35,11 @@ function AppRoutes() {
         <Route
           path="/product/:slug"
           element={<ProductDetailsPage />}
+        />
+
+        <Route
+          path="/checkout"
+          element={<CheckoutPage />}
         />
       </Route>
 
