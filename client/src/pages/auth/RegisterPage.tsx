@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 
+import { Eye, EyeOff } from "lucide-react";
+
 import {
   registerSchema,
   type RegisterFormData,
@@ -16,10 +18,12 @@ import { registerUser } from "../../api/authApi";
 function RegisterPage() {
   const navigate = useNavigate();
 
-  const [serverError, setServerError] =
-    useState("");
+  const [serverError, setServerError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [isSubmitting, setIsSubmitting] =
+  // Show / Hide password states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
     useState(false);
 
   const {
@@ -27,13 +31,10 @@ function RegisterPage() {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver:
-      zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (
-    data: RegisterFormData
-  ) => {
+  const onSubmit = async (data: RegisterFormData) => {
     try {
       setServerError("");
       setIsSubmitting(true);
@@ -49,19 +50,20 @@ function RegisterPage() {
           email: data.email,
         },
       });
+      toast.success("Registration successful!");
     } catch (error: unknown) {
-  if (
-    axios.isAxiosError(error)
-  ) {
-    setServerError(
-      toast.error(error.response?.data?.message || "Registration failed")
-    );
-  } else {
-    setServerError(
-      toast.error("Registration failed")
-    );
-  }
-} finally {
+      if (axios.isAxiosError(error)) {
+        const message =
+          (error.response?.data?.message ||
+          "Registration failed");
+
+        setServerError(message);
+        toast.error(message);
+      } else {
+        setServerError("Registration failed");
+        toast.error("Registration failed");
+      }
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -112,9 +114,7 @@ function RegisterPage() {
         </div>
 
         <form
-          onSubmit={handleSubmit(
-            onSubmit
-          )}
+          onSubmit={handleSubmit(onSubmit)}
           className="space-y-5"
         >
           {/* Full Name */}
@@ -126,6 +126,7 @@ function RegisterPage() {
 
             <input
               {...register("fullName")}
+              type="text"
               className="
                 w-full
                 rounded-xl
@@ -142,10 +143,7 @@ function RegisterPage() {
 
             {errors.fullName && (
               <p className="mt-1 text-sm text-red-400">
-                {
-                  errors.fullName
-                    .message
-                }
+                {errors.fullName.message}
               </p>
             )}
           </div>
@@ -176,10 +174,7 @@ function RegisterPage() {
 
             {errors.email && (
               <p className="mt-1 text-sm text-red-400">
-                {
-                  errors.email
-                    .message
-                }
+                {errors.email.message}
               </p>
             )}
           </div>
@@ -191,29 +186,62 @@ function RegisterPage() {
               Password
             </label>
 
-            <input
-              {...register("password")}
-              type="password"
-              className="
-                w-full
-                rounded-xl
-                border border-white/10
-                bg-[#0B0F19]
-                px-4
-                py-3
-                text-white
-                outline-none
-                focus:border-violet-500
-              "
-              placeholder="********"
-            />
+            <div className="relative">
+              <input
+                {...register("password")}
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
+                className="
+                  w-full
+                  rounded-xl
+                  border border-white/10
+                  bg-[#0B0F19]
+                  px-4
+                  py-3
+                  pr-12
+                  text-white
+                  outline-none
+                  focus:border-violet-500
+                "
+                placeholder="********"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword(
+                    !showPassword
+                  )
+                }
+                className="
+                  absolute
+                  right-3
+                  top-1/2
+                  -translate-y-1/2
+                  text-slate-400
+                  transition
+                  hover:text-violet-400
+                "
+                aria-label={
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+              >
+                {showPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
+              </button>
+            </div>
 
             {errors.password && (
               <p className="mt-1 text-sm text-red-400">
-                {
-                  errors.password
-                    .message
-                }
+                {errors.password.message}
               </p>
             )}
           </div>
@@ -225,30 +253,65 @@ function RegisterPage() {
               Confirm Password
             </label>
 
-            <input
-              {...register(
-                "confirmPassword"
-              )}
-              type="password"
-              className="
-                w-full
-                rounded-xl
-                border border-white/10
-                bg-[#0B0F19]
-                px-4
-                py-3
-                text-white
-                outline-none
-                focus:border-violet-500
-              "
-              placeholder="********"
-            />
+            <div className="relative">
+              <input
+                {...register(
+                  "confirmPassword"
+                )}
+                type={
+                  showConfirmPassword
+                    ? "text"
+                    : "password"
+                }
+                className="
+                  w-full
+                  rounded-xl
+                  border border-white/10
+                  bg-[#0B0F19]
+                  px-4
+                  py-3
+                  pr-12
+                  text-white
+                  outline-none
+                  focus:border-violet-500
+                "
+                placeholder="********"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowConfirmPassword(
+                    !showConfirmPassword
+                  )
+                }
+                className="
+                  absolute
+                  right-3
+                  top-1/2
+                  -translate-y-1/2
+                  text-slate-400
+                  transition
+                  hover:text-violet-400
+                "
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
+              >
+                {showConfirmPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
+              </button>
+            </div>
 
             {errors.confirmPassword && (
               <p className="mt-1 text-sm text-red-400">
                 {
-                  errors
-                    .confirmPassword
+                  errors.confirmPassword
                     .message
                 }
               </p>
@@ -257,9 +320,9 @@ function RegisterPage() {
 
           {/* Server Error */}
 
-            {serverError && (
+          {serverError && (
             <div
-                className="
+              className="
                 fixed
                 left-1/2
                 top-6
@@ -275,11 +338,11 @@ function RegisterPage() {
                 text-red-400
                 backdrop-blur-md
                 shadow-lg
-                "
+              "
             >
-                {serverError}
+              {serverError}
             </div>
-            )}
+          )}
 
           {/* Submit */}
 
@@ -294,8 +357,10 @@ function RegisterPage() {
               to-blue-600
               py-3
               font-semibold
+              text-white
               transition
               hover:scale-[1.02]
+              disabled:cursor-not-allowed
               disabled:opacity-50
             "
           >
@@ -305,8 +370,11 @@ function RegisterPage() {
           </button>
         </form>
 
+        {/* Login */}
+
         <div className="mt-6 text-center">
           <button
+            type="button"
             onClick={() =>
               navigate("/login")
             }
