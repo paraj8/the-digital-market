@@ -1,24 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import axios from "axios";
+import { Eye, EyeOff } from "lucide-react";
 
 import { loginUser } from "../../api/authApi";
 
 function LoginPage() {
   const navigate = useNavigate();
 
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const [password, setPassword] =
-    useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
-
-  const [serverError, setServerError] =
-    useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   const handleSubmit = async (
     e: React.FormEvent
@@ -29,11 +25,10 @@ function LoginPage() {
       setServerError("");
       setIsSubmitting(true);
 
-      const response =
-        await loginUser({
-          email,
-          password,
-        });
+      const response = await loginUser({
+        email,
+        password,
+      });
 
       localStorage.setItem(
         "token",
@@ -42,25 +37,18 @@ function LoginPage() {
 
       localStorage.setItem(
         "user",
-        JSON.stringify(
-          response.data.user
-        )
+        JSON.stringify(response.data.user)
       );
 
       navigate("/");
     } catch (error: unknown) {
-      if (
-        axios.isAxiosError(error)
-      ) {
+      if (axios.isAxiosError(error)) {
         setServerError(
-          error.response?.data
-            ?.message ||
+          error.response?.data?.message ||
             "Login failed"
         );
       } else {
-        setServerError(
-          "Login failed"
-        );
+        setServerError("Login failed");
       }
     } finally {
       setIsSubmitting(false);
@@ -86,6 +74,7 @@ function LoginPage() {
             top-6
             z-50
             -translate-x-1/2
+            -translate-x-1/2
             rounded-xl
             border border-red-500/20
             bg-red-500/10
@@ -109,39 +98,38 @@ function LoginPage() {
           shadow-black/20
         "
       >
-            <div className="mb-8 text-center">
-            <h1
-                className="
-                bg-gradient-to-r
-                from-violet-400
-                via-blue-400
-                to-cyan-400
-                bg-clip-text
-                text-4xl
-                font-bold
-                text-transparent
-                "
-            >
-                TDM
-            </h1>
+        <div className="mb-8 text-center">
+          <h1
+            className="
+              bg-gradient-to-r
+              from-violet-400
+              via-blue-400
+              to-cyan-400
+              bg-clip-text
+              text-4xl
+              font-bold
+              text-transparent
+            "
+          >
+            TDM
+          </h1>
 
-            <p className="mt-2 text-slate-400">
-                Welcome back
-            </p>
-            </div>
+          <p className="mt-2 text-slate-400">
+            Welcome back
+          </p>
+        </div>
 
         <form
           onSubmit={handleSubmit}
           className="mt-6 space-y-5"
         >
+          {/* Email */}
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) =>
-              setEmail(
-                e.target.value
-              )
+              setEmail(e.target.value)
             }
             className="
               w-full
@@ -149,45 +137,88 @@ function LoginPage() {
               border border-white/10
               bg-[#0B0F19]
               px-4 py-3
+              text-white
+              outline-none
+              focus:border-violet-500
             "
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) =>
-              setPassword(
-                e.target.value
-              )
-            }
-            className="
-              w-full
-              rounded-xl
-              border border-white/10
-              bg-[#0B0F19]
-              px-4 py-3
-            "
-          />
+          {/* Password */}
+          <div className="relative">
+            <input
+              type={
+                showPassword
+                  ? "text"
+                  : "password"
+              }
+              placeholder="Password"
+              value={password}
+              onChange={(e) =>
+                setPassword(e.target.value)
+              }
+              className="
+                w-full
+                rounded-xl
+                border border-white/10
+                bg-[#0B0F19]
+                px-4 py-3
+                pr-12
+                text-white
+                outline-none
+                focus:border-violet-500
+              "
+            />
 
-<div className="flex justify-end">
-  <button
-    type="button"
-    className="
-      text-sm
-      text-slate-400
-      hover:text-violet-400
-    "
-  >
-    Forgot Password?
-  </button>
-</div>
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword(
+                  !showPassword
+                )
+              }
+              className="
+                absolute
+                right-3
+                top-1/2
+                -translate-y-1/2
+                text-slate-400
+                hover:text-violet-400
+              "
+              aria-label={
+                showPassword
+                  ? "Hide password"
+                  : "Show password"
+              }
+            >
+              {showPassword ? (
+                <EyeOff size={20} />
+              ) : (
+                <Eye size={20} />
+              )}
+            </button>
+          </div>
 
+          {/* Forgot Password */}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() =>
+                navigate("/forgot-password")
+              }
+              className="
+                text-sm
+                text-slate-400
+                hover:text-violet-400
+              "
+            >
+              Forgot Password?
+            </button>
+          </div>
+
+          {/* Login */}
           <button
             type="submit"
-            disabled={
-              isSubmitting
-            }
+            disabled={isSubmitting}
             className="
               w-full
               rounded-xl
@@ -196,6 +227,9 @@ function LoginPage() {
               to-blue-600
               py-3
               font-semibold
+              text-white
+              disabled:cursor-not-allowed
+              disabled:opacity-50
             "
           >
             {isSubmitting
@@ -204,26 +238,27 @@ function LoginPage() {
           </button>
         </form>
 
-<div className="mt-6 text-center">
-  <p className="text-sm text-slate-400">
-    Don't have an account?
-  </p>
+        {/* Register */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-slate-400">
+            Don't have an account?
+          </p>
 
-  <button
-    onClick={() =>
-      navigate("/register")
-    }
-    className="
-      mt-2
-      text-sm
-      font-medium
-      text-violet-400
-      hover:text-violet-300
-    "
-  >
-    Create Account
-  </button>
-</div>
+          <button
+            onClick={() =>
+              navigate("/register")
+            }
+            className="
+              mt-2
+              text-sm
+              font-medium
+              text-violet-400
+              hover:text-violet-300
+            "
+          >
+            Create Account
+          </button>
+        </div>
       </div>
     </div>
   );
