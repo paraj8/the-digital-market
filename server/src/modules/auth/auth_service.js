@@ -12,7 +12,11 @@ const registerUser = async ({ fullName, email, password }) => {
   if (existingUser) {
     throw new Error("User already exists");
   }
-
+console.log("Request Body:",{
+  fullName,
+  email,
+  password,
+});
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await User.create({
@@ -137,8 +141,102 @@ const loginUser = async ({
   };
 };
 
+
+// Forgot Password
+const forgotPassword = async ({ email }) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const otp = generateOTP();
+
+  // Remove any previous OTP for this email
+  await Otp.deleteMany({ email });
+
+  await Otp.create({
+    email,
+    otp,
+    expiresAt: new Date(
+      Date.now() + 10 * 60 * 1000
+    ),
+  });
+
+  await sendEmail({
+    to: email,
+    subject: "Reset Your Password",
+    html: `
+      <h2>The Digital Market</h2>
+      <p>Your password reset OTP is:</p>
+      <h1>${otp}</h1>
+      <p>Valid for 10 minutes.</p>
+    `,
+  });
+
+  return {
+    message: "OTP sent successfully",
+  };
+};
+
+
+// Verify Forgot Password OTP
+const verifyForgotPasswordOTP = async ({
+  email,
+  otp,
+}) => {
+  const otpDoc = await Otp.findOne({
+    email,
+    otp,
+  });
+
+  if (!otpDoc) {
+    throw new Error("Invalid OTP");
+  }
+
+  if (otpDoc.expiresAt < new Date()) {
+    throw new Error("OTP expired");
+  }
+
+  return {
+    message: "OTP verified successfully",
+  };
+};
+
+
+// Reset Password
+const resetPassword = async ({
+  email,
+  password,
+}) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    password,
+    10
+  );
+
+  user.password = hashedPassword;
+
+  await user.save();
+
+  // Delete OTP after successful password reset
+  await Otp.deleteMany({ email });
+
+  return {
+    message: "Password reset successfully",
+  };
+};
+
 module.exports = {
   registerUser,
   verifyOTP,
   loginUser,
+  forgotPassword,
+  verifyForgotPasswordOTP,
+  resetPassword,
 };
