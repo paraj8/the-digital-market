@@ -1,24 +1,4 @@
-const dns = require("dns");
-const nodemailer = require("nodemailer");
-
-// Force Node to prefer IPv4 over IPv6
-dns.setDefaultResultOrder("ipv4first");
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // true only for port 465
-
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-
-  // Optional but helpful on Render
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 20000,
-});
+const axios = require("axios");
 
 const sendEmail = async ({
   to,
@@ -26,21 +6,53 @@ const sendEmail = async ({
   html,
 }) => {
   try {
-    console.log("📧 Sending email to:", to);
+    console.log(`📧 Sending email to ${to}`);
 
-    const info = await transporter.sendMail({
-      from: `"The Digital Market" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      html,
-    });
+    const response = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: process.env.EMAIL_FROM_NAME || "The Digital Market",
+          email: process.env.EMAIL_FROM,
+        },
 
-    console.log("✅ Email sent:", info.messageId);
+        to: [
+          {
+            email: to,
+          },
+        ],
 
-    return info;
+        subject,
+
+        htmlContent: html,
+      },
+      {
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          "api-key": process.env.BREVO_API_KEY,
+        },
+      }
+    );
+
+    console.log("✅ Email Sent");
+    console.log(response.data);
+
+    return response.data;
   } catch (error) {
-    console.error("❌ SMTP Error:", error);
-    throw error;
+    console.error("❌ Brevo Error");
+
+    if (error.response) {
+      console.error(error.response.status);
+      console.error(error.response.data);
+    } else {
+      console.error(error.message);
+    }
+
+    throw new Error(
+      error.response?.data?.message ||
+      "Failed to send email"
+    );
   }
 };
 
