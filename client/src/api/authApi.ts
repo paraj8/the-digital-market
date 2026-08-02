@@ -45,3 +45,39 @@ export const loginUser = async (
 
   return response.data;
 };
+
+export const forgotPassword = async (
+  data: {
+    email: string;
+  }
+) => {
+  const response = await api.post(
+    "/auth/forgot-password",
+    data
+  );
+  return response.data;
+};
+export const verifyForgotPasswordOtp = async (
+  data: {
+    email: string;
+    otp: string;
+  }
+) => {
+  const response = await api.post(
+    "/auth/verify-forgot-password-otp",
+    data
+  );
+  return response.data;
+};
+export const resetPassword = async (
+  data: {
+    email: string;
+    password: string;
+  }
+) => {
+  const response = await api.post(
+    "/auth/reset-password",
+    data
+  );
+  return response.data;
+};
