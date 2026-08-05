@@ -59,8 +59,71 @@ const login = async (req, res) => {
   }
 };
 
+
+
+const forgotPassword = async (req, res) => {
+  try {
+    const result =
+      await authService.forgotPassword(
+        req.body
+      );
+    res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+const verifyForgotPasswordOTP = async (
+  req,
+  res
+) => {
+  try {
+    const result =
+      await authService.verifyForgotPasswordOTP(
+        req.body
+      );
+    res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+const resetPassword = async (
+  req,
+  res
+) => {
+  try {
+    const result =
+      await authService.resetPassword(
+        req.body
+      );
+    res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   verifyOTP,
   login,
+  forgotPassword,
+  verifyForgotPasswordOTP,
+  resetPassword,
 };

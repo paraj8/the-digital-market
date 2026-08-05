@@ -1,27 +1,22 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {Eye, EyeOff} from "lucide-react";
 import axios from "axios";
-
 import {
   registerSchema,
   type RegisterFormData,
 } from "../../features/auth/schemas/registerSchema";
-
 import { registerUser } from "../../api/authApi";
-
 function RegisterPage() {
   const navigate = useNavigate();
-
   const [serverError, setServerError] =
     useState("");
-
   const [isSubmitting, setIsSubmitting] =
     useState(false);
-
   const {
     register,
     handleSubmit,
@@ -30,20 +25,23 @@ function RegisterPage() {
     resolver:
       zodResolver(registerSchema),
   });
-
   const onSubmit = async (
     data: RegisterFormData
   ) => {
     try {
       setServerError("");
       setIsSubmitting(true);
-
+      console.log("Sending:",{
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,}
+      );
+      console.log(data);
       await registerUser({
         fullName: data.fullName,
         email: data.email,
         password: data.password,
       });
-
       navigate("/verify-otp", {
         state: {
           email: data.email,
@@ -65,7 +63,8 @@ function RegisterPage() {
       setIsSubmitting(false);
     }
   };
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   return (
     <div
       className="
@@ -89,7 +88,6 @@ function RegisterPage() {
         "
       >
         {/* Logo */}
-
         <div className="mb-8 text-center">
           <h1
             className="
@@ -105,12 +103,10 @@ function RegisterPage() {
           >
             TDM
           </h1>
-
           <p className="mt-2 text-slate-400">
             Create your account
           </p>
         </div>
-
         <form
           onSubmit={handleSubmit(
             onSubmit
@@ -118,12 +114,10 @@ function RegisterPage() {
           className="space-y-5"
         >
           {/* Full Name */}
-
           <div>
             <label className="mb-2 block text-sm text-slate-300">
               Full Name
             </label>
-
             <input
               {...register("fullName")}
               className="
@@ -139,7 +133,6 @@ function RegisterPage() {
               "
               placeholder="John Doe"
             />
-
             {errors.fullName && (
               <p className="mt-1 text-sm text-red-400">
                 {
@@ -149,14 +142,11 @@ function RegisterPage() {
               </p>
             )}
           </div>
-
           {/* Email */}
-
           <div>
             <label className="mb-2 block text-sm text-slate-300">
               Email
             </label>
-
             <input
               {...register("email")}
               type="email"
@@ -173,7 +163,6 @@ function RegisterPage() {
               "
               placeholder="you@example.com"
             />
-
             {errors.email && (
               <p className="mt-1 text-sm text-red-400">
                 {
@@ -183,17 +172,15 @@ function RegisterPage() {
               </p>
             )}
           </div>
-
           {/* Password */}
-
           <div>
             <label className="mb-2 block text-sm text-slate-300">
               Password
             </label>
-
+            <div className="relative">
             <input
               {...register("password")}
-              type="password"
+              type={showPassword ? "text" :"password"}
               className="
                 w-full
                 rounded-xl
@@ -201,13 +188,30 @@ function RegisterPage() {
                 bg-[#0B0F19]
                 px-4
                 py-3
+                pr-12
                 text-white
                 outline-none
                 focus:border-violet-500
               "
               placeholder="********"
             />
-
+            <button 
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="
+            absolute
+            right-4
+            top-1/2
+            -translate-y-1/2
+            text-slate-400
+            hover:text-violet-400
+            transition-colors
+            ">
+              {showPassword ? ( <EyeOff size={20} />):
+              (<Eye size = {20} />)}
+            </button>
+            </div>
+            
             {errors.password && (
               <p className="mt-1 text-sm text-red-400">
                 {
@@ -217,19 +221,16 @@ function RegisterPage() {
               </p>
             )}
           </div>
-
           {/* Confirm Password */}
-
           <div>
             <label className="mb-2 block text-sm text-slate-300">
               Confirm Password
             </label>
-
+            <div className="relative">
             <input
               {...register(
                 "confirmPassword"
-              )}
-              type="password"
+              )}type={showConfirmPassword ? "text" : "password"}
               className="
                 w-full
                 rounded-xl
@@ -237,13 +238,29 @@ function RegisterPage() {
                 bg-[#0B0F19]
                 px-4
                 py-3
+                pr-12
                 text-white
                 outline-none
                 focus:border-violet-500
               "
               placeholder="********"
             />
+            <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="
+           absolute
+            right-4
+            top-1/2
+            -translate-y-1/2
+            text-slate-400
+            hover:text-violet-400
+            transition-colors">
+               {showPassword ? ( <EyeOff size={20} />):
+              (<Eye size = {20} />)}
 
+            </button>
+            </div>
             {errors.confirmPassword && (
               <p className="mt-1 text-sm text-red-400">
                 {
@@ -254,9 +271,7 @@ function RegisterPage() {
               </p>
             )}
           </div>
-
           {/* Server Error */}
-
             {serverError && (
             <div
                 className="
@@ -280,9 +295,7 @@ function RegisterPage() {
                 {serverError}
             </div>
             )}
-
           {/* Submit */}
-
           <button
             type="submit"
             disabled={isSubmitting}
@@ -304,7 +317,6 @@ function RegisterPage() {
               : "Create Account"}
           </button>
         </form>
-
         <div className="mt-6 text-center">
           <button
             onClick={() =>
@@ -323,5 +335,4 @@ function RegisterPage() {
     </div>
   );
 }
-
 export default RegisterPage;
