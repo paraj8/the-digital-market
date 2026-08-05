@@ -7,6 +7,9 @@ import ProductDetailsPage from "../pages/product/ProductDetailsPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import VerifyOtpPage from "../pages/auth/VerifyOtpPage";
 import LoginPage from "../pages/auth/LoginPage";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
+import VerifyForgotPasswordOtpPage from "../pages/auth/VerifyForgotPasswordOtpPage";
 import ProfilePage from "../pages/profile/ProfilePage";
 import OrdersPage from "../pages/orders/OrdersPage";
 import WishlistPage from "../pages/wishlist/WishlistPage";
@@ -62,6 +65,24 @@ function AppRoutes() {
           element={
             <LoginPage />
           }
+        />
+        <Route 
+        path="/forgot-password"
+        element={
+          <ForgotPasswordPage />
+        }
+        />
+         <Route 
+        path="/verify-forgot-password-otp"
+        element={
+          <VerifyForgotPasswordOtpPage />
+        }
+        />
+         <Route 
+        path="/reset-password"
+        element={
+          <ResetPasswordPage />
+        }
         />
 
                     <Route
