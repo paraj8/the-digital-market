@@ -141,6 +141,78 @@ const loginUser = async ({
   };
 };
 
+// Admin Login
+const loginAdmin = async ({
+  email,
+  password,
+}) => {
+  const user = await User.findOne({
+    email,
+  });
+
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
+
+  const isMatch =
+    await bcrypt.compare(
+      password,
+      user.password
+    );
+
+  if (!isMatch) {
+    throw new Error("Invalid credentials");
+  }
+
+  if (!user.isVerified) {
+    throw new Error(
+      "Please verify your account first"
+    );
+  }
+
+  if (user.isBlocked) {
+    throw new Error(
+      "Your account has been blocked"
+    );
+  }
+
+  // Only staff/admin can login here
+  if (
+    user.role !== "admin" &&
+    user.role !== "staff"
+  ) {
+    throw new Error(
+      "You are not authorized to access the admin panel"
+    );
+  }
+
+  user.lastLogin = new Date();
+
+  await user.save();
+
+  const token = jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+      panel: "admin",
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
+
+  return {
+    token,
+
+    user: {
+      id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    },
+  };
+};
 
 // Forgot Password
 const forgotPassword = async ({ email }) => {
@@ -236,6 +308,7 @@ module.exports = {
   registerUser,
   verifyOTP,
   loginUser,
+  loginAdmin,
   forgotPassword,
   verifyForgotPasswordOTP,
   resetPassword,

@@ -1,4 +1,4 @@
-function DashboardPage() {
+function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -300,4 +300,4 @@ function DashboardPage() {
   );
 }
 
-export default DashboardPage;
+export default AdminDashboardPage;
