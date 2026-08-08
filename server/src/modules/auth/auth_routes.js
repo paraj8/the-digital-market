@@ -6,7 +6,7 @@ const authController = require("./auth_controller");
 router.post("/register", authController.register);
 router.post("/verify-otp", authController.verifyOTP);
 router.post("/login", authController.login);
-
+router.post("/admin/login", authController.adminLogin);
 
 router.post(
   "/forgot-password",

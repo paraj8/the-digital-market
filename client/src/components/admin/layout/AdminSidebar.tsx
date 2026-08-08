@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   FiGrid,
   FiShoppingBag,
@@ -60,6 +61,17 @@ const menu = [
 ];
 
 function AdminSidebar() {
+  const navigate = useNavigate();
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+
+  navigate("/admin/login", {
+    replace: true,
+  });
+};
+
   return (
     <aside
       className="
@@ -160,6 +172,8 @@ function AdminSidebar() {
         "
       >
         <button
+          type="button"
+          onClick={handleLogout}
           className="
             w-full
 

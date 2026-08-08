@@ -276,6 +276,14 @@ const getAllOrders = async () => {
       "user",
       "fullName email"
     )
+    .populate(
+      "shippingAddress",
+      "fullName phone addressLine1 addressLine2 landmark city state country postalCode addressType"
+    )
+    .populate(
+      "coupon",
+      "code discountType discountValue"
+    )
     .sort({
       createdAt: -1,
     });

@@ -1,21 +1,22 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAdminLogin } from "../../hooks/admin/useAdminLogin";
 
 function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const {login, loading, error,} = useAdminLogin();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+const handleLogin = async (
+  e: React.FormEvent
+) => {
+  e.preventDefault();
 
-    console.log({
-      email,
-      password,
-    });
-
-    // TODO:
-    // Connect admin login API
-  };
+  await login(
+    email,
+    password
+  );
+};
 
   return (
     <div
@@ -168,26 +169,55 @@ function AdminLoginPage() {
             />
           </div>
 
-          <button
-            type="submit"
-            className="
-              w-full
+              {
+      error && (
+        <div
+          className="
+            rounded-lg
 
-              rounded-xl
+            border
+            border-red-500/30
 
-              bg-violet-600
+            bg-red-500/10
 
-              py-3
+            p-3
 
-              font-semibold
+            text-sm
 
-              transition
+            text-red-400
+          "
+        >
+          {error}
+        </div>
+      )
+    }
 
-              hover:bg-violet-500
-            "
-          >
-            Login
-          </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="
+            w-full
+
+            rounded-xl
+
+            bg-violet-600
+
+            py-3
+
+            font-semibold
+
+            transition
+
+            hover:bg-violet-500
+
+            disabled:cursor-not-allowed
+            disabled:opacity-60
+          "
+        >
+          {loading
+            ? "Signing In..."
+            : "Login"}
+        </button>
         </form>
 
         <div
