@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   useMutation,
   useQuery,
@@ -7,49 +9,106 @@ import {
 import {
   getAllOrders,
   updateOrderStatus,
-  type AdminOrder,
+  type AdminOrderStatus,
 } from "../../api/adminOrderApi";
 
 export function useAdminOrders() {
-  const queryClient =
-    useQueryClient();
+  const queryClient = useQueryClient();
+
+  // =====================================
+  // FILTER / PAGINATION STATE
+  // =====================================
+
+  const [page, setPage] = useState(1);
+
+  const [limit, setLimit] = useState(20);
+
+  const [status, setStatus] =
+    useState<AdminOrderStatus | "all">("all");
+
+  const [search, setSearch] = useState("");
+
+  // =====================================
+  // GET ORDERS
+  // =====================================
 
   const ordersQuery = useQuery({
-    queryKey: ["admin-orders"],
-    queryFn: getAllOrders,
+    queryKey: [
+      "admin-orders",
+      page,
+      limit,
+      status,
+      search,
+    ],
+
+    queryFn: () =>
+      getAllOrders({
+        page,
+        limit,
+        status,
+        search,
+      }),
   });
 
-  const updateStatusMutation =
-    useMutation({
-      mutationFn: ({
-        orderId,
-        orderStatus,
-      }: {
-        orderId: string;
-        orderStatus: AdminOrder["orderStatus"];
-      }) =>
-        updateOrderStatus(
-          orderId,
-          orderStatus
-        ),
+  // =====================================
+  // UPDATE ORDER STATUS
+  // =====================================
 
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["admin-orders"],
-        });
-      },
-    });
+  const updateStatusMutation = useMutation({
+    mutationFn: ({
+      orderId,
+      orderStatus,
+    }: {
+      orderId: string;
+      orderStatus: AdminOrderStatus;
+    }) =>
+      updateOrderStatus(
+        orderId,
+        orderStatus
+      ),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["admin-orders"],
+      });
+    },
+  });
+
+  // =====================================
+  // RETURN
+  // =====================================
 
   return {
     orders:
       ordersQuery.data?.data ?? [],
 
-    loading:
-      ordersQuery.isLoading,
+    pagination:
+      ordersQuery.data?.pagination ?? {
+        currentPage: 1,
+        limit,
+        totalOrders: 0,
+        totalPages: 0,
+      },
 
-    error:
-      ordersQuery.error,
+    loading: ordersQuery.isLoading,
 
+    error: ordersQuery.error,
+
+    // Pagination
+    page,
+    setPage,
+
+    limit,
+    setLimit,
+
+    // Filters
+    status,
+    setStatus,
+
+    search,
+    setSearch,
+
+    // Update status
     updateStatus:
       updateStatusMutation.mutateAsync,
 

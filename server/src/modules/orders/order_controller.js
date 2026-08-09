@@ -80,12 +80,26 @@ const getAllOrders = async (
   res
 ) => {
   try {
-    const orders =
-      await orderService.getAllOrders();
+    const {
+      page,
+      limit,
+      status,
+      search,
+    } = req.query;
+
+    const result =
+      await orderService.getAllOrders({
+        page,
+        limit,
+        status,
+        search,
+      });
 
     res.status(200).json({
       success: true,
-      data: orders,
+      data: result.orders,
+      pagination:
+        result.pagination,
     });
   } catch (error) {
     res.status(400).json({

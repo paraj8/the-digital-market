@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { useAdminOrders } from "../../../hooks/admin/useAdminOrders";
 
 import OrderStats from "./components/OrderStats";
@@ -9,46 +7,28 @@ import OrdersTable from "./components/OrdersTable";
 function AdminOrdersPage() {
   const {
     orders,
+    pagination,
+
+    page,
+    setPage,
+
+    limit,
+    setLimit,
+
+    status,
+    setStatus,
+
+    search,
+    setSearch,
+
     loading,
     error,
   } = useAdminOrders();
 
-  const [search, setSearch] =
-    useState("");
+  // =====================================
+  // VIEW ORDER
+  // =====================================
 
-  const [statusFilter, setStatusFilter] =
-    useState("all");
-
-  // Search + status filtering
-  const filteredOrders = orders.filter(
-    (order) => {
-      const searchValue =
-        search.toLowerCase();
-
-      const matchesSearch =
-        order._id
-          .toLowerCase()
-          .includes(searchValue) ||
-        order.user.fullName
-          .toLowerCase()
-          .includes(searchValue) ||
-        order.user.email
-          .toLowerCase()
-          .includes(searchValue);
-
-      const matchesStatus =
-        statusFilter === "all" ||
-        order.orderStatus ===
-          statusFilter;
-
-      return (
-        matchesSearch &&
-        matchesStatus
-      );
-    }
-  );
-
-  // View order
   const handleViewOrder = (
     orderId: string
   ) => {
@@ -60,33 +40,23 @@ function AdminOrdersPage() {
     // Order details will be connected later.
   };
 
+  // =====================================
+  // LIMIT CHANGE
+  // =====================================
+
+  const handleLimitChange = (
+    value: number
+  ) => {
+    setPage(1);
+    setLimit(value);
+  };
+
+  // =====================================
+  // RENDER
+  // =====================================
+
   return (
     <div className="space-y-6">
-
-      {/* Header */}
-
-      <div>
-        <h1
-          className="
-            text-2xl
-            font-bold
-            text-white
-          "
-        >
-          Orders
-        </h1>
-
-        <p
-          className="
-            mt-1
-            text-sm
-            text-gray-400
-          "
-        >
-          Manage and track customer
-          orders.
-        </p>
-      </div>
 
       {/* Stats */}
 
@@ -98,9 +68,17 @@ function AdminOrdersPage() {
 
       <OrderFilters
         search={search}
-        onSearchChange={setSearch}
-        status={statusFilter}
-        onStatusChange={setStatusFilter}
+        status={status}
+
+        onSearchChange={(value) => {
+          setPage(1);
+          setSearch(value);
+        }}
+
+        onStatusChange={(value) => {
+          setPage(1);
+          setStatus(value);
+        }}
       />
 
       {/* Loading */}
@@ -145,14 +123,158 @@ function AdminOrdersPage() {
 
       {!loading && !error && (
         <OrdersTable
-          orders={filteredOrders}
+          orders={orders}
           onView={handleViewOrder}
         />
       )}
+
+      {/* Pagination */}
+
+      {!loading &&
+        !error &&
+        pagination.totalOrders > 0 && (
+          <div
+            className="
+              flex
+              flex-col
+              gap-4
+              rounded-2xl
+              border
+              border-white/10
+              bg-slate-900/60
+              px-5
+              py-4
+              sm:flex-row
+              sm:items-center
+              sm:justify-between
+            "
+          >
+
+            {/* Left */}
+
+            <div className="flex items-center gap-4">
+
+              <p className="text-sm text-gray-400">
+                Page {pagination.currentPage}{" "}
+                of {pagination.totalPages}
+              </p>
+
+              <p className="text-sm text-gray-500">
+                {pagination.totalOrders} orders
+              </p>
+
+            </div>
+
+            {/* Right */}
+
+            <div className="flex items-center gap-3">
+
+              {/* Limit */}
+
+              <div className="flex items-center gap-2">
+
+                <span className="text-sm text-gray-500">
+                  Show
+                </span>
+
+                <select
+                  value={limit}
+                  onChange={(e) =>
+                    handleLimitChange(
+                      Number(e.target.value)
+                    )
+                  }
+                  className="
+                    rounded-lg
+                    border
+                    border-white/10
+                    bg-slate-800/70
+                    px-3
+                    py-2
+                    text-sm
+                    text-gray-300
+                    outline-none
+                    focus:border-violet-500
+                  "
+                >
+                  <option value={10}>
+                    10
+                  </option>
+
+                  <option value={20}>
+                    20
+                  </option>
+
+                  <option value={50}>
+                    50
+                  </option>
+
+                  <option value={100}>
+                    100
+                  </option>
+                </select>
+
+              </div>
+
+              {/* Previous */}
+
+              <button
+                type="button"
+                disabled={page === 1}
+                onClick={() =>
+                  setPage(page - 1)
+                }
+                className="
+                  rounded-lg
+                  border
+                  border-white/10
+                  px-4
+                  py-2
+                  text-sm
+                  text-gray-300
+                  transition
+                  hover:bg-white/5
+                  disabled:cursor-not-allowed
+                  disabled:opacity-40
+                "
+              >
+                Previous
+              </button>
+
+              {/* Next */}
+
+              <button
+                type="button"
+                disabled={
+                  page >=
+                  pagination.totalPages
+                }
+                onClick={() =>
+                  setPage(page + 1)
+                }
+                className="
+                  rounded-lg
+                  border
+                  border-white/10
+                  px-4
+                  py-2
+                  text-sm
+                  text-gray-300
+                  transition
+                  hover:bg-white/5
+                  disabled:cursor-not-allowed
+                  disabled:opacity-40
+                "
+              >
+                Next
+              </button>
+
+            </div>
+          </div>
+        )}
 
     </div>
   );
 }
 
 export default AdminOrdersPage;
-
