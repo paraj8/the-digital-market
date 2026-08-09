@@ -1,9 +1,14 @@
 import { Navigate, Outlet } from "react-router-dom";
 
+interface AdminUser {
+  role: "admin" | "staff" | string;
+}
+
 function AdminProtectedRoute() {
   const token = localStorage.getItem("token");
   const userData = localStorage.getItem("user");
 
+  // Not logged in
   if (!token || !userData) {
     return (
       <Navigate
@@ -13,10 +18,10 @@ function AdminProtectedRoute() {
     );
   }
 
-  let user;
+  let user: AdminUser;
 
   try {
-    user = JSON.parse(userData);
+    user = JSON.parse(userData) as AdminUser;
   } catch {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -29,6 +34,7 @@ function AdminProtectedRoute() {
     );
   }
 
+  // Check admin/staff access
   const isAdmin =
     user.role === "admin" ||
     user.role === "staff";
@@ -36,12 +42,13 @@ function AdminProtectedRoute() {
   if (!isAdmin) {
     return (
       <Navigate
-        to="/admin/login"
+        to="/"
         replace
       />
     );
   }
 
+  // Authorized user
   return <Outlet />;
 }
 
