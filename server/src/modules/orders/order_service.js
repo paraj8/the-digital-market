@@ -270,23 +270,97 @@ const getOrderById = async (
 };
 
 // Get All Orders (Admin)
-const getAllOrders = async () => {
-  return await Order.find()
-    .populate(
-      "user",
-      "fullName email"
-    )
-    .populate(
-      "shippingAddress",
-      "fullName phone addressLine1 addressLine2 landmark city state country postalCode addressType"
-    )
-    .populate(
-      "coupon",
-      "code discountType discountValue"
-    )
-    .sort({
-      createdAt: -1,
-    });
+const getAllOrders = async ({
+  page = 1,
+  limit = 20,
+  status,
+  search,
+}) => {
+  const currentPage = Math.max(
+    Number(page) || 1,
+    1
+  );
+
+  const perPage = Math.min(
+    Math.max(Number(limit) || 20, 1),
+    100
+  );
+
+  const skip =
+    (currentPage - 1) * perPage;
+
+  const filter = {};
+
+  // Status filter
+  if (status) {
+    filter.orderStatus = status;
+  }
+
+  // Search filter
+  if (search) {
+    const searchRegex =
+      new RegExp(search, "i");
+
+    const users =
+      await require("../users/user_model")
+        .find({
+          $or: [
+            {
+              fullName: searchRegex,
+            },
+            {
+              email: searchRegex,
+            },
+          ],
+        })
+        .select("_id");
+
+    filter.user = {
+      $in: users.map(
+        (user) => user._id
+      ),
+    };
+  }
+
+  const [
+    orders,
+    totalOrders,
+  ] = await Promise.all([
+    Order.find(filter)
+      .populate(
+        "user",
+        "fullName email"
+      )
+      .populate(
+        "shippingAddress",
+        "fullName phone addressLine1 addressLine2 landmark city state country postalCode addressType"
+      )
+      .populate(
+        "coupon",
+        "code discountType discountValue"
+      )
+      .sort({
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(perPage),
+
+    Order.countDocuments(filter),
+  ]);
+
+  return {
+    orders,
+
+    pagination: {
+      currentPage,
+      limit: perPage,
+      totalOrders,
+
+      totalPages: Math.ceil(
+        totalOrders / perPage
+      ),
+    },
+  };
 };
 
 // Update Order Status (Admin)

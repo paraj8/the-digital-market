@@ -1,5 +1,13 @@
 import API from "./axios";
 
+export type AdminOrderStatus =
+  | "pending"
+  | "confirmed"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
 export interface AdminOrder {
   _id: string;
 
@@ -29,10 +37,7 @@ export interface AdminOrder {
     state: string;
     country: string;
     postalCode: string;
-    addressType:
-      | "home"
-      | "office"
-      | "other";
+    addressType: "home" | "office" | "other";
   };
 
   coupon: {
@@ -48,10 +53,7 @@ export interface AdminOrder {
   tax: number;
   totalAmount: number;
 
-  paymentMethod:
-    | "cod"
-    | "razorpay"
-    | "stripe";
+  paymentMethod: "cod" | "razorpay" | "stripe";
 
   paymentStatus:
     | "pending"
@@ -59,13 +61,7 @@ export interface AdminOrder {
     | "failed"
     | "refunded";
 
-  orderStatus:
-    | "pending"
-    | "confirmed"
-    | "processing"
-    | "shipped"
-    | "delivered"
-    | "cancelled";
+  orderStatus: AdminOrderStatus;
 
   notes: string;
 
@@ -73,39 +69,63 @@ export interface AdminOrder {
   updatedAt: string;
 }
 
-interface AdminOrdersResponse {
-  success: boolean;
-  data: AdminOrder[];
+export interface AdminOrderPagination {
+  currentPage: number;
+  limit: number;
+  totalOrders: number;
+  totalPages: number;
 }
 
-interface AdminOrderResponse {
+export interface AdminOrdersResponse {
+  success: boolean;
+  data: AdminOrder[];
+  pagination: AdminOrderPagination;
+}
+
+export interface AdminOrderResponse {
   success: boolean;
   message: string;
   data: AdminOrder;
 }
 
-export const getAllOrders =
-  async (): Promise<AdminOrdersResponse> => {
-    const response =
-      await API.get<AdminOrdersResponse>(
-        "/orders/admin/all"
-      );
+export interface GetAllOrdersParams {
+  page?: number;
+  limit?: number;
+  status?: AdminOrderStatus | "all";
+  search?: string;
+}
 
-    return response.data;
-  };
-
-export const updateOrderStatus = async (
-  orderId: string,
-  orderStatus: AdminOrder["orderStatus"]
-): Promise<AdminOrderResponse> => {
-  const response =
-    await API.patch<AdminOrderResponse>(
-      `/orders/${orderId}/status`,
-      {
-        orderStatus,
-      }
-    );
+export const getAllOrders = async ({
+  page = 1,
+  limit = 20,
+  status = "all",
+  search = "",
+}: GetAllOrdersParams = {}): Promise<AdminOrdersResponse> => {
+  const response = await API.get<AdminOrdersResponse>(
+    "/orders/admin/all",
+    {
+      params: {
+        page,
+        limit,
+        status: status === "all" ? undefined : status,
+        search: search.trim() || undefined,
+      },
+    }
+  );
 
   return response.data;
 };
 
+export const updateOrderStatus = async (
+  orderId: string,
+  orderStatus: AdminOrderStatus
+): Promise<AdminOrderResponse> => {
+  const response = await API.patch<AdminOrderResponse>(
+    `/orders/${orderId}/status`,
+    {
+      orderStatus,
+    }
+  );
+
+  return response.data;
+};
