@@ -31,6 +31,7 @@ import ProductDetailsPage from "../pages/product/ProductDetailsPage";
 import ProductListingPage from "../pages/product/ProductListingPage";
 
 import RegisterPage from "../pages/auth/RegisterPage";
+import VerifyOtpPage from "../pages/auth/VerifyOtpPage";
 import LoginPage from "../pages/auth/LoginPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
@@ -155,6 +156,13 @@ function AppRoutes() {
         path="/register"
         element={<RegisterPage />}
       />
+
+      <Route
+        path="/verify-otp"
+        element={
+          <VerifyOtpPage />
+        }
+      /> 
 
       <Route
         path="/login"
