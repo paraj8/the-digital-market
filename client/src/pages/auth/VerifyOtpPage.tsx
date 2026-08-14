@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import axios from "axios";
 
-import { verifyOtp } from "../../api/authApi";
+import { verifyOtp } from "../../features/auth/api/authApi";
 
 function VerifyOtpPage() {
   const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import type { CheckoutAddress } from "../../../types/checkout.ts";
+import type { CheckoutAddress } from "../../../features/checkout/types/checkout.ts";
 
 interface AddressCardProps {
   address: CheckoutAddress;

@@ -2,7 +2,7 @@ import CheckoutSection from "./common/CheckoutSection";
 
 import AddressList from "./addressSelector/AddressList";
 
-import type { CheckoutAddress as CheckoutAddressType } from "../../types/checkout";
+import type { CheckoutAddress as CheckoutAddressType } from "../../features/checkout/types/checkout";
 
 interface CheckoutAddressProps {
   addresses: CheckoutAddressType[];

@@ -4,11 +4,11 @@ import { FiHeart } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import { useWishlist } from "../../hooks/wishlist/useWishlist";
-import { useAddToWishlist } from "../../hooks/wishlist/useAddToWishlist";
-import { useRemoveFromWishlist } from "../../hooks/wishlist/useRemoveFromWishlist";
-import { useProduct } from "../../hooks/products/useProduct";
-import { addToCart } from "../../api/cartApi";
+import { useWishlist } from "../../features/wishlist/hooks/useWishlist";
+import { useAddToWishlist } from "../../features/wishlist/hooks/useAddToWishlist";
+import { useRemoveFromWishlist } from "../../features/wishlist/hooks/useRemoveFromWishlist";
+import { useProduct } from "../../features/products/hooks/useProduct";
+import { addToCart } from "../../features/cart/api/cartApi";
 import toast from "react-hot-toast";
 
 import RelatedProducts from "./components/RelatedProducts";

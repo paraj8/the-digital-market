@@ -3,9 +3,9 @@ import ProductFilterBar from "../../components/product/ProductFilterBar";
 import ProductGrid from "../../components/product/ProductGrid";
 import ProductPagination from "../../components/product/ProductPagination";
 
-import { useProducts } from "../../hooks/products/useProducts";
-import { useFilterOptions } from "../../hooks/products/useFilterOptions";
-import { useProductFilters } from "../../hooks/products/useProductFilters";
+import { useProducts } from "../../features/products/hooks/useProducts";
+import { useFilterOptions } from "../../features/products/hooks/useFilterOptions";
+import { useProductFilters } from "../../features/products/hooks/useProductFilters";
 
 type ArrayFilterKey =
   | "categories"

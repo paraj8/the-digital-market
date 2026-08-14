@@ -1,4 +1,4 @@
-import type { PaymentMethod } from "../../../types/checkout";
+import type { PaymentMethod } from "../../../features/checkout/types/checkout";
 
 interface PaymentOptionProps {
   title: string;

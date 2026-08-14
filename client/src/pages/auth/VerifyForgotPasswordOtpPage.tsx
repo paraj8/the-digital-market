@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { verifyForgotPasswordOtp } from "../../api/authApi";
+import { verifyForgotPasswordOtp } from "../../features/auth/api/authApi";
 function VerifyForgotPasswordOtpPage() {
   const navigate = useNavigate();
   const location = useLocation();

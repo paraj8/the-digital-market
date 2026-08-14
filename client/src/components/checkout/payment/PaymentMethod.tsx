@@ -1,6 +1,6 @@
 import PaymentOption from "./PaymentOption";
 
-import type { PaymentMethod as PaymentMethodType } from "../../../types/checkout";
+import type { PaymentMethod as PaymentMethodType } from "../../../features/checkout/types/checkout";
 
 interface PaymentMethodProps {
   selected: PaymentMethodType;

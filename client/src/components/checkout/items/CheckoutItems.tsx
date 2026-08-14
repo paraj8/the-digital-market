@@ -4,7 +4,7 @@ import CheckoutItem from "./CheckoutItem";
 
 import type {
   CheckoutItem as CheckoutItemType,
-} from "../../../types/checkout.ts";
+} from "../../../features/checkout/types/checkout.ts";
 
 interface CheckoutItemsProps {
   items: CheckoutItemType[];

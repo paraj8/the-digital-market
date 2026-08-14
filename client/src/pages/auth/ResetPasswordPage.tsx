@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
-import { resetPassword } from "../../api/authApi";
+import { resetPassword } from "../../features/auth/api/authApi";
 function ResetPasswordPage() {
   const navigate = useNavigate();
   const location = useLocation();

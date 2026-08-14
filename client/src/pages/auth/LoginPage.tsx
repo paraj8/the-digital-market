@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
 
-import { loginUser } from "../../api/authApi";
+import { loginUser } from "../../features/auth/api/authApi";
 
 function LoginPage() {
   const navigate = useNavigate();
