@@ -1,12 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  updateCategory,
-  type UpdateCategoryData,
-} from "../api/categoryApi";
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+
+import { updateCategory } from "../api/categoryApi";
 
 interface UpdateCategoryParams {
   id: string;
-  data: UpdateCategoryData;
+  data: FormData;
 }
 
 export const useUpdateCategory = () => {

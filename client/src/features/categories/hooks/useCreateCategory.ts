@@ -1,14 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  createCategory,
-  type CreateCategoryData,
-} from "../api/categoryApi";
+
+import { createCategory } from "../api/categoryApi";
 
 export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateCategoryData) =>
+    mutationFn: (data: FormData) =>
       createCategory(data),
 
     onSuccess: () => {
