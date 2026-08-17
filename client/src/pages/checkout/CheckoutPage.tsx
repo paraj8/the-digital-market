@@ -6,7 +6,7 @@ import CheckoutDelivery from "../../components/checkout/CheckoutDelivery";
 import CheckoutSummary from "../../components/checkout/CheckoutSummary";
 
 import { useLocation } from "react-router-dom";
-import { useCheckout } from "../../hooks/checkout/useCheckout";
+import { useCheckout } from "../../features/checkout/hooks/useCheckout";
 
 function CheckoutPage() {
   const { state } = useLocation();

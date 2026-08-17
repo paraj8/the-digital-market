@@ -1,4 +1,4 @@
-import { forgotPassword } from "../../api/authApi";
+import { forgotPassword } from "../../features/auth/api/authApi";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";

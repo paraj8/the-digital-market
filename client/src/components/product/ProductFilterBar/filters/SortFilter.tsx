@@ -1,5 +1,5 @@
 import FilterDropdown from "../../../common/FilterDropdown";
-import type { FilterOptions } from "../../../../types/filter";
+import type { FilterOptions } from "../../../../features/products/types/filter";
 
 interface Props {
   sortOptions: FilterOptions["sortOptions"];

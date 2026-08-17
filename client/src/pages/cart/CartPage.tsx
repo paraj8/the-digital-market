@@ -1,11 +1,11 @@
 import { FiTrash2 } from "react-icons/fi";
 
-import { useCart } from "../../hooks/cart/useCart";
+import { useCart } from "../../features/cart/hooks/useCart";
 
 import {
   useRemoveCartItem,
   useUpdateCartItem,
-} from "../../hooks/cart/useCartMutations";
+} from "../../features/cart/hooks/useCartMutations";
 
 function CartPage() {
   const {

@@ -1,6 +1,6 @@
 import AddressCard from "./AddressCard";
 
-import type { CheckoutAddress } from "../../../types/checkout";
+import type { CheckoutAddress } from "../../../features/checkout/types/checkout";
 
 interface AddressListProps {
   addresses: CheckoutAddress[];

@@ -1,4 +1,4 @@
-import type { CheckoutItem as CheckoutItemType } from "../../../types/checkout.ts";
+import type { CheckoutItem as CheckoutItemType } from "../../../features/checkout/types/checkout.ts";
 
 interface CheckoutItemProps {
   item: CheckoutItemType;

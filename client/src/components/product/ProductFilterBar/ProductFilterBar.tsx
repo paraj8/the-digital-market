@@ -12,7 +12,7 @@ import type {
   FilterOptions,
   ProductFiltersState,
   ArrayFilterKey,
-} from "../../../types/filter";
+} from "../../../features/products/types/filter";
 
 interface ProductFilterBarProps {
   options?: FilterOptions;

@@ -3,7 +3,7 @@ import { FaHeart } from "react-icons/fa";
 
 import { toast } from "react-hot-toast";
 
-import { useWishlist } from "../../../hooks/wishlist/useWishlist";
+import { useWishlist } from "../../../features/wishlist/hooks/useWishlist";
 
 interface ProductCardWishlistProps {
   productId: string;

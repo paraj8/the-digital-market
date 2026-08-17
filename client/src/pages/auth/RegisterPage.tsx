@@ -10,7 +10,7 @@ import {
   registerSchema,
   type RegisterFormData,
 } from "../../features/auth/schemas/registerSchema";
-import { registerUser } from "../../api/authApi";
+import { registerUser } from "../../features/auth/api/authApi";
 function RegisterPage() {
   const navigate = useNavigate();
   const [serverError, setServerError] =

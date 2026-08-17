@@ -2,7 +2,7 @@ import CheckoutSection from "./common/CheckoutSection";
 
 import PaymentMethod from "./payment/PaymentMethod";
 
-import type { PaymentMethod as PaymentMethodType } from "../../types/checkout";
+import type { PaymentMethod as PaymentMethodType } from "../../features/checkout/types/checkout";
 
 interface CheckoutPaymentProps {
   paymentMethod: PaymentMethodType;

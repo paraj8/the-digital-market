@@ -1,8 +1,8 @@
 import ProductCard from "../../../components/product/ProductCard";
 
-import { useRelatedProducts } from "../../../hooks/products/useRelatedProducts";
+import { useRelatedProducts } from "../../../features/products/hooks/useRelatedProducts";
 
-import type { Product } from "../../../types/product";
+import type { Product } from "../../../features/products/types/product";
 
 type Props = {
   categoryId: string;

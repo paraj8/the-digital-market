@@ -1,7 +1,7 @@
 import ProductCard from "./ProductCard";
 import ProductCardSkeleton from "../common/ProductCardSkeleton";
 
-import type { Product } from "../../types/product";
+import type { Product } from "../../features/products/types/product";
 
 interface ProductGridProps {
   products: Product[];

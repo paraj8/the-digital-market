@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import type { Product } from "../../../types/product";
+import type { Product } from "../../../features/products/types/product";
 
 import ProductCardImage from "./ProductCardImage";
 import ProductCardInfo from "./ProductCardInfo";
