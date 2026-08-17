@@ -1,4 +1,4 @@
-import type { AdminOrder } from "../../../../api/adminOrderApi";
+import type { AdminOrder } from "../../../api/adminOrderApi";
 
 interface OrderStatsProps {
   orders: AdminOrder[];

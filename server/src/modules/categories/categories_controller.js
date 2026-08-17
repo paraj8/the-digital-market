@@ -1,5 +1,9 @@
 const categoryService = require("./categories_service");
 
+// =====================================
+// CREATE CATEGORY
+// =====================================
+
 const createCategory = async (
   req,
   res
@@ -7,7 +11,8 @@ const createCategory = async (
   try {
     const category =
       await categoryService.createCategory(
-        req.body
+        req.body,
+        req.file?.buffer
       );
 
     res.status(201).json({
@@ -23,6 +28,10 @@ const createCategory = async (
     });
   }
 };
+
+// =====================================
+// GET CATEGORY BY ID
+// =====================================
 
 const getCategoryById = async (
   req,
@@ -46,6 +55,10 @@ const getCategoryById = async (
   }
 };
 
+// =====================================
+// GET ALL CATEGORIES
+// =====================================
+
 const getAllCategories = async (
   req,
   res
@@ -66,6 +79,10 @@ const getAllCategories = async (
   }
 };
 
+// =====================================
+// UPDATE CATEGORY
+// =====================================
+
 const updateCategory = async (
   req,
   res
@@ -74,7 +91,8 @@ const updateCategory = async (
     const category =
       await categoryService.updateCategory(
         req.params.id,
-        req.body
+        req.body,
+        req.file?.buffer
       );
 
     res.status(200).json({
@@ -90,6 +108,10 @@ const updateCategory = async (
     });
   }
 };
+
+// =====================================
+// DELETE CATEGORY
+// =====================================
 
 const deleteCategory = async (
   req,
@@ -112,6 +134,8 @@ const deleteCategory = async (
     });
   }
 };
+
+// =====================================
 
 module.exports = {
   createCategory,

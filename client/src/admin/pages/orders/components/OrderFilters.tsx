@@ -4,7 +4,7 @@ import {
   FiChevronDown,
 } from "react-icons/fi";
 
-import type { AdminOrderStatus } from "../../../../api/adminOrderApi";
+import type { AdminOrderStatus } from "../../../api/adminOrderApi";
 
 export type OrderFilterStatus =
   | AdminOrderStatus
