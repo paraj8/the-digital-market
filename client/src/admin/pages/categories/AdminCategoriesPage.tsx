@@ -1,13 +1,17 @@
 import { useMemo, useState } from "react";
 import { FiPlus } from "react-icons/fi";
+import { toast } from "react-toastify";
+import { isAxiosError } from "axios";
 
 import type { Category } from "../../../features/categories/types/category";
 import { useCategories } from "../../../features/categories/hooks/useCategories";
+import { useDeleteCategory } from "../../../features/categories/hooks/useDeleteCategory";
 
 import CategoryFilters from "./components/CategoryFilters";
 import CategoryStats from "./components/CategoryStats";
 import CategoriesTable from "./components/CategoriesTable";
 import CategoryFormModal from "./components/categoryEditor/CategoryFormModal";
+import CategoryDeleteModal from "./components/categoryDelete/CategoryDeleteModal";
 
 function AdminCategoriesPage() {
   const {
@@ -16,6 +20,9 @@ function AdminCategoriesPage() {
     isError,
     refetch,
   } = useCategories();
+
+  const deleteCategoryMutation =
+    useDeleteCategory();
 
   const [search, setSearch] = useState("");
 
@@ -34,6 +41,15 @@ function AdminCategoriesPage() {
   >("create");
 
   const [selectedCategory, setSelectedCategory] =
+    useState<Category | null>(null);
+
+  /*
+   * Category delete state
+   */
+  const [isDeleteOpen, setIsDeleteOpen] =
+    useState(false);
+
+  const [categoryToDelete, setCategoryToDelete] =
     useState<Category | null>(null);
 
   /*
@@ -78,7 +94,7 @@ function AdminCategoriesPage() {
   };
 
   /*
-   * Close modal
+   * Close editor modal
    */
   const handleCloseForm = () => {
     setIsFormOpen(false);
@@ -88,17 +104,64 @@ function AdminCategoriesPage() {
   /*
    * Called after successful create/edit
    */
-  const handleFormSuccess = async (
-    category: Category
-  ) => {
-    console.log(
-      "Category saved successfully:",
-      category
-    );
-
+  const handleFormSuccess = async () => {
     handleCloseForm();
 
     await refetch();
+  };
+
+  /*
+   * Open delete confirmation
+   */
+  const handleDeleteCategory = (
+    category: Category
+  ) => {
+    setCategoryToDelete(category);
+    setIsDeleteOpen(true);
+  };
+
+  /*
+   * Close delete confirmation
+   */
+  const handleCloseDelete = () => {
+    if (deleteCategoryMutation.isPending) {
+      return;
+    }
+
+    setIsDeleteOpen(false);
+    setCategoryToDelete(null);
+  };
+
+  /*
+   * Delete category
+   */
+  const handleConfirmDelete = async () => {
+    if (
+      !categoryToDelete ||
+      deleteCategoryMutation.isPending
+    ) {
+      return;
+    }
+
+    try {
+      await deleteCategoryMutation.mutateAsync(
+        categoryToDelete._id
+      );
+
+      toast.success(
+        "Category deleted successfully"
+      );
+
+      setIsDeleteOpen(false);
+      setCategoryToDelete(null);
+    } catch (error: unknown) {
+      const message = isAxiosError(error)
+        ? error.response?.data?.message ||
+          "Failed to delete category."
+        : "Failed to delete category.";
+
+      toast.error(message);
+    }
   };
 
   return (
@@ -170,6 +233,7 @@ function AdminCategoriesPage() {
         categories={filteredCategories}
         isLoading={isLoading}
         onEdit={handleEditCategory}
+        onDelete={handleDeleteCategory}
       />
 
       {/* Category Form Modal */}
@@ -179,6 +243,17 @@ function AdminCategoriesPage() {
         category={selectedCategory}
         onClose={handleCloseForm}
         onSuccess={handleFormSuccess}
+      />
+
+      {/* Category Delete Modal */}
+      <CategoryDeleteModal
+        isOpen={isDeleteOpen}
+        category={categoryToDelete}
+        isDeleting={
+          deleteCategoryMutation.isPending
+        }
+        onClose={handleCloseDelete}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 const Category = require("./categories_model");
+const Product = require("../products/products_model");
 const slugify = require("slugify");
 
 const {
@@ -133,14 +134,36 @@ const deleteCategory = async (id) => {
     throw new Error("Category not found");
   }
 
-  // Delete image from Cloudinary
-  if (category.image?.publicId) {
-    await deleteImage(
-      category.image.publicId
+  // Check whether any products are using this category
+  const productExists =
+    await Product.exists({
+      category: category._id,
+    });
+
+  if (productExists) {
+    throw new Error(
+      "Cannot delete this category because products are associated with it"
     );
   }
 
+  // Delete category from MongoDB first
   await Category.findByIdAndDelete(id);
+
+  // Delete category image from Cloudinary
+  if (category.image?.publicId) {
+    try {
+      await deleteImage(
+        category.image.publicId
+      );
+    } catch (error) {
+      // Category is already deleted from MongoDB.
+      // Log the Cloudinary cleanup failure so it can be handled later.
+      console.error(
+        "Failed to delete category image from Cloudinary:",
+        error
+      );
+    }
+  }
 
   return {
     message:
@@ -148,6 +171,8 @@ const deleteCategory = async (id) => {
   };
 };
 
+// =====================================
+// EXPORT SERVICES
 // =====================================
 
 module.exports = {
