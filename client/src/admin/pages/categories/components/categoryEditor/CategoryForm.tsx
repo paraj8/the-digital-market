@@ -1,10 +1,8 @@
 import { useState } from "react";
 
 import type { Category } from "../../../../../features/categories/types/category";
-import {
-  createCategory,
-  updateCategory,
-} from "../../../../../features/categories/api/categoryApi";
+import { useCreateCategory } from "../../../../../features/categories/hooks/useCreateCategory";
+import { useUpdateCategory } from "../../../../../features/categories/hooks/useUpdateCategory";
 
 import CategoryFormFields from "./CategoryFormFields";
 import CategoryFormActions from "./CategoryFormActions";
@@ -22,6 +20,9 @@ function CategoryForm({
   onSuccess,
   onCancel,
 }: CategoryFormProps) {
+  const createMutation = useCreateCategory();
+  const updateMutation = useUpdateCategory();
+
   const [name, setName] = useState(
     category?.name ?? ""
   );
@@ -42,10 +43,11 @@ function CategoryForm({
     null
   );
 
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
-
   const [error, setError] = useState("");
+
+  const isSubmitting =
+    createMutation.isPending ||
+    updateMutation.isPending;
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>
@@ -57,34 +59,39 @@ function CategoryForm({
       return;
     }
 
-    setIsSubmitting(true);
     setError("");
 
+    const formData = new FormData();
+
+    formData.append("name", name.trim());
+
+    formData.append(
+      "description",
+      description.trim()
+    );
+
+    formData.append(
+      "isActive",
+      String(isActive)
+    );
+
+    formData.append(
+      "sortOrder",
+      String(sortOrder)
+    );
+
+    if (image) {
+      formData.append("image", image);
+    }
+
     try {
-      const formData = new FormData();
-
-      formData.append("name", name.trim());
-      formData.append(
-        "description",
-        description.trim()
-      );
-      formData.append(
-        "isActive",
-        String(isActive)
-      );
-      formData.append(
-        "sortOrder",
-        String(sortOrder)
-      );
-
-      if (image) {
-        formData.append("image", image);
-      }
-
       let result: Category;
 
       if (mode === "create") {
-        result = await createCategory(formData);
+        result =
+          await createMutation.mutateAsync(
+            formData
+          );
       } else {
         if (!category?._id) {
           throw new Error(
@@ -92,22 +99,20 @@ function CategoryForm({
           );
         }
 
-        result = await updateCategory(
-          category._id,
-          formData
-        );
+        result =
+          await updateMutation.mutateAsync({
+            id: category._id,
+            data: formData,
+          });
       }
 
       onSuccess(result);
     } catch (err) {
-      const message =
+      setError(
         err instanceof Error
           ? err.message
-          : "Something went wrong.";
-
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
+          : "Something went wrong."
+      );
     }
   };
 

@@ -1,6 +1,8 @@
 import api from "../../../api/axios";
 import type { Category } from "../types/category";
 
+export type CategoryFormData = FormData;
+
 export const getCategories = async (): Promise<Category[]> => {
   const response = await api.get("/categories");
 
@@ -16,7 +18,7 @@ export const getCategoryById = async (
 };
 
 export const createCategory = async (
-  data: FormData
+  data: CategoryFormData
 ): Promise<Category> => {
   const response = await api.post(
     "/categories",
@@ -28,7 +30,7 @@ export const createCategory = async (
 
 export const updateCategory = async (
   id: string,
-  data: FormData
+  data: CategoryFormData
 ): Promise<Category> => {
   const response = await api.put(
     `/categories/${id}`,

@@ -3,11 +3,14 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { updateCategory } from "../api/categoryApi";
+import {
+  updateCategory,
+  type CategoryFormData,
+} from "../api/categoryApi";
 
 interface UpdateCategoryParams {
   id: string;
-  data: FormData;
+  data: CategoryFormData;
 }
 
 export const useUpdateCategory = () => {
