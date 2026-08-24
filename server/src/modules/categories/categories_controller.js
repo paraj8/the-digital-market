@@ -136,6 +136,8 @@ const deleteCategory = async (
 };
 
 // =====================================
+// EXPORT CONTROLLERS
+// =====================================
 
 module.exports = {
   createCategory,

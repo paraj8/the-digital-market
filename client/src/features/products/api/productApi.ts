@@ -72,3 +72,14 @@ export const getProductsByCategory =
 
     return response.data.data;
   };
+
+  // Create a new product
+export const createProduct = 
+  async (data: FormData): Promise<Product> => {
+    const response = await api.post(
+      "/products",
+      data
+    );
+
+    return response.data.data;
+};

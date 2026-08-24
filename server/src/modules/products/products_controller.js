@@ -10,7 +10,8 @@ const createProduct = async (
   try {
     const product =
       await productService.createProduct(
-        req.body
+        req.body,
+        req.files
       );
 
     res.status(201).json({
@@ -85,7 +86,8 @@ const updateProduct = async (
     const product =
       await productService.updateProduct(
         req.params.id,
-        req.body
+        req.body,
+        req.files
       );
 
     res.status(200).json({

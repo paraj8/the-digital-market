@@ -186,9 +186,7 @@ const handleBuyNow = () => {
           >
             <img
               src={
-                data.images?.[
-                  selectedImage
-                ] ||
+                data.images?.[selectedImage]?.url ||
                 "https://placehold.co/800x800"
               }
               alt={data.title}
