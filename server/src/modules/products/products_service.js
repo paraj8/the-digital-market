@@ -1,6 +1,11 @@
 const Product = require("./products_model");
 const slugify = require("slugify");
 
+const {
+  uploadImage,
+  deleteImage,
+} = require("../../services/cloudinary_service");
+
 const generateSKU = () => {
   return (
     "PRD-" +
@@ -11,7 +16,14 @@ const generateSKU = () => {
   );
 };
 
-const createProduct = async (data) => {
+/* =========================================
+   CREATE PRODUCT
+========================================= */
+
+const createProduct = async (
+  data,
+  files = []
+) => {
   const slug = slugify(data.title, {
     lower: true,
     strict: true,
@@ -26,14 +38,50 @@ const createProduct = async (data) => {
     );
   }
 
+  let images = [];
+
+  if (files.length > 0) {
+    const uploadedImages =
+      await Promise.all(
+        files.map((file) =>
+          uploadImage(
+            file.buffer,
+            "the-digital-market/products"
+          )
+        )
+      );
+
+    /*
+     * IMPORTANT:
+     * Product schema expects:
+     *
+     * {
+     *   url: "...",
+     *   publicId: "..."
+     * }
+     */
+
+    images = uploadedImages.map(
+      (image) => ({
+        url: image.url,
+        publicId: image.publicId,
+      })
+    );
+  }
+
   const product = await Product.create({
     ...data,
     slug,
     sku: generateSKU(),
+    images,
   });
 
   return product;
 };
+
+/* =========================================
+   GET ALL PRODUCTS
+========================================= */
 
 const getAllProducts = async (query) => {
   const {
@@ -58,78 +106,68 @@ const getAllProducts = async (query) => {
     isActive: true,
   };
 
-  // Search
   if (search) {
     filters.$text = {
       $search: search,
     };
   }
 
-  // Category
   if (category) {
     filters.category = category;
   }
 
-  // Brand
   if (brand) {
     filters.brand = brand;
   }
 
-  // Featured
   if (featured === "true") {
     filters.isFeatured = true;
   }
 
-  // Deals
   if (deals === "true") {
     filters.salePrice = {
       $gt: 0,
     };
   }
 
-  // In Stock
   if (inStock === "true") {
     filters.stock = {
       $gt: 0,
     };
   }
 
-  // Returnable
   if (returnable === "true") {
     filters.returnable = true;
   }
 
-  // Cash on Delivery
   if (cod === "true") {
     filters.codAvailable = true;
   }
 
-  // Digital Product
   if (digital === "true") {
     filters.isDigital = true;
   }
 
-  // Rating
   if (rating) {
     filters.ratingsAverage = {
       $gte: Number(rating),
     };
   }
 
-  // Price
   if (minPrice || maxPrice) {
     filters.price = {};
 
     if (minPrice) {
-      filters.price.$gte = Number(minPrice);
+      filters.price.$gte =
+        Number(minPrice);
     }
 
     if (maxPrice) {
-      filters.price.$lte = Number(maxPrice);
+      filters.price.$lte =
+        Number(maxPrice);
     }
   }
 
-  // Sorting
   let sortOption = {
     createdAt: -1,
   };
@@ -200,7 +238,10 @@ const getAllProducts = async (query) => {
     await Product.find(filters)
       .populate("category")
       .sort(sortOption)
-      .skip((currentPage - 1) * pageLimit)
+      .skip(
+        (currentPage - 1) *
+          pageLimit
+      )
       .limit(pageLimit);
 
   return {
@@ -216,7 +257,9 @@ const getAllProducts = async (query) => {
   };
 };
 
-// New function to get a product by ID
+/* =========================================
+   GET PRODUCT BY ID
+========================================= */
 
 const getProductById = async (id) => {
   const product =
@@ -224,64 +267,222 @@ const getProductById = async (id) => {
       .populate("category");
 
   if (!product) {
-    throw new Error("Product not found");
+    throw new Error(
+      "Product not found"
+    );
   }
 
   return product;
 };
 
-// New function to get a product by slug
+/* =========================================
+   GET PRODUCT BY SLUG
+========================================= */
 
-const getProductBySlug = async (slug) => {
-  const product = await Product.findOne({
-    slug,
-  }).populate("category");
+const getProductBySlug = async (
+  slug
+) => {
+  const product =
+    await Product.findOne({
+      slug,
+    }).populate("category");
 
   if (!product) {
-    throw new Error("Product not found");
+    throw new Error(
+      "Product not found"
+    );
   }
 
   return product;
 };
 
-// New function to update a product
+/* =========================================
+   UPDATE PRODUCT
+========================================= */
 
 const updateProduct = async (
   id,
-  data
+  data,
+  files = []
 ) => {
   const product =
     await Product.findById(id);
 
   if (!product) {
-    throw new Error("Product not found");
+    throw new Error(
+      "Product not found"
+    );
   }
 
+  /*
+   * Generate slug when title changes
+   */
   if (data.title) {
-    data.slug = slugify(data.title, {
-      lower: true,
-      strict: true,
-    });
+    data.slug = slugify(
+      data.title,
+      {
+        lower: true,
+        strict: true,
+      }
+    );
   }
 
-  return await Product.findByIdAndUpdate(
-    id,
-    data,
-    {
-      new: true,
-      runValidators: true,
+  /*
+   * =====================================
+   * CATEGORY
+   * =====================================
+   *
+   * Because products are populated before
+   * reaching the frontend, category can
+   * sometimes come back as:
+   *
+   * {
+   *   _id: "...",
+   *   name: "Electronics"
+   * }
+   *
+   * Never send that object to MongoDB.
+   */
+
+  if (
+    data.category &&
+    typeof data.category === "object"
+  ) {
+    if (data.category._id) {
+      data.category =
+        data.category._id;
+    } else {
+      delete data.category;
     }
-  ).populate("category");
+  }
+
+  /*
+   * =====================================
+   * IMAGES
+   * =====================================
+   *
+   * If new files are uploaded:
+   *
+   * 1. Upload new images
+   * 2. Delete old Cloudinary images
+   * 3. Save new image objects
+   *
+   * If no new files are uploaded,
+   * keep existing images.
+   */
+
+  if (files.length > 0) {
+    const uploadedImages =
+      await Promise.all(
+        files.map((file) =>
+          uploadImage(
+            file.buffer,
+            "the-digital-market/products"
+          )
+        )
+      );
+
+    const newImages =
+      uploadedImages.map(
+        (image) => ({
+          url: image.url,
+          publicId: image.publicId,
+        })
+      );
+
+    /*
+     * Delete old Cloudinary images
+     */
+    if (
+      product.images &&
+      product.images.length > 0
+    ) {
+      await Promise.all(
+        product.images.map(
+          async (image) => {
+            if (image.publicId) {
+              try {
+                await deleteImage(
+                  image.publicId
+                );
+              } catch (error) {
+                console.error(
+                  "Failed to delete old Cloudinary image:",
+                  error.message
+                );
+              }
+            }
+          }
+        )
+      );
+    }
+
+    data.images = newImages;
+  }
+
+  /*
+   * Never allow the frontend to send
+   * a raw image string.
+   */
+  if (
+    typeof data.images === "string"
+  ) {
+    delete data.images;
+  }
+
+  const updatedProduct =
+    await Product.findByIdAndUpdate(
+      id,
+      data,
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).populate("category");
+
+  return updatedProduct;
 };
 
-// New function to delete a product
+/* =========================================
+   DELETE PRODUCT
+========================================= */
 
 const deleteProduct = async (id) => {
   const product =
     await Product.findById(id);
 
   if (!product) {
-    throw new Error("Product not found");
+    throw new Error(
+      "Product not found"
+    );
+  }
+
+  /*
+   * Delete product images from
+   * Cloudinary before deleting product.
+   */
+  if (
+    product.images &&
+    product.images.length > 0
+  ) {
+    await Promise.all(
+      product.images.map(
+        async (image) => {
+          if (image.publicId) {
+            try {
+              await deleteImage(
+                image.publicId
+              );
+            } catch (error) {
+              console.error(
+                "Failed to delete Cloudinary image:",
+                error.message
+              );
+            }
+          }
+        }
+      )
+    );
   }
 
   await Product.findByIdAndDelete(id);
@@ -292,21 +493,29 @@ const deleteProduct = async (id) => {
   };
 };
 
-// New function to get filter options for products
-const getFilterOptions = async () => {
-  const brands = await Product.distinct("brand", {
-    isActive: true,
-    brand: {
-      $ne: "",
-    },
-  });
+/* =========================================
+   GET FILTER OPTIONS
+========================================= */
 
-  const categories = await Product.distinct(
-    "category",
-    {
-      isActive: true,
-    }
-  );
+const getFilterOptions = async () => {
+  const brands =
+    await Product.distinct(
+      "brand",
+      {
+        isActive: true,
+        brand: {
+          $ne: "",
+        },
+      }
+    );
+
+  const categories =
+    await Product.distinct(
+      "category",
+      {
+        isActive: true,
+      }
+    );
 
   const categoryDetails =
     await Product.find({
@@ -315,7 +524,9 @@ const getFilterOptions = async () => {
       },
     }).distinct("category");
 
-  const Category = require("../categories/categories_model");
+  const Category = require(
+    "../categories/categories_model"
+  );
 
   const categoryList =
     await Category.find({
@@ -359,7 +570,10 @@ const getFilterOptions = async () => {
       price.length > 0
         ? {
             min: 100,
-            max: Math.min(price[0].max,150000),
+            max: Math.min(
+              price[0].max,
+              150000
+            ),
           }
         : {
             min: 100,
@@ -374,11 +588,13 @@ const getFilterOptions = async () => {
         value: "newest",
       },
       {
-        label: "Price: Low to High",
+        label:
+          "Price: Low to High",
         value: "priceLow",
       },
       {
-        label: "Price: High to Low",
+        label:
+          "Price: High to Low",
         value: "priceHigh",
       },
       {

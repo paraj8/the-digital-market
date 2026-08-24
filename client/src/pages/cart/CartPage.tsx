@@ -74,8 +74,7 @@ function CartPage() {
         </h1>
 
         <p className="mt-2 text-slate-400">
-          Review your items before
-          checkout
+          Review your items before checkout
         </p>
       </div>
 
@@ -89,8 +88,12 @@ function CartPage() {
         {/* Cart Items */}
 
         <div className="space-y-4">
-          {data.items.map(
-            (item) => (
+          {data.items.map((item) => {
+            const imageUrl =
+              item.product.images?.[0]?.url ||
+              "https://placehold.co/300x300";
+
+            return (
               <div
                 key={item._id}
                 className="
@@ -102,15 +105,11 @@ function CartPage() {
                   p-4
                 "
               >
+                {/* Product Image */}
+
                 <img
-                  src={
-                    item.product
-                      .images?.[0] ||
-                    "https://placehold.co/300x300"
-                  }
-                  alt={
-                    item.product.title
-                  }
+                  src={imageUrl}
+                  alt={item.product.title}
                   className="
                     h-24
                     w-24
@@ -120,91 +119,103 @@ function CartPage() {
                 />
 
                 <div className="flex flex-1 flex-col">
+                  {/* Product Info */}
+
                   <h3 className="font-semibold">
-                    {
-                      item.product
-                        .title
-                    }
+                    {item.product.title}
                   </h3>
 
                   <p className="mt-1 text-sm text-slate-400">
-                    {
-                      item.product
-                        .brand
-                    }
+                    {item.product.brand}
                   </p>
+
+                  {/* Bottom Row */}
 
                   <div className="mt-auto flex items-center justify-between">
                     <span className="font-bold">
                       ₹
-                      {
+                      {Number(
                         item.subtotal
-                      }
+                      ).toLocaleString("en-IN")}
                     </span>
+
+                    {/* Quantity Controls */}
 
                     <div className="flex items-center gap-3">
                       <button
+                        type="button"
                         onClick={() =>
-                          updateMutation.mutate(
-                            {
-                              itemId:
-                                item._id,
-                              quantity:
-                                Math.max(
-                                  1,
-                                  item.quantity -
-                                    1
-                                ),
-                            }
-                          )
+                          updateMutation.mutate({
+                            itemId: item._id,
+                            quantity:
+                              Math.max(
+                                1,
+                                item.quantity - 1
+                              ),
+                          })
+                        }
+                        disabled={
+                          updateMutation.isPending
                         }
                         className="
                           rounded-lg
                           border border-white/10
                           px-3 py-1
+                          transition
+                          hover:bg-white/5
+                          disabled:opacity-50
                         "
                       >
                         -
                       </button>
 
                       <span>
-                        {
-                          item.quantity
-                        }
+                        {item.quantity}
                       </span>
 
                       <button
+                        type="button"
                         onClick={() =>
-                          updateMutation.mutate(
-                            {
-                              itemId:
-                                item._id,
-                              quantity:
-                                item.quantity +
-                                1,
-                            }
-                          )
+                          updateMutation.mutate({
+                            itemId: item._id,
+                            quantity:
+                              item.quantity + 1,
+                          })
+                        }
+                        disabled={
+                          updateMutation.isPending
                         }
                         className="
                           rounded-lg
                           border border-white/10
                           px-3 py-1
+                          transition
+                          hover:bg-white/5
+                          disabled:opacity-50
                         "
                       >
                         +
                       </button>
 
+                      {/* Remove */}
+
                       <button
+                        type="button"
                         onClick={() =>
                           removeMutation.mutate(
                             item._id
                           )
                         }
+                        disabled={
+                          removeMutation.isPending
+                        }
                         className="
                           rounded-lg
                           p-2
                           text-red-400
+                          transition
                           hover:bg-red-500/10
+                          disabled:opacity-50
                         "
                       >
                         <FiTrash2 />
@@ -213,8 +224,8 @@ function CartPage() {
                   </div>
                 </div>
               </div>
-            )
-          )}
+            );
+          })}
         </div>
 
         {/* Summary */}
@@ -245,9 +256,7 @@ function CartPage() {
               </span>
 
               <span>
-                {
-                  data.totalItems
-                }
+                {data.totalItems}
               </span>
             </div>
 
@@ -265,15 +274,16 @@ function CartPage() {
 
                 <span>
                   ₹
-                  {
+                  {Number(
                     data.totalAmount
-                  }
+                  ).toLocaleString("en-IN")}
                 </span>
               </div>
             </div>
           </div>
 
           <button
+            type="button"
             className="
               mt-6
               w-full
@@ -283,6 +293,8 @@ function CartPage() {
               to-blue-600
               py-3
               font-semibold
+              transition
+              hover:opacity-90
             "
           >
             Proceed To Checkout

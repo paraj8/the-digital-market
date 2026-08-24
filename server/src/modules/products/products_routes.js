@@ -6,15 +6,49 @@ const productController = require(
   "./products_controller"
 );
 
+const upload = require(
+  "../../middleware/upload_middleware"
+);
+
 // Special routes
-router.get("/filter/options", productController.getFilterOptions);
-router.get("/slug/:slug", productController.getProductBySlug);
+
+router.get(
+  "/filter/options",
+  productController.getFilterOptions
+);
+
+router.get(
+  "/slug/:slug",
+  productController.getProductBySlug
+);
 
 // CRUD
-router.get("/", productController.getAllProducts);
-router.get("/:id", productController.getProductById);
-router.post("/", productController.createProduct);
-router.put("/:id", productController.updateProduct);
-router.delete("/:id", productController.deleteProduct);
+
+router.get(
+  "/",
+  productController.getAllProducts
+);
+
+router.get(
+  "/:id",
+  productController.getProductById
+);
+
+router.post(
+  "/",
+  upload.array("images", 8),
+  productController.createProduct
+);
+
+router.put(
+  "/:id",
+  upload.array("images", 8),
+  productController.updateProduct
+);
+
+router.delete(
+  "/:id",
+  productController.deleteProduct
+);
 
 module.exports = router;

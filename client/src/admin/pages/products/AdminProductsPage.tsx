@@ -1,73 +1,315 @@
-import {
-  FiSearch,
-  FiPlus,
-  FiEdit2,
-  FiTrash2,
-  FiEye,
-  FiFilter,
-  FiChevronDown,
-} from "react-icons/fi";
+import { useMemo, useState } from "react";
+import { FiPlus } from "react-icons/fi";
 
-const products = [
-  {
-    id: "PRD-1001",
-    name: "Samsung Galaxy S25",
-    category: "Electronics",
-    price: "₹79,999",
-    stock: 24,
-    status: "Active",
-    sales: 128,
-  },
-  {
-    id: "PRD-1002",
-    name: "Wireless Mechanical Keyboard",
-    category: "Electronics",
-    price: "₹2,499",
-    stock: 42,
-    status: "Active",
-    sales: 86,
-  },
-  {
-    id: "PRD-1003",
-    name: "Ergonomic Wireless Mouse",
-    category: "Accessories",
-    price: "₹1,499",
-    stock: 18,
-    status: "Active",
-    sales: 64,
-  },
-  {
-    id: "PRD-1004",
-    name: "Premium Cotton T-Shirt",
-    category: "Fashion",
-    price: "₹899",
-    stock: 7,
-    status: "Low Stock",
-    sales: 42,
-  },
-  {
-    id: "PRD-1005",
-    name: "USB-C Fast Charging Cable",
-    category: "Accessories",
-    price: "₹499",
-    stock: 0,
-    status: "Out of Stock",
-    sales: 31,
-  },
-];
+import ProductFormModal from "./components/productEditor/ProductFormModal";
+import ProductStats from "./components/ProductStats";
+import ProductFilters from "./components/ProductFilters";
+import ProductsTable from "./components/ProductsTable";
 
-const statusStyles: Record<string, string> = {
-  Active:
-    "border-green-500/20 bg-green-500/10 text-green-400",
+import { useProducts } from "../../../features/products/hooks/useProducts";
+import { useCategories } from "../../../features/categories/hooks/useCategories";
+import { useCreateProduct } from "../../../features/products/hooks/useCreateProduct";
+import { useUpdateProduct } from "../../hooks/useAdminProductMutations";
 
-  "Low Stock":
-    "border-yellow-500/20 bg-yellow-500/10 text-yellow-400",
-
-  "Out of Stock":
-    "border-red-500/20 bg-red-500/10 text-red-400",
-};
+import type { Product } from "../../../features/products/types/product";
+import type { AdminProduct } from "./components/productEditor/types";
 
 function AdminProductsPage() {
+  /* ===================================== */
+  /* MODAL STATE */
+  /* ===================================== */
+
+  const [isProductModalOpen, setIsProductModalOpen] =
+    useState(false);
+
+  const [selectedProduct, setSelectedProduct] =
+    useState<Product | null>(null);
+
+  const [formMode, setFormMode] =
+    useState<"create" | "edit">("create");
+
+  /* ===================================== */
+  /* FILTER STATE */
+  /* ===================================== */
+
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  /* ===================================== */
+  /* PRODUCTS */
+  /* ===================================== */
+
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+  } = useProducts({
+    page: 1,
+    limit: 50,
+    search: search || undefined,
+    category: categoryFilter || undefined,
+  });
+
+  const products = useMemo(
+    () => data?.data ?? [],
+    [data?.data]
+  );
+
+  /* ===================================== */
+  /* CATEGORIES */
+  /* ===================================== */
+
+  const {
+    data: categories = [],
+  } = useCategories();
+
+  /* ===================================== */
+  /* PRODUCT MUTATIONS */
+  /* ===================================== */
+
+  const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
+
+  /* ===================================== */
+  /* FILTERED PRODUCTS */
+  /* ===================================== */
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      if (!statusFilter) {
+        return true;
+      }
+
+      if (statusFilter === "active") {
+        return product.isActive === true;
+      }
+
+      if (statusFilter === "inactive") {
+        return product.isActive === false;
+      }
+
+      if (statusFilter === "low-stock") {
+        const threshold =
+          (product as AdminProduct).lowStockThreshold ?? 5;
+
+        return (
+          product.stock > 0 &&
+          product.stock <= threshold
+        );
+      }
+
+      if (statusFilter === "out-of-stock") {
+        return product.stock === 0;
+      }
+
+      return true;
+    });
+  }, [products, statusFilter]);
+
+  /* ===================================== */
+  /* STATISTICS */
+  /* ===================================== */
+
+  const totalProducts = products.length;
+
+  const activeProducts = products.filter(
+    (product) => product.isActive
+  ).length;
+
+  const lowStockProducts = products.filter((product) => {
+    const threshold =
+      (product as AdminProduct).lowStockThreshold ?? 5;
+
+    return (
+      product.stock > 0 &&
+      product.stock <= threshold
+    );
+  }).length;
+
+  const outOfStockProducts = products.filter(
+    (product) => product.stock === 0
+  ).length;
+
+  /* ===================================== */
+  /* ADD PRODUCT */
+  /* ===================================== */
+
+  const handleAddProduct = () => {
+    setSelectedProduct(null);
+    setFormMode("create");
+    setIsProductModalOpen(true);
+  };
+
+  /* ===================================== */
+  /* VIEW PRODUCT */
+  /* ===================================== */
+
+  const handleViewProduct = (product: Product) => {
+    console.log("View product:", product);
+  };
+
+  /* ===================================== */
+  /* EDIT PRODUCT */
+  /* ===================================== */
+
+  const handleEditProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setFormMode("edit");
+    setIsProductModalOpen(true);
+  };
+
+  /* ===================================== */
+  /* DELETE PRODUCT */
+  /* ===================================== */
+
+  const handleDeleteProduct = (product: Product) => {
+    console.log("Delete product:", product);
+  };
+
+  /* ===================================== */
+  /* CLOSE MODAL */
+  /* ===================================== */
+
+  const handleCloseModal = () => {
+    if (
+      createProductMutation.isPending ||
+      updateProductMutation.isPending
+    ) {
+      return;
+    }
+
+    setIsProductModalOpen(false);
+    setSelectedProduct(null);
+  };
+
+  /* ===================================== */
+  /* FORM SUBMIT */
+  /* ===================================== */
+
+  const handleFormSubmit = async (
+    form: Partial<AdminProduct>,
+    files: File[]
+  ) => {
+    const formData = new FormData();
+
+    Object.entries(form).forEach(([key, value]) => {
+      if (value === undefined || value === null) {
+        return;
+      }
+
+      /*
+       * Category can be:
+       * - ObjectId string
+       * - populated category object
+       */
+      if (key === "category") {
+        if (
+          typeof value === "object" &&
+          value !== null &&
+          "_id" in value
+        ) {
+          formData.append(
+            "category",
+            String(value._id)
+          );
+        } else if (value) {
+          formData.append(
+            "category",
+            String(value)
+          );
+        }
+
+        return;
+      }
+
+      /*
+       * Arrays such as tags
+       */
+      if (Array.isArray(value)) {
+        formData.append(
+          key,
+          JSON.stringify(value)
+        );
+
+        return;
+      }
+
+      formData.append(
+        key,
+        String(value)
+      );
+    });
+
+    /*
+     * Product images
+     */
+    files.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    try {
+      /* ===================================== */
+      /* CREATE */
+      /* ===================================== */
+
+      if (formMode === "create") {
+        await createProductMutation.mutateAsync(
+          formData
+        );
+      }
+
+      /* ===================================== */
+      /* EDIT */
+      /* ===================================== */
+
+      else if (
+        formMode === "edit" &&
+        selectedProduct?._id
+      ) {
+        await updateProductMutation.mutateAsync({
+          id: selectedProduct._id,
+          data: formData,
+        });
+      }
+
+      /* ===================================== */
+      /* CLOSE AFTER SUCCESS */
+      /* ===================================== */
+
+      setIsProductModalOpen(false);
+      setSelectedProduct(null);
+    } catch {
+      /*
+       * React Query handles the mutation error.
+       * Keep modal open so user can correct the form.
+       */
+    }
+  };
+
+  /* ===================================== */
+  /* CLEAR FILTERS */
+  /* ===================================== */
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setCategoryFilter("");
+    setStatusFilter("");
+  };
+
+  /* ===================================== */
+  /* SUBMITTING STATE */
+  /* ===================================== */
+
+  const isSubmitting =
+    createProductMutation.isPending ||
+    updateProductMutation.isPending;
+
+  /* ===================================== */
+  /* RENDER */
+  /* ===================================== */
+
   return (
     <div className="space-y-6">
 
@@ -89,6 +331,7 @@ function AdminProductsPage() {
 
         <button
           type="button"
+          onClick={handleAddProduct}
           className="
             inline-flex
             items-center
@@ -106,7 +349,6 @@ function AdminProductsPage() {
           "
         >
           <FiPlus size={18} />
-
           Add Product
         </button>
 
@@ -116,408 +358,69 @@ function AdminProductsPage() {
       {/* STATS */}
       {/* ===================================== */}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-gray-400">
-            Total Products
-          </p>
-
-          <p className="mt-2 text-2xl font-bold text-white">
-            324
-          </p>
-
-          <p className="mt-1 text-xs text-green-400">
-            +12 this month
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-gray-400">
-            Active Products
-          </p>
-
-          <p className="mt-2 text-2xl font-bold text-green-400">
-            298
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-gray-400">
-            Low Stock
-          </p>
-
-          <p className="mt-2 text-2xl font-bold text-yellow-400">
-            18
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-gray-400">
-            Out of Stock
-          </p>
-
-          <p className="mt-2 text-2xl font-bold text-red-400">
-            8
-          </p>
-        </div>
-
-      </div>
+      <ProductStats
+        total={totalProducts}
+        active={activeProducts}
+        lowStock={lowStockProducts}
+        outOfStock={outOfStockProducts}
+      />
 
       {/* ===================================== */}
-      {/* SEARCH + FILTERS */}
+      {/* FILTERS */}
       {/* ===================================== */}
 
-      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
+      <ProductFilters
+        search={search}
+        category={categoryFilter}
+        status={statusFilter}
+        categories={categories}
+        onSearchChange={setSearch}
+        onCategoryChange={setCategoryFilter}
+        onStatusChange={setStatusFilter}
+        onClear={handleClearFilters}
+      />
 
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      {/* ===================================== */}
+      {/* ERROR */}
+      {/* ===================================== */}
 
-          {/* Search */}
-
-          <div className="relative w-full lg:max-w-md">
-
-            <FiSearch
-              size={18}
-              className="
-                absolute
-                left-3
-                top-1/2
-                -translate-y-1/2
-                text-gray-500
-              "
-            />
-
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="
-                w-full
-                rounded-xl
-                border
-                border-white/10
-                bg-slate-800/70
-                py-2.5
-                pl-10
-                pr-4
-                text-sm
-                text-white
-                outline-none
-                placeholder:text-gray-500
-                focus:border-violet-500
-              "
-            />
-
-          </div>
-
-          {/* Filters */}
-
-          <div className="flex flex-wrap gap-3">
-
-            <button
-              type="button"
-              className="
-                inline-flex
-                items-center
-                gap-2
-                rounded-xl
-                border
-                border-white/10
-                bg-slate-800/70
-                px-4
-                py-2.5
-                text-sm
-                text-gray-300
-                transition
-                hover:bg-slate-800
-              "
-            >
-              <FiFilter size={16} />
-
-              Filter
-            </button>
-
-            <button
-              type="button"
-              className="
-                inline-flex
-                items-center
-                gap-2
-                rounded-xl
-                border
-                border-white/10
-                bg-slate-800/70
-                px-4
-                py-2.5
-                text-sm
-                text-gray-300
-                transition
-                hover:bg-slate-800
-              "
-            >
-              All Categories
-
-              <FiChevronDown size={15} />
-            </button>
-
-            <button
-              type="button"
-              className="
-                inline-flex
-                items-center
-                gap-2
-                rounded-xl
-                border
-                border-white/10
-                bg-slate-800/70
-                px-4
-                py-2.5
-                text-sm
-                text-gray-300
-                transition
-                hover:bg-slate-800
-              "
-            >
-              All Status
-
-              <FiChevronDown size={15} />
-            </button>
-
-          </div>
-
+      {isError && (
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center">
+          <p className="text-sm text-red-400">
+            {error instanceof Error
+              ? error.message
+              : "Failed to load products."}
+          </p>
         </div>
-
-      </div>
+      )}
 
       {/* ===================================== */}
       {/* PRODUCTS TABLE */}
       {/* ===================================== */}
 
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60">
+      {!isError && (
+        <ProductsTable
+          products={filteredProducts}
+          isLoading={isLoading}
+          onView={handleViewProduct}
+          onEdit={handleEditProduct}
+          onDelete={handleDeleteProduct}
+        />
+      )}
 
-        <div className="overflow-x-auto">
+      {/* ===================================== */}
+      {/* PRODUCT FORM MODAL */}
+      {/* ===================================== */}
 
-          <table className="w-full min-w-[1050px]">
-
-            <thead className="border-b border-white/10 bg-slate-800/40">
-
-              <tr className="text-left text-xs uppercase tracking-wider text-gray-500">
-
-                <th className="px-6 py-4">
-                  Product
-                </th>
-
-                <th className="px-6 py-4">
-                  Category
-                </th>
-
-                <th className="px-6 py-4">
-                  Price
-                </th>
-
-                <th className="px-6 py-4">
-                  Stock
-                </th>
-
-                <th className="px-6 py-4">
-                  Sales
-                </th>
-
-                <th className="px-6 py-4">
-                  Status
-                </th>
-
-                <th className="px-6 py-4 text-right">
-                  Actions
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody className="divide-y divide-white/5">
-
-              {products.map((product) => (
-
-                <tr
-                  key={product.id}
-                  className="
-                    transition
-                    hover:bg-white/[0.02]
-                  "
-                >
-
-                  {/* Product */}
-
-                  <td className="px-6 py-4">
-
-                    <div className="flex items-center gap-4">
-
-                      <div
-                        className="
-                          flex
-                          h-11
-                          w-11
-                          shrink-0
-                          items-center
-                          justify-center
-                          rounded-xl
-                          bg-slate-800
-                          text-xs
-                          font-semibold
-                          text-violet-400
-                        "
-                      >
-                        IMG
-                      </div>
-
-                      <div>
-
-                        <p className="font-medium text-white">
-                          {product.name}
-                        </p>
-
-                        <p className="mt-1 text-xs text-gray-500">
-                          {product.id}
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                  </td>
-
-                  {/* Category */}
-
-                  <td className="px-6 py-4 text-sm text-gray-400">
-                    {product.category}
-                  </td>
-
-                  {/* Price */}
-
-                  <td className="px-6 py-4 font-medium text-white">
-                    {product.price}
-                  </td>
-
-                  {/* Stock */}
-
-                  <td className="px-6 py-4">
-
-                    <span
-                      className={
-                        product.stock === 0
-                          ? "text-red-400"
-                          : product.stock < 10
-                            ? "text-yellow-400"
-                            : "text-gray-300"
-                      }
-                    >
-                      {product.stock}
-                    </span>
-
-                  </td>
-
-                  {/* Sales */}
-
-                  <td className="px-6 py-4 text-sm text-gray-300">
-                    {product.sales}
-                  </td>
-
-                  {/* Status */}
-
-                  <td className="px-6 py-4">
-
-                    <span
-                      className={`
-                        inline-flex
-                        rounded-full
-                        border
-                        px-3
-                        py-1
-                        text-xs
-                        font-medium
-                        ${statusStyles[product.status]}
-                      `}
-                    >
-                      {product.status}
-                    </span>
-
-                  </td>
-
-                  {/* Actions */}
-
-                  <td className="px-6 py-4">
-
-                    <div className="flex justify-end gap-2">
-
-                      <button
-                        type="button"
-                        title="View product"
-                        className="
-                          rounded-lg
-                          border
-                          border-white/10
-                          p-2
-                          text-gray-400
-                          transition
-                          hover:border-violet-500/30
-                          hover:bg-violet-500/10
-                          hover:text-violet-400
-                        "
-                      >
-                        <FiEye size={16} />
-                      </button>
-
-                      <button
-                        type="button"
-                        title="Edit product"
-                        className="
-                          rounded-lg
-                          border
-                          border-white/10
-                          p-2
-                          text-gray-400
-                          transition
-                          hover:border-blue-500/30
-                          hover:bg-blue-500/10
-                          hover:text-blue-400
-                        "
-                      >
-                        <FiEdit2 size={16} />
-                      </button>
-
-                      <button
-                        type="button"
-                        title="Delete product"
-                        className="
-                          rounded-lg
-                          border
-                          border-white/10
-                          p-2
-                          text-gray-400
-                          transition
-                          hover:border-red-500/30
-                          hover:bg-red-500/10
-                          hover:text-red-400
-                        "
-                      >
-                        <FiTrash2 size={16} />
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
+      <ProductFormModal
+        isOpen={isProductModalOpen}
+        mode={formMode}
+        product={selectedProduct}
+        categories={categories}
+        isSubmitting={isSubmitting}
+        onClose={handleCloseModal}
+        onSubmit={handleFormSubmit}
+      />
 
     </div>
   );

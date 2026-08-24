@@ -17,7 +17,7 @@ function ProductCardImage({
 
       <img
         src={
-          product.images?.[0] ??
+          product.images?.[0]?.url ??
           "https://placehold.co/600x600"
         }
         alt={product.title}
