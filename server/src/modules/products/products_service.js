@@ -6,6 +6,10 @@ const {
   deleteImage,
 } = require("../../services/cloudinary_service");
 
+/* =========================================
+   GENERATE SKU
+========================================= */
+
 const generateSKU = () => {
   return (
     "PRD-" +
@@ -40,6 +44,9 @@ const createProduct = async (
 
   let images = [];
 
+  /*
+   * Upload product images to Cloudinary.
+   */
   if (files.length > 0) {
     const uploadedImages =
       await Promise.all(
@@ -51,16 +58,6 @@ const createProduct = async (
         )
       );
 
-    /*
-     * IMPORTANT:
-     * Product schema expects:
-     *
-     * {
-     *   url: "...",
-     *   publicId: "..."
-     * }
-     */
-
     images = uploadedImages.map(
       (image) => ({
         url: image.url,
@@ -69,6 +66,9 @@ const createProduct = async (
     );
   }
 
+  /*
+   * Create product.
+   */
   const product = await Product.create({
     ...data,
     slug,
@@ -314,9 +314,10 @@ const updateProduct = async (
     );
   }
 
-  /*
-   * Generate slug when title changes
-   */
+  /* =======================================
+     SLUG
+  ======================================= */
+
   if (data.title) {
     data.slug = slugify(
       data.title,
@@ -327,23 +328,17 @@ const updateProduct = async (
     );
   }
 
-  /*
-   * =====================================
-   * CATEGORY
-   * =====================================
-   *
-   * Because products are populated before
-   * reaching the frontend, category can
-   * sometimes come back as:
-   *
-   * {
-   *   _id: "...",
-   *   name: "Electronics"
-   * }
-   *
-   * Never send that object to MongoDB.
-   */
+  /* =======================================
+     CATEGORY
+  ======================================= */
 
+  /*
+   * Multipart/form-data normally sends
+   * category as a string.
+   *
+   * But this also safely handles a
+   * populated category object.
+   */
   if (
     data.category &&
     typeof data.category === "object"
@@ -356,20 +351,140 @@ const updateProduct = async (
     }
   }
 
+  /* =======================================
+     EXISTING IMAGES
+  ======================================= */
+
+  let existingImages = product.images || [];
+
   /*
-   * =====================================
-   * IMAGES
-   * =====================================
+   * The frontend sends:
    *
-   * If new files are uploaded:
+   * existingImages:
+   * [
+   *   {
+   *     _id,
+   *     url,
+   *     publicId
+   *   }
+   * ]
    *
-   * 1. Upload new images
-   * 2. Delete old Cloudinary images
-   * 3. Save new image objects
-   *
-   * If no new files are uploaded,
-   * keep existing images.
+   * These are the images the user wants
+   * to KEEP.
    */
+
+  if (
+    data.existingImages !== undefined
+  ) {
+    try {
+      let parsedImages =
+        data.existingImages;
+
+      /*
+       * Multer/body-parser normally gives
+       * us a string because this is
+       * multipart/form-data.
+       */
+      if (
+        typeof parsedImages === "string"
+      ) {
+        parsedImages =
+          JSON.parse(parsedImages);
+      }
+
+      if (
+        Array.isArray(parsedImages)
+      ) {
+        existingImages =
+          parsedImages
+            .filter(
+              (image) =>
+                image &&
+                image.url &&
+                image.publicId
+            )
+            .map((image) => ({
+              ...(image._id
+                ? {
+                    _id: image._id,
+                  }
+                : {}),
+              url: image.url,
+              publicId:
+                image.publicId,
+            }));
+      }
+    } catch (error) {
+      throw new Error(
+        "Invalid existingImages data"
+      );
+    }
+
+    /*
+     * Remove this temporary field so
+     * Mongoose does not try to save it.
+     */
+    delete data.existingImages;
+  }
+
+  /* =======================================
+     DELETE REMOVED CLOUDINARY IMAGES
+  ======================================= */
+
+  /*
+   * Compare database images with the
+   * images the frontend wants to keep.
+   *
+   * Anything missing from existingImages
+   * was removed by the user.
+   */
+
+  const keptPublicIds = new Set(
+    existingImages
+      .map(
+        (image) => image.publicId
+      )
+      .filter(Boolean)
+  );
+
+  const removedImages =
+    (product.images || []).filter(
+      (image) =>
+        image.publicId &&
+        !keptPublicIds.has(
+          image.publicId
+        )
+    );
+
+  if (removedImages.length > 0) {
+    await Promise.all(
+      removedImages.map(
+        async (image) => {
+          try {
+            await deleteImage(
+              image.publicId
+            );
+          } catch (error) {
+            /*
+             * Do not fail the entire
+             * product update if Cloudinary
+             * deletion fails.
+             */
+            console.error(
+              "Failed to delete removed Cloudinary image:",
+              error.message
+            );
+          }
+        }
+      )
+    );
+  }
+
+  /* =======================================
+     UPLOAD NEW IMAGES
+  ======================================= */
+
+  let newImages = [];
 
   if (files.length > 0) {
     const uploadedImages =
@@ -382,53 +497,53 @@ const updateProduct = async (
         )
       );
 
-    const newImages =
+    newImages =
       uploadedImages.map(
         (image) => ({
           url: image.url,
-          publicId: image.publicId,
+          publicId:
+            image.publicId,
         })
       );
-
-    /*
-     * Delete old Cloudinary images
-     */
-    if (
-      product.images &&
-      product.images.length > 0
-    ) {
-      await Promise.all(
-        product.images.map(
-          async (image) => {
-            if (image.publicId) {
-              try {
-                await deleteImage(
-                  image.publicId
-                );
-              } catch (error) {
-                console.error(
-                  "Failed to delete old Cloudinary image:",
-                  error.message
-                );
-              }
-            }
-          }
-        )
-      );
-    }
-
-    data.images = newImages;
   }
+
+  /* =======================================
+     FINAL IMAGE ARRAY
+  ======================================= */
 
   /*
-   * Never allow the frontend to send
-   * a raw image string.
+   * Keep the existing images that the
+   * user did not remove, then append
+   * newly uploaded images.
    */
-  if (
-    typeof data.images === "string"
-  ) {
-    delete data.images;
-  }
+
+  data.images = [
+    ...existingImages,
+    ...newImages,
+  ];
+
+  /* =======================================
+     SECURITY CLEANUP
+  ======================================= */
+
+  /*
+   * Never allow the frontend to directly
+   * overwrite these server-controlled
+   * fields.
+   */
+
+  delete data._id;
+  delete data.sku;
+  delete data.views;
+  delete data.salesCount;
+  delete data.ratingsAverage;
+  delete data.ratingsCount;
+  delete data.createdAt;
+  delete data.updatedAt;
+
+  /* =======================================
+     UPDATE DATABASE
+  ======================================= */
 
   const updatedProduct =
     await Product.findByIdAndUpdate(
@@ -459,7 +574,8 @@ const deleteProduct = async (id) => {
 
   /*
    * Delete product images from
-   * Cloudinary before deleting product.
+   * Cloudinary before deleting
+   * the product.
    */
   if (
     product.images &&
@@ -612,6 +728,10 @@ const getFilterOptions = async () => {
     ],
   };
 };
+
+/* =========================================
+   EXPORTS
+========================================= */
 
 module.exports = {
   createProduct,

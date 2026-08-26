@@ -140,27 +140,25 @@ function BasicInfoFields({
           />
         </div>
 
-        {/* SKU */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-300">
-            SKU
-          </label>
-
-          <input
-            type="text"
-            name="sku"
-            value={form.sku ?? ""}
-            onChange={onChange}
-            placeholder="Auto generated"
-            disabled
+        {/* SKU Information */}
+        <div className="sm:col-span-2">
+          <div
             className="
-              w-full rounded-xl
+              rounded-xl
               border border-white/10
-              bg-white/5 px-4 py-3
-              text-sm text-gray-500
-              outline-none
+              bg-white/[0.03]
+              px-4 py-3
             "
-          />
+          >
+            <p className="text-xs font-medium text-gray-400">
+              SKU
+            </p>
+
+            <p className="mt-1 text-sm text-gray-500">
+              SKU is automatically generated when
+              the product is created.
+            </p>
+          </div>
         </div>
 
         {/* Short Description */}
@@ -206,7 +204,6 @@ function BasicInfoFields({
               text-sm text-white
               outline-none transition
               placeholder:text-gray-500
-              focus:border-violet-500
             "
           />
         </div>
@@ -216,3 +213,4 @@ function BasicInfoFields({
 }
 
 export default BasicInfoFields;
+

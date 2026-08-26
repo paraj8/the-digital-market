@@ -7,6 +7,11 @@ export interface AdminProductResponse {
   data: Product;
 }
 
+export interface AdminDeleteProductResponse {
+  success: boolean;
+  message: string;
+}
+
 export const updateProduct = async (
   id: string,
   data: FormData
@@ -22,6 +27,11 @@ export const updateProduct = async (
 
 export const deleteProduct = async (
   id: string
-): Promise<void> => {
-  await api.delete(`/products/${id}`);
+): Promise<AdminDeleteProductResponse> => {
+  const response =
+    await api.delete<AdminDeleteProductResponse>(
+      `/products/${id}`
+    );
+
+  return response.data;
 };

@@ -20,7 +20,8 @@ interface ProductFormProps {
 
   onSubmit: (
     data: Partial<AdminProduct>,
-    files: File[]
+    files: File[],
+    remainingExistingImages: Product["images"]
   ) => void;
 
   onClose: () => void;
@@ -86,13 +87,39 @@ function ProductForm({
   onSubmit,
   onClose,
 }: ProductFormProps) {
+  /*
+   * ProductForm is remounted by ProductFormModal
+   * whenever the product or mode changes.
+   */
   const [form, setForm] =
     useState<Partial<AdminProduct>>(() =>
       getInitialForm(product)
     );
 
+  /*
+   * New image files selected by the user.
+   */
   const [selectedFiles, setSelectedFiles] =
     useState<File[]>([]);
+
+  /*
+   * Existing images that the user has kept.
+   *
+   * In edit mode, this allows the parent component
+   * to tell the backend which existing images remain.
+   */
+  const [
+    remainingExistingImages,
+    setRemainingExistingImages,
+  ] = useState<Product["images"]>(
+    product?.images ?? []
+  );
+
+  /*
+   * =========================================
+   * HANDLE FIELD CHANGE
+   * =========================================
+   */
 
   const handleChange = (
     event: ChangeEvent<
@@ -109,6 +136,9 @@ function ProductForm({
       type,
     } = target;
 
+    /*
+     * Checkbox
+     */
     if (type === "checkbox") {
       const checked = (
         target as HTMLInputElement
@@ -122,6 +152,9 @@ function ProductForm({
       return;
     }
 
+    /*
+     * Number input
+     */
     if (type === "number") {
       setForm((previous) => ({
         ...previous,
@@ -134,26 +167,55 @@ function ProductForm({
       return;
     }
 
+    /*
+     * Text / select / textarea
+     */
     setForm((previous) => ({
       ...previous,
       [name]: value,
     }));
   };
 
+  /*
+   * =========================================
+   * HANDLE IMAGE CHANGE
+   * =========================================
+   */
+
   const handleImagesChange = (
-    files: File[]
+    files: File[],
+    remainingImages: Product["images"]
   ) => {
     setSelectedFiles(files);
+    setRemainingExistingImages(
+      remainingImages
+    );
   };
+
+  /*
+   * =========================================
+   * HANDLE SUBMIT
+   * =========================================
+   */
 
   const handleSubmit = (
     event: FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
 
-    onSubmit(form, selectedFiles);
+    onSubmit(
+      form,
+      selectedFiles,
+      remainingExistingImages
+    );
   };
 
+  /*
+   * Existing Cloudinary images.
+   *
+   * ProductImageUpload displays and manages
+   * these images.
+   */
   const existingImages =
     product?.images ?? [];
 
@@ -162,16 +224,28 @@ function ProductForm({
       onSubmit={handleSubmit}
       className="space-y-6"
     >
+      {/* ===================================== */}
+      {/* PRODUCT IMAGES */}
+      {/* ===================================== */}
+
       <ProductImageUpload
         existingImages={existingImages}
         onChange={handleImagesChange}
       />
+
+      {/* ===================================== */}
+      {/* PRODUCT FIELDS */}
+      {/* ===================================== */}
 
       <ProductFormFields
         form={form}
         onChange={handleChange}
         categories={categories}
       />
+
+      {/* ===================================== */}
+      {/* FORM ACTIONS */}
+      {/* ===================================== */}
 
       <ProductFormActions
         onClose={onClose}

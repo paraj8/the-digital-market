@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 import ProductFormModal from "./components/productEditor/ProductFormModal";
+import ProductDeleteModal from "./components/deleteProduct/ProductDeleteModal";
 import ProductStats from "./components/ProductStats";
 import ProductFilters from "./components/ProductFilters";
 import ProductsTable from "./components/ProductsTable";
@@ -9,7 +10,11 @@ import ProductsTable from "./components/ProductsTable";
 import { useProducts } from "../../../features/products/hooks/useProducts";
 import { useCategories } from "../../../features/categories/hooks/useCategories";
 import { useCreateProduct } from "../../../features/products/hooks/useCreateProduct";
-import { useUpdateProduct } from "../../hooks/useAdminProductMutations";
+
+import {
+  useDeleteProduct,
+  useUpdateProduct,
+} from "../../hooks/useAdminProductMutations";
 
 import type { Product } from "../../../features/products/types/product";
 import type { AdminProduct } from "./components/productEditor/types";
@@ -20,6 +25,9 @@ function AdminProductsPage() {
   /* ===================================== */
 
   const [isProductModalOpen, setIsProductModalOpen] =
+    useState(false);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] =
     useState(false);
 
   const [selectedProduct, setSelectedProduct] =
@@ -33,8 +41,10 @@ function AdminProductsPage() {
   /* ===================================== */
 
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] =
+    useState("");
+  const [statusFilter, setStatusFilter] =
+    useState("");
 
   /* ===================================== */
   /* PRODUCTS */
@@ -69,8 +79,14 @@ function AdminProductsPage() {
   /* PRODUCT MUTATIONS */
   /* ===================================== */
 
-  const createProductMutation = useCreateProduct();
-  const updateProductMutation = useUpdateProduct();
+  const createProductMutation =
+    useCreateProduct();
+
+  const updateProductMutation =
+    useUpdateProduct();
+
+  const deleteProductMutation =
+    useDeleteProduct();
 
   /* ===================================== */
   /* FILTERED PRODUCTS */
@@ -92,7 +108,7 @@ function AdminProductsPage() {
 
       if (statusFilter === "low-stock") {
         const threshold =
-          (product as AdminProduct).lowStockThreshold ?? 5;
+          product.lowStockThreshold ?? 5;
 
         return (
           product.stock > 0 &&
@@ -118,19 +134,21 @@ function AdminProductsPage() {
     (product) => product.isActive
   ).length;
 
-  const lowStockProducts = products.filter((product) => {
-    const threshold =
-      (product as AdminProduct).lowStockThreshold ?? 5;
+  const lowStockProducts =
+    products.filter((product) => {
+      const threshold =
+        product.lowStockThreshold ?? 5;
 
-    return (
-      product.stock > 0 &&
-      product.stock <= threshold
-    );
-  }).length;
+      return (
+        product.stock > 0 &&
+        product.stock <= threshold
+      );
+    }).length;
 
-  const outOfStockProducts = products.filter(
-    (product) => product.stock === 0
-  ).length;
+  const outOfStockProducts =
+    products.filter(
+      (product) => product.stock === 0
+    ).length;
 
   /* ===================================== */
   /* ADD PRODUCT */
@@ -146,7 +164,9 @@ function AdminProductsPage() {
   /* VIEW PRODUCT */
   /* ===================================== */
 
-  const handleViewProduct = (product: Product) => {
+  const handleViewProduct = (
+    product: Product
+  ) => {
     console.log("View product:", product);
   };
 
@@ -154,7 +174,9 @@ function AdminProductsPage() {
   /* EDIT PRODUCT */
   /* ===================================== */
 
-  const handleEditProduct = (product: Product) => {
+  const handleEditProduct = (
+    product: Product
+  ) => {
     setSelectedProduct(product);
     setFormMode("edit");
     setIsProductModalOpen(true);
@@ -164,12 +186,51 @@ function AdminProductsPage() {
   /* DELETE PRODUCT */
   /* ===================================== */
 
-  const handleDeleteProduct = (product: Product) => {
-    console.log("Delete product:", product);
+  const handleDeleteProduct = (
+    product: Product
+  ) => {
+    setSelectedProduct(product);
+    setIsDeleteModalOpen(true);
   };
 
   /* ===================================== */
-  /* CLOSE MODAL */
+  /* CLOSE DELETE MODAL */
+  /* ===================================== */
+
+  const handleCloseDeleteModal = () => {
+    if (deleteProductMutation.isPending) {
+      return;
+    }
+
+    setIsDeleteModalOpen(false);
+    setSelectedProduct(null);
+  };
+
+  /* ===================================== */
+  /* CONFIRM DELETE */
+  /* ===================================== */
+
+  const handleConfirmDelete = async () => {
+    if (!selectedProduct?._id) {
+      return;
+    }
+
+    try {
+      await deleteProductMutation.mutateAsync(
+        selectedProduct._id
+      );
+
+      setIsDeleteModalOpen(false);
+      setSelectedProduct(null);
+    } catch {
+      /*
+       * Keep modal open on error.
+       */
+    }
+  };
+
+  /* ===================================== */
+  /* CLOSE PRODUCT MODAL */
   /* ===================================== */
 
   const handleCloseModal = () => {
@@ -190,64 +251,105 @@ function AdminProductsPage() {
 
   const handleFormSubmit = async (
     form: Partial<AdminProduct>,
-    files: File[]
+    files: File[],
+    remainingExistingImages: Product["images"]
   ) => {
     const formData = new FormData();
 
-    Object.entries(form).forEach(([key, value]) => {
-      if (value === undefined || value === null) {
-        return;
-      }
+    /* ===================================== */
+    /* PRODUCT FIELDS */
+    /* ===================================== */
 
-      /*
-       * Category can be:
-       * - ObjectId string
-       * - populated category object
-       */
-      if (key === "category") {
+    Object.entries(form).forEach(
+      ([key, value]) => {
         if (
-          typeof value === "object" &&
-          value !== null &&
-          "_id" in value
+          value === undefined ||
+          value === null
         ) {
-          formData.append(
-            "category",
-            String(value._id)
-          );
-        } else if (value) {
-          formData.append(
-            "category",
-            String(value)
-          );
+          return;
         }
 
-        return;
-      }
+        /*
+         * Category
+         *
+         * The frontend may have either:
+         * - category ObjectId
+         * - populated category object
+         */
+        if (key === "category") {
+          if (
+            typeof value === "object" &&
+            value !== null &&
+            "_id" in value
+          ) {
+            formData.append(
+              "category",
+              String(value._id)
+            );
+          } else if (value) {
+            formData.append(
+              "category",
+              String(value)
+            );
+          }
 
-      /*
-       * Arrays such as tags
-       */
-      if (Array.isArray(value)) {
+          return;
+        }
+
+        /*
+         * Arrays such as tags.
+         */
+        if (Array.isArray(value)) {
+          formData.append(
+            key,
+            JSON.stringify(value)
+          );
+
+          return;
+        }
+
         formData.append(
           key,
-          JSON.stringify(value)
+          String(value)
         );
-
-        return;
       }
+    );
 
+    /* ===================================== */
+    /* EXISTING IMAGES */
+    /* ===================================== */
+
+    /*
+     * Send the images that the user decided
+     * to keep.
+     *
+     * The backend can compare these with
+     * the existing database images and
+     * delete removed Cloudinary images.
+     */
+    if (formMode === "edit") {
       formData.append(
-        key,
-        String(value)
+        "existingImages",
+        JSON.stringify(
+          remainingExistingImages
+        )
+      );
+    }
+
+    /* ===================================== */
+    /* NEW IMAGES */
+    /* ===================================== */
+
+    files.forEach((file) => {
+      formData.append(
+        "images",
+        file
       );
     });
 
-    /*
-     * Product images
-     */
-    files.forEach((file) => {
-      formData.append("images", file);
-    });
+    /* ===================================== */
+    /* SUBMIT */
+    /* ===================================== */
 
     try {
       /* ===================================== */
@@ -283,7 +385,9 @@ function AdminProductsPage() {
     } catch {
       /*
        * React Query handles the mutation error.
-       * Keep modal open so user can correct the form.
+       *
+       * Keep the modal open so the user can
+       * correct the form and try again.
        */
     }
   };
@@ -313,19 +417,24 @@ function AdminProductsPage() {
   return (
     <div className="space-y-6">
 
-      {/* ===================================== */}
       {/* HEADER */}
-      {/* ===================================== */}
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
+      <div
+        className="
+          flex flex-col gap-4
+          sm:flex-row
+          sm:items-center
+          sm:justify-between
+        "
+      >
         <div>
           <h1 className="text-2xl font-bold text-white">
             Products
           </h1>
 
           <p className="mt-1 text-sm text-gray-400">
-            Manage your store products and inventory.
+            Manage your store products and
+            inventory.
           </p>
         </div>
 
@@ -351,12 +460,9 @@ function AdminProductsPage() {
           <FiPlus size={18} />
           Add Product
         </button>
-
       </div>
 
-      {/* ===================================== */}
       {/* STATS */}
-      {/* ===================================== */}
 
       <ProductStats
         total={totalProducts}
@@ -365,9 +471,7 @@ function AdminProductsPage() {
         outOfStock={outOfStockProducts}
       />
 
-      {/* ===================================== */}
       {/* FILTERS */}
-      {/* ===================================== */}
 
       <ProductFilters
         search={search}
@@ -380,12 +484,18 @@ function AdminProductsPage() {
         onClear={handleClearFilters}
       />
 
-      {/* ===================================== */}
       {/* ERROR */}
-      {/* ===================================== */}
 
       {isError && (
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center">
+        <div
+          className="
+            rounded-2xl
+            border border-red-500/20
+            bg-red-500/5
+            p-6
+            text-center
+          "
+        >
           <p className="text-sm text-red-400">
             {error instanceof Error
               ? error.message
@@ -394,9 +504,7 @@ function AdminProductsPage() {
         </div>
       )}
 
-      {/* ===================================== */}
       {/* PRODUCTS TABLE */}
-      {/* ===================================== */}
 
       {!isError && (
         <ProductsTable
@@ -408,9 +516,7 @@ function AdminProductsPage() {
         />
       )}
 
-      {/* ===================================== */}
       {/* PRODUCT FORM MODAL */}
-      {/* ===================================== */}
 
       <ProductFormModal
         isOpen={isProductModalOpen}
@@ -420,6 +526,18 @@ function AdminProductsPage() {
         isSubmitting={isSubmitting}
         onClose={handleCloseModal}
         onSubmit={handleFormSubmit}
+      />
+
+      {/* DELETE PRODUCT MODAL */}
+
+      <ProductDeleteModal
+        isOpen={isDeleteModalOpen}
+        product={selectedProduct}
+        isDeleting={
+          deleteProductMutation.isPending
+        }
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
       />
 
     </div>
