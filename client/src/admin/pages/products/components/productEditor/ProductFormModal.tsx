@@ -17,7 +17,8 @@ interface ProductFormModalProps {
 
   onSubmit: (
     data: Partial<AdminProduct>,
-    files: File[]
+    files: File[],
+    remainingExistingImages: Product["images"]
   ) => void;
 }
 

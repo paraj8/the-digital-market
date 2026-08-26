@@ -1,21 +1,22 @@
+import type { ProductImage } from "../../../../../features/products/types/product";
+
 import {
   useRef,
   useState,
 } from "react";
+
 import {
   FiImage,
   FiX,
 } from "react-icons/fi";
 
-interface ProductImage {
-  _id?: string;
-  url: string;
-  publicId: string;
-}
-
 interface ProductImageUploadProps {
   existingImages?: ProductImage[];
-  onChange: (files: File[]) => void;
+
+  onChange: (
+    files: File[],
+    remainingExistingImages: ProductImage[]
+  ) => void;
 }
 
 function ProductImageUpload({
@@ -25,26 +26,28 @@ function ProductImageUpload({
   const inputRef =
     useRef<HTMLInputElement>(null);
 
+  const [
+    remainingExistingImages,
+    setRemainingExistingImages,
+  ] = useState<ProductImage[]>(
+    existingImages
+  );
+
   const [selectedFiles, setSelectedFiles] =
     useState<File[]>([]);
 
   /*
-   * Existing Cloudinary images
-   */
-  const existingPreviews =
-    existingImages.map(
-      (image) => image.url
-    );
-
-  /*
-   * New local images
-   *
-   * These URLs are generated directly from
-   * the selected files.
+   * New local image previews
    */
   const newPreviews = selectedFiles.map(
     (file) => URL.createObjectURL(file)
   );
+
+  /*
+   * =========================================
+   * ADD NEW IMAGES
+   * =========================================
+   */
 
   const handleFiles = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -65,12 +68,47 @@ function ProductImageUpload({
     ];
 
     setSelectedFiles(updatedFiles);
-    onChange(updatedFiles);
+
+    onChange(
+      updatedFiles,
+      remainingExistingImages
+    );
 
     if (inputRef.current) {
       inputRef.current.value = "";
     }
   };
+
+  /*
+   * =========================================
+   * REMOVE EXISTING IMAGE
+   * =========================================
+   */
+
+  const handleRemoveExistingImage = (
+    index: number
+  ) => {
+    const updatedExistingImages =
+      remainingExistingImages.filter(
+        (_, imageIndex) =>
+          imageIndex !== index
+      );
+
+    setRemainingExistingImages(
+      updatedExistingImages
+    );
+
+    onChange(
+      selectedFiles,
+      updatedExistingImages
+    );
+  };
+
+  /*
+   * =========================================
+   * REMOVE NEW IMAGE
+   * =========================================
+   */
 
   const handleRemoveNewImage = (
     index: number
@@ -82,32 +120,42 @@ function ProductImageUpload({
       );
 
     setSelectedFiles(updatedFiles);
-    onChange(updatedFiles);
+
+    onChange(
+      updatedFiles,
+      remainingExistingImages
+    );
   };
 
   return (
     <section className="space-y-4">
+
       {/* Header */}
+
       <div>
         <h3 className="text-sm font-semibold text-white">
           Product Images
         </h3>
 
         <p className="mt-1 text-xs text-gray-400">
-          Upload product images. You can select
-          multiple images.
+          Upload product images. You can
+          select multiple images.
         </p>
       </div>
 
-      {/* Existing Images */}
-      {existingPreviews.length > 0 && (
+      {/* ===================================== */}
+      {/* EXISTING IMAGES */}
+      {/* ===================================== */}
+
+      {remainingExistingImages.length >
+        0 && (
         <div>
           <p className="mb-3 text-xs font-medium text-gray-400">
             Existing Images
           </p>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {existingImages.map(
+            {remainingExistingImages.map(
               (image, index) => (
                 <div
                   key={
@@ -134,6 +182,35 @@ function ProductImageUpload({
                     "
                   />
 
+                  {/* Remove button */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleRemoveExistingImage(
+                        index
+                      )
+                    }
+                    className="
+                      absolute right-2 top-2
+                      flex h-7 w-7
+                      items-center
+                      justify-center
+                      rounded-full
+                      bg-black/70
+                      text-white
+                      opacity-0
+                      transition
+                      group-hover:opacity-100
+                      hover:bg-red-500
+                    "
+                    title="Remove image"
+                  >
+                    <FiX size={15} />
+                  </button>
+
+                  {/* Existing label */}
+
                   <div
                     className="
                       absolute inset-x-0
@@ -142,9 +219,6 @@ function ProductImageUpload({
                       px-2 py-1
                       text-[10px]
                       text-gray-300
-                      opacity-0
-                      transition
-                      group-hover:opacity-100
                     "
                   >
                     Existing
@@ -156,7 +230,10 @@ function ProductImageUpload({
         </div>
       )}
 
-      {/* New Images */}
+      {/* ===================================== */}
+      {/* NEW IMAGES */}
+      {/* ===================================== */}
+
       {newPreviews.length > 0 && (
         <div>
           <p className="mb-3 text-xs font-medium text-gray-400">
@@ -208,6 +285,7 @@ function ProductImageUpload({
                       group-hover:opacity-100
                       hover:bg-red-500
                     "
+                    title="Remove image"
                   >
                     <FiX size={15} />
                   </button>
@@ -231,7 +309,10 @@ function ProductImageUpload({
         </div>
       )}
 
-      {/* Add Images */}
+      {/* ===================================== */}
+      {/* ADD IMAGES */}
+      {/* ===================================== */}
+
       <button
         type="button"
         onClick={() =>
@@ -262,6 +343,7 @@ function ProductImageUpload({
       </button>
 
       {/* File Input */}
+
       <input
         ref={inputRef}
         type="file"
