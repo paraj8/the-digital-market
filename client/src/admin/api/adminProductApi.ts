@@ -12,13 +12,25 @@ export interface AdminDeleteProductResponse {
   message: string;
 }
 
+export const createProduct = async (
+  data: FormData
+): Promise<Product> => {
+  const response =
+    await api.post<AdminProductResponse>(
+      "/admin/products",
+      data
+    );
+
+  return response.data.data;
+};
+
 export const updateProduct = async (
   id: string,
   data: FormData
 ): Promise<Product> => {
   const response =
     await api.put<AdminProductResponse>(
-      `/products/${id}`,
+      `/admin/products/${id}`,
       data
     );
 
@@ -30,7 +42,7 @@ export const deleteProduct = async (
 ): Promise<AdminDeleteProductResponse> => {
   const response =
     await api.delete<AdminDeleteProductResponse>(
-      `/products/${id}`
+      `/admin/products/${id}`
     );
 
   return response.data;

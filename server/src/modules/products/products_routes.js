@@ -6,49 +6,32 @@ const productController = require(
   "./products_controller"
 );
 
-const upload = require(
-  "../../middleware/upload_middleware"
-);
+// =========================================
+// CUSTOMER / STOREFRONT ROUTES
+// =========================================
 
-// Special routes
-
+// Filter options
 router.get(
   "/filter/options",
   productController.getFilterOptions
 );
 
+// Product by slug
 router.get(
   "/slug/:slug",
   productController.getProductBySlug
 );
 
-// CRUD
-
+// Get active products
 router.get(
   "/",
   productController.getAllProducts
 );
 
+// Get product by ID
 router.get(
   "/:id",
   productController.getProductById
-);
-
-router.post(
-  "/",
-  upload.array("images", 8),
-  productController.createProduct
-);
-
-router.put(
-  "/:id",
-  upload.array("images", 8),
-  productController.updateProduct
-);
-
-router.delete(
-  "/:id",
-  productController.deleteProduct
 );
 
 module.exports = router;

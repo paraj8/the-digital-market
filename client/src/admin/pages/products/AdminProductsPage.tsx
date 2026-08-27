@@ -9,9 +9,10 @@ import ProductsTable from "./components/ProductsTable";
 
 import { useProducts } from "../../../features/products/hooks/useProducts";
 import { useCategories } from "../../../features/categories/hooks/useCategories";
-import { useCreateProduct } from "../../../features/products/hooks/useCreateProduct";
+
 
 import {
+  useCreateProduct,
   useDeleteProduct,
   useUpdateProduct,
 } from "../../hooks/useAdminProductMutations";
