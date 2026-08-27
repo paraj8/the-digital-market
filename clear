@@ -1,0 +1,927 @@
+[1mdiff --git a/client/src/admin/api/adminProductApi.ts b/client/src/admin/api/adminProductApi.ts[m
+[1mindex 8578c63..3546072 100644[m
+[1m--- a/client/src/admin/api/adminProductApi.ts[m
+[1m+++ b/client/src/admin/api/adminProductApi.ts[m
+[36m@@ -12,13 +12,25 @@[m [mexport interface AdminDeleteProductResponse {[m
+   message: string;[m
+ }[m
+ [m
+[32m+[m[32mexport const createProduct = async ([m
+[32m+[m[32m  data: FormData[m
+[32m+[m[32m): Promise<Product> => {[m
+[32m+[m[32m  const response =[m
+[32m+[m[32m    await api.post<AdminProductResponse>([m
+[32m+[m[32m      "/admin/products",[m
+[32m+[m[32m      data[m
+[32m+[m[32m    );[m
+[32m+[m
+[32m+[m[32m  return response.data.data;[m
+[32m+[m[32m};[m
+[32m+[m
+ export const updateProduct = async ([m
+   id: string,[m
+   data: FormData[m
+ ): Promise<Product> => {[m
+   const response =[m
+     await api.put<AdminProductResponse>([m
+[31m-      `/products/${id}`,[m
+[32m+[m[32m      `/admin/products/${id}`,[m
+       data[m
+     );[m
+ [m
+[36m@@ -30,7 +42,7 @@[m [mexport const deleteProduct = async ([m
+ ): Promise<AdminDeleteProductResponse> => {[m
+   const response =[m
+     await api.delete<AdminDeleteProductResponse>([m
+[31m-      `/products/${id}`[m
+[32m+[m[32m      `/admin/products/${id}`[m
+     );[m
+ [m
+   return response.data;[m
+[1mdiff --git a/client/src/admin/hooks/useAdminProductMutations.ts b/client/src/admin/hooks/useAdminProductMutations.ts[m
+[1mindex c6da820..a9a8a35 100644[m
+[1m--- a/client/src/admin/hooks/useAdminProductMutations.ts[m
+[1m+++ b/client/src/admin/hooks/useAdminProductMutations.ts[m
+[36m@@ -4,10 +4,25 @@[m [mimport {[m
+ } from "@tanstack/react-query";[m
+ [m
+ import {[m
+[32m+[m[32m  createProduct,[m
+   updateProduct,[m
+   deleteProduct,[m
+ } from "../api/adminProductApi";[m
+ [m
+[32m+[m[32mexport const useCreateProduct = () => {[m
+[32m+[m[32m  const queryClient = useQueryClient();[m
+[32m+[m
+[32m+[m[32m  return useMutation({[m
+[32m+[m[32m    mutationFn: (data: FormData) => createProduct(data),[m
+[32m+[m
+[32m+[m[32m    onSuccess: () => {[m
+[32m+[m[32m      queryClient.invalidateQueries({[m
+[32m+[m[32m        queryKey: ["products"],[m
+[32m+[m[32m      });[m
+[32m+[m[32m    },[m
+[32m+[m[32m  });[m
+[32m+[m[32m};[m
+[32m+[m
+ export const useUpdateProduct = () => {[m
+   const queryClient = useQueryClient();[m
+ [m
+[1mdiff --git a/client/src/admin/pages/products/AdminProductsPage.tsx b/client/src/admin/pages/products/AdminProductsPage.tsx[m
+[1mindex 4aad716..4bafe8a 100644[m
+[1m--- a/client/src/admin/pages/products/AdminProductsPage.tsx[m
+[1m+++ b/client/src/admin/pages/products/AdminProductsPage.tsx[m
+[36m@@ -9,9 +9,10 @@[m [mimport ProductsTable from "./components/ProductsTable";[m
+ [m
+ import { useProducts } from "../../../features/products/hooks/useProducts";[m
+ import { useCategories } from "../../../features/categories/hooks/useCategories";[m
+[31m-import { useCreateProduct } from "../../../features/products/hooks/useCreateProduct";[m
+[32m+[m
+ [m
+ import {[m
+[32m+[m[32m  useCreateProduct,[m
+   useDeleteProduct,[m
+   useUpdateProduct,[m
+ } from "../../hooks/useAdminProductMutations";[m
+[1mdiff --git a/client/src/admin/pages/products/components/productEditor/types.ts b/client/src/admin/pages/products/components/productEditor/types.ts[m
+[1mindex 533eb42..b649969 100644[m
+[1m--- a/client/src/admin/pages/products/components/productEditor/types.ts[m
+[1m+++ b/client/src/admin/pages/products/components/productEditor/types.ts[m
+[36m@@ -5,7 +5,6 @@[m [mexport type AdminProduct = Partial<[m
+     Product,[m
+     | "_id"[m
+     | "slug"[m
+[31m-    | "sku"[m
+     | "images"[m
+     | "views"[m
+     | "salesCount"[m
+[1mdiff --git a/client/src/features/products/api/productApi.ts b/client/src/features/products/api/productApi.ts[m
+[1mindex ee7ce7c..949dc34 100644[m
+[1m--- a/client/src/features/products/api/productApi.ts[m
+[1m+++ b/client/src/features/products/api/productApi.ts[m
+[36m@@ -4,27 +4,20 @@[m [mimport type { Product } from "../types/product";[m
+ export interface ProductQuery {[m
+   page?: number;[m
+   limit?: number;[m
+[31m-[m
+   category?: string;[m
+   brand?: string;[m
+[31m-[m
+   featured?: boolean;[m
+   deals?: boolean;[m
+   inStock?: boolean;[m
+[31m-[m
+   sort?: string;[m
+[31m-[m
+   minPrice?: number;[m
+   maxPrice?: number;[m
+[31m-[m
+   search?: string;[m
+ }[m
+ [m
+ export interface ProductResponse {[m
+   success: boolean;[m
+[31m-[m
+   data: Product[];[m
+[31m-[m
+   pagination: {[m
+     total: number;[m
+     page: number;[m
+[36m@@ -71,15 +64,4 @@[m [mexport const getProductsByCategory =[m
+       );[m
+ [m
+     return response.data.data;[m
+[31m-  };[m
+[31m-[m
+[31m-  // Create a new product[m
+[31m-export const createProduct = [m
+[31m-  async (data: FormData): Promise<Product> => {[m
+[31m-    const response = await api.post([m
+[31m-      "/products",[m
+[31m-      data[m
+[31m-    );[m
+[31m-[m
+[31m-    return response.data.data;[m
+[31m-};[m
+\ No newline at end of file[m
+[32m+[m[32m  };[m
+\ No newline at end of file[m
+[1mdiff --git a/server/src/modules/products/products_controller.js b/server/src/modules/products/products_controller.js[m
+[1mindex bf5af06..1294f02 100644[m
+[1m--- a/server/src/modules/products/products_controller.js[m
+[1m+++ b/server/src/modules/products/products_controller.js[m
+[36m@@ -2,33 +2,10 @@[m [mconst productService = require([m
+   "./products_service"[m
+ );[m
+ [m
+[31m-// Controller functions[m
+[31m-const createProduct = async ([m
+[31m-  req,[m
+[31m-  res[m
+[31m-) => {[m
+[31m-  try {[m
+[31m-    const product =[m
+[31m-      await productService.createProduct([m
+[31m-        req.body,[m
+[31m-        req.files[m
+[31m-      );[m
+[32m+[m[32m/* =========================================[m
+[32m+[m[32m   GET ALL PRODUCTS[m
+[32m+[m[32m========================================= */[m
+ [m
+[31m-    res.status(201).json({[m
+[31m-      success: true,[m
+[31m-      message:[m
+[31m-        "Product created successfully",[m
+[31m-      data: product,[m
+[31m-    });[m
+[31m-  } catch (error) {[m
+[31m-    res.status(400).json({[m
+[31m-      success: false,[m
+[31m-      message: error.message,[m
+[31m-    });[m
+[31m-  }[m
+[31m-};[m
+[31m-[m
+[31m-// New function to get all products with pagination and filtering[m
+ const getAllProducts = async ([m
+   req,[m
+   res[m
+[36m@@ -42,8 +19,7 @@[m [mconst getAllProducts = async ([m
+     res.status(200).json({[m
+       success: true,[m
+       data: result.products,[m
+[31m-      pagination:[m
+[31m-        result.pagination,[m
+[32m+[m[32m      pagination: result.pagination,[m
+     });[m
+   } catch (error) {[m
+     res.status(500).json({[m
+[36m@@ -53,7 +29,10 @@[m [mconst getAllProducts = async ([m
+   }[m
+ };[m
+ [m
+[31m-// New function to get a product by ID[m
+[32m+[m[32m/* =========================================[m
+[32m+[m[32m   GET PRODUCT BY ID[m
+[32m+[m[32m========================================= */[m
+[32m+[m
+ const getProductById = async ([m
+   req,[m
+   res[m
+[36m@@ -76,59 +55,9 @@[m [mconst getProductById = async ([m
+   }[m
+ };[m
+ [m
+[31m-// New functions for update and delete[m
+[31m-[m
+[31m-const updateProduct = async ([m
+[31m-  req,[m
+[31m-  res[m
+[31m-) => {[m
+[31m-  try {[m
+[31m-    const product =[m
+[31m-      await productService.updateProduct([m
+[31m-        req.params.id,[m
+[31m-        req.body,[m
+[31m-        req.files[m
+[31m-      );[m
+[31m-[m
+[31m-    res.status(200).json({[m
+[31m-      success: true,[m
+[31m-      message:[m
+[31m-        "Product updated successfully",[m
+[31m-      data: product,[m
+[31m-    });[m
+[31m-  } catch (error) {[m
+[31m-    res.status(400).json({[m
+[31m-      success: false,[m
+[31m-      message: error.message,[m
+[31m-    });[m
+[31m-  }[m
+[31m-};[m
+[31m-[m
+[31m-// New function for deleting a product[m
+[31m-[m
+[31m-const deleteProduct = async ([m
+[31m-  req,[m
+[31m-  res[m
+[31m-) => {[m
+[31m-  try {[m
+[31m-    const result =[m
+[31m-      await productService.deleteProduct([m
+[31m-        req.params.id[m
+[31m-      );[m
+[31m-[m
+[31m-    res.status(200).json({[m
+[31m-      success: true,[m
+[31m-      message: result.message,[m
+[31m-    });[m
+[31m-  } catch (error) {[m
+[31m-    res.status(400).json({[m
+[31m-      success: false,[m
+[31m-      message: error.message,[m
+[31m-    });[m
+[31m-  }[m
+[31m-};[m
+[31m-[m
+[31m-// New function to get a product by slug[m
+[32m+[m[32m/* =========================================[m
+[32m+[m[32m   GET PRODUCT BY SLUG[m
+[32m+[m[32m========================================= */[m
+ [m
+ const getProductBySlug = async ([m
+   req,[m
+[36m@@ -152,7 +81,10 @@[m [mconst getProductBySlug = async ([m
+   }[m
+ };[m
+ [m
+[31m-// New function to get filter options for products[m
+[32m+[m[32m/* =========================================[m
+[32m+[m[32m   GET FILTER OPTIONS[m
+[32m+[m[32m========================================= */[m
+[32m+[m
+ const getFilterOptions = async ([m
+   req,[m
+   res[m
+[36m@@ -174,11 +106,8 @@[m [mconst getFilterOptions = async ([m
+ };[m
+ [m
+ module.exports = {[m
+[31m-  createProduct,[m
+   getAllProducts,[m
+   getProductById,[m
+[31m-  getFilterOptions,[m
+[31m-  updateProduct,[m
+[31m-  deleteProduct,[m
+   getProductBySlug,[m
+[32m+[m[32m  getFilterOptions,[m
+ };[m
+\ No newline at end of file[m
+[1mdiff --git a/server/src/modules/products/products_routes.js b/server/src/modules/products/products_routes.js[m
+[1mindex bebd1ff..b5f69f1 100644[m
+[1m--- a/server/src/modules/products/products_routes.js[m
+[1m+++ b/server/src/modules/products/products_routes.js[m
+[36m@@ -6,49 +6,32 @@[m [mconst productController = require([m
+   "./products_controller"[m
+ );[m
+ [m
+[31m-const upload = require([m
+[31m-  "../../middleware/upload_middleware"[m
+[31m-);[m
+[31m-[m
+[31m-// Special routes[m
+[32m+[m[32m// =========================================[m
+[32m+[m[32m// CUSTOMER / STOREFRONT ROUTES[m
+[32m+[m[32m// =========================================[m
+ [m
+[32m+[m[32m// Filter options[m
+ router.get([m
+   "/filter/options",[m
+   productController.getFilterOptions[m
+ );[m
+ [m
+[32m+[m[32m// Product by slug[m
+ router.get([m
+   "/slug/:slug",[m
+   productController.getProductBySlug[m
+ );[m
+ [m
+[31m-// CRUD[m
+[31m-[m
+[32m+[m[32m// Get active products[m
+ router.get([m
+   "/",[m
+   productController.getAllProducts[m
+ );[m
+ [m
+[32m+[m[32m// Get product by ID[m
+ router.get([m
+   "/:id",[m
+   productController.getProductById[m
+ );[m
+ [m
+[31m-router.post([m
+[31m-  "/",[m
+[31m-  upload.array("images", 8),[m
+[31m-  productController.createProduct[m
+[31m-);[m
+[31m-[m
+[31m-router.put([m
+[31m-  "/:id",[m
+[31m-  upload.array("images", 8),[m
+[31m-  productController.updateProduct[m
+[31m-);[m
+[31m-[m
+[31m-router.delete([m
+[31m-  "/:id",[m
+[31m-  productController.deleteProduct[m
+[31m-);[m
+[31m-[m
+ module.exports = router;[m
+\ No newline at end of file[m
+[1mdiff --git a/server/src/modules/products/products_service.js b/server/src/modules/products/products_service.js[m
+[1mindex 512112d..f4b4e65 100644[m
+[1m--- a/server/src/modules/products/products_service.js[m
+[1m+++ b/server/src/modules/products/products_service.js[m
+[36m@@ -1,86 +1,7 @@[m
+ const Product = require("./products_model");[m
+[31m-const slugify = require("slugify");[m
+[31m-[m
+[31m-const {[m
+[31m-  uploadImage,[m
+[31m-  deleteImage,[m
+[31m-} = require("../../services/cloudinary_service");[m
+[31m-[m
+[31m-/* =========================================[m
+[31m-   GENERATE SKU[m
+[31m-========================================= */[m
+[31m-[m
+[31m-const generateSKU = () => {[m
+[31m-  return ([m
+[31m-    "PRD-" +[m
+[31m-    Math.random()[m
+[31m-      .toString(36)[m
+[31m-      .substring(2, 8)[m
+[31m-      .toUpperCase()[m
+[31m-  );[m
+[31m-};[m
+[31m-[m
+[31m-/* =========================================[m
+[31m-   CREATE PRODUCT[m
+[31m-========================================= */[m
+[31m-[m
+[31m-const createProduct = async ([m
+[31m-  data,[m
+[31m-  files = [][m
+[31m-) => {[m
+[31m-  const slug = slugify(data.title, {[m
+[31m-    lower: true,[m
+[31m-    strict: true,[m
+[31m-  });[m
+[31m-[m
+[31m-  const existingProduct =[m
+[31m-    await Product.findOne({ slug });[m
+[31m-[m
+[31m-  if (existingProduct) {[m
+[31m-    throw new Error([m
+[31m-      "Product already exists"[m
+[31m-    );[m
+[31m-  }[m
+[31m-[m
+[31m-  let images = [];[m
+[31m-[m
+[31m-  /*[m
+[31m-   * Upload product images to Cloudinary.[m
+[31m-   */[m
+[31m-  if (files.length > 0) {[m
+[31m-    const uploadedImages =[m
+[31m-      await Promise.all([m
+[31m-        files.map((file) =>[m
+[31m-          uploadImage([m
+[31m-            file.buffer,[m
+[31m-            "the-digital-market/products"[m
+[31m-          )[m
+[31m-        )[m
+[31m-      );[m
+[31m-[m
+[31m-    images = uploadedImages.map([m
+[31m-      (image) => ({[m
+[31m-        url: image.url,[m
+[31m-        publicId: image.publicId,[m
+[31m-      })[m
+[31m-    );[m
+[31m-  }[m
+[31m-[m
+[31m-  /*[m
+[31m-   * Create product.[m
+[31m-   */[m
+[31m-  const product = await Product.create({[m
+[31m-    ...data,[m
+[31m-    slug,[m
+[31m-    sku: generateSKU(),[m
+[31m-    images,[m
+[31m-  });[m
+[31m-[m
+[31m-  return product;[m
+[31m-};[m
+ [m
+ /* =========================================[m
+[31m-   GET ALL PRODUCTS[m
+[32m+[m[32m   GET ALL ACTIVE PRODUCTS[m
+ ========================================= */[m
+ [m
+ const getAllProducts = async (query) => {[m
+[36m@@ -158,13 +79,11 @@[m [mconst getAllProducts = async (query) => {[m
+     filters.price = {};[m
+ [m
+     if (minPrice) {[m
+[31m-      filters.price.$gte =[m
+[31m-        Number(minPrice);[m
+[32m+[m[32m      filters.price.$gte = Number(minPrice);[m
+     }[m
+ [m
+     if (maxPrice) {[m
+[31m-      filters.price.$lte =[m
+[31m-        Number(maxPrice);[m
+[32m+[m[32m      filters.price.$lte = Number(maxPrice);[m
+     }[m
+   }[m
+ [m
+[36m@@ -174,15 +93,11 @@[m [mconst getAllProducts = async (query) => {[m
+ [m
+   switch (sort) {[m
+     case "priceLow":[m
+[31m-      sortOption = {[m
+[31m-        price: 1,[m
+[31m-      };[m
+[32m+[m[32m      sortOption = { price: 1 };[m
+       break;[m
+ [m
+     case "priceHigh":[m
+[31m-      sortOption = {[m
+[31m-        price: -1,[m
+[31m-      };[m
+[32m+[m[32m      sortOption = { price: -1 };[m
+       break;[m
+ [m
+     case "featured":[m
+[36m@@ -228,8 +143,15 @@[m [mconst getAllProducts = async (query) => {[m
+       };[m
+   }[m
+ [m
+[31m-  const currentPage = Number(page);[m
+[31m-  const pageLimit = Number(limit);[m
+[32m+[m[32m  const currentPage = Math.max([m
+[32m+[m[32m    Number(page) || 1,[m
+[32m+[m[32m    1[m
+[32m+[m[32m  );[m
+[32m+[m
+[32m+[m[32m  const pageLimit = Math.min([m
+[32m+[m[32m    Math.max(Number(limit) || 12, 1),[m
+[32m+[m[32m    100[m
+[32m+[m[32m  );[m
+ [m
+   const total =[m
+     await Product.countDocuments(filters);[m
+[36m@@ -258,13 +180,15 @@[m [mconst getAllProducts = async (query) => {[m
+ };[m
+ [m
+ /* =========================================[m
+[31m-   GET PRODUCT BY ID[m
+[32m+[m[32m   GET ACTIVE PRODUCT BY ID[m
+ ========================================= */[m
+ [m
+ const getProductById = async (id) => {[m
+   const product =[m
+[31m-    await Product.findById(id)[m
+[31m-      .populate("category");[m
+[32m+[m[32m    await Product.findOne({[m
+[32m+[m[32m      _id: id,[m
+[32m+[m[32m      isActive: true,[m
+[32m+[m[32m    }).populate("category");[m
+ [m
+   if (!product) {[m
+     throw new Error([m
+[36m@@ -276,7 +200,7 @@[m [mconst getProductById = async (id) => {[m
+ };[m
+ [m
+ /* =========================================[m
+[31m-   GET PRODUCT BY SLUG[m
+[32m+[m[32m   GET ACTIVE PRODUCT BY SLUG[m
+ ========================================= */[m
+ [m
+ const getProductBySlug = async ([m
+[36m@@ -285,6 +209,7 @@[m [mconst getProductBySlug = async ([m
+   const product =[m
+     await Product.findOne({[m
+       slug,[m
+[32m+[m[32m      isActive: true,[m
+     }).populate("category");[m
+ [m
+   if (!product) {[m
+[36m@@ -296,319 +221,6 @@[m [mconst getProductBySlug = async ([m
+   return product;[m
+ };[m
+ [m
+[31m-/* =========================================[m
+[31m-   UPDATE PRODUCT[m
+[31m-========================================= */[m
+[31m-[m
+[31m-const updateProduct = async ([m
+[31m-  id,[m
+[31m-  data,[m
+[31m-  files = [][m
+[31m-) => {[m
+[31m-  const product =[m
+[31m-    await Product.findById(id);[m
+[31m-[m
+[31m-  if (!product) {[m
+[31m-    throw new Error([m
+[31m-      "Product not found"[m
+[31m-    );[m
+[31m-  }[m
+[31m-[m
+[31m-  /* =======================================[m
+[31m-     SLUG[m
+[31m-  ======================================= */[m
+[31m-[m
+[31m-  if (data.title) {[m
+[31m-    data.slug = slugify([m
+[31m-      data.title,[m
+[31m-      {[m
+[31m-        lower: true,[m
+[31m-        strict: true,[m
+[31m-      }[m
+[31m-    );[m
+[31m-  }[m
+[31m-[m
+[31m-  /* =======================================[m
+[31m-     CATEGORY[m
+[31m-  ======================================= */[m
+[31m-[m
+[31m-  /*[m
+[31m-   * Multipart/form-data normally sends[m
+[31m-   * category as a string.[m
+[31m-   *[m
+[31m-   * But this also safely handles a[m
+[31m-   * populated category object.[m
+[31m-   */[m
+[31m-  if ([m
+[31m-    data.category &&[m
+[31m-    typeof data.category === "object"[m
+[31m-  ) {[m
+[31m-    if (data.category._id) {[m
+[31m-      data.category =[m
+[31m-        data.category._id;[m
+[31m-    } else {[m
+[31m-      delete data.category;[m
+[31m-    }[m
+[31m-  }[m
+[31m-[m
+[31m-  /* =======================================[m
+[31m-     EXISTING IMAGES[m
+[31m-  ======================================= */[m
+[31m-[m
+[31m-  let existingImages = product.images || [];[m
+[31m-[m
+[31m-  /*[m
+[31m-   * The frontend sends:[m
+[31m-   *[m
+[31m-   * existingImages:[m
+[31m-   * [[m
+[31m-   *   {[m
+[31m-   *     _id,[m
+[31m-   *     url,[m
+[31m-   *     publicId[m
+[31m-   *   }[m
+[31m-   * ][m
+[31m-   *[m
+[31m-   * These are the images the user wants[m
+[31m-   * to KEEP.[m
+[31m-   */[m
+[31m-[m
+[31m-  if ([m
+[31m-    data.existingImages !== undefined[m
+[31m-  ) {[m
+[31m-    try {[m
+[31m-      let parsedImages =[m
+[31m-        data.existingImages;[m
+[31m-[m
+[31m-      /*[m
+[31m-       * Multer/body-parser normally gives[m
+[31m-       * us a string because this is[m
+[31m-       * multipart/form-data.[m
+[31m-       */[m
+[31m-      if ([m
+[31m-        typeof parsedImages === "string"[m
+[31m-      ) {[m
+[31m-        parsedImages =[m
+[31m-          JSON.parse(parsedImages);[m
+[31m-      }[m
+[31m-[m
+[31m-      if ([m
+[31m-        Array.isArray(parsedImages)[m
+[31m-      ) {[m
+[31m-        existingImages =[m
+[31m-          parsedImages[m
+[31m-            .filter([m
+[31m-              (image) =>[m
+[31m-                image &&[m
+[31m-                image.url &&[m
+[31m-                image.publicId[m
+[31m-            )[m
+[31m-            .map((image) => ({[m
+[31m-              ...(image._id[m
+[31m-                ? {[m
+[31m-                    _id: image._id,[m
+[31m-                  }[m
+[31m-                : {}),[m
+[31m-              url: image.url,[m
+[31m-              publicId:[m
+[31m-                image.publicId,[m
+[31m-            }));[m
+[31m-      }[m
+[31m-    } catch (error) {[m
+[31m-      throw new Error([m
+[31m-        "Invalid existingImages data"[m
+[31m-      );[m
+[31m-    }[m
+[31m-[m
+[31m-    /*[m
+[31m-     * Remove this temporary field so[m
+[31m-     * Mongoose does not try to save it.[m
+[31m-     */[m
+[31m-    delete data.existingImages;[m
+[31m-  }[m
+[31m-[m
+[31m-  /* =======================================[m
+[31m-     DELETE REMOVED CLOUDINARY IMAGES[m
+[31m-  ======================================= */[m
+[31m-[m
+[31m-  /*[m
+[31m-   * Compare database images with the[m
+[31m-   * images the frontend wants to keep.[m
+[31m-   *[m
+[31m-   * Anything missing from existingImages[m
+[31m-   * was removed by the user.[m
+[31m-   */[m
+[31m-[m
+[31m-  const keptPublicIds = new Set([m
+[31m-    existingImages[m
+[31m-      .map([m
+[31m-        (image) => image.publicId[m
+[31m-      )[m
+[31m-      .filter(Boolean)[m
+[31m-  );[m
+[31m-[m
+[31m-  const removedImages =[m
+[31m-    (product.images || []).filter([m
+[31m-      (image) =>[m
+[31m-        image.publicId &&[m
+[31m-        !keptPublicIds.has([m
+[31m-          image.publicId[m
+[31m-        )[m
+[31m-    );[m
+[31m-[m
+[31m-  if (removedImages.length > 0) {[m
+[31m-    await Promise.all([m
+[31m-      removedImages.map([m
+[31m-        async (image) => {[m
+[31m-          try {[m
+[31m-            await deleteImage([m
+[31m-              image.publicId[m
+[31m-            );[m
+[31m-          } catch (error) {[m
+[31m-            /*[m
+[31m-             * Do not fail the entire[m
+[31m-             * product update if Cloudinary[m
+[31m-             * deletion fails.[m
+[31m-             */[m
+[31m-            console.error([m
+[31m-              "Failed to delete removed Cloudinary image:",[m
+[31m-              error.message[m
+[31m-            );[m
+[31m-          }[m
+[31m-        }[m
+[31m-      )[m
+[31m-    );[m
+[31m-  }[m
+[31m-[m
+[31m-  /* =======================================[m
+[31m-     UPLOAD NEW IMAGES[m
+[31m-  ======================================= */[m
+[31m-[m
+[31m-  let newImages = [];[m
+[31m-[m
+[31m-  if (files.length > 0) {[m
+[31m-    const uploadedImages =[m
+[31m-      await Promise.all([m
+[31m-        files.map((file) =>[m
+[31m-          uploadImage([m
+[31m-            file.buffer,[m
+[31m-            "the-digital-market/products"[m
+[31m-          )[m
+[31m-        )[m
+[31m-      );[m
+[31m-[m
+[31m-    newImages =[m
+[31m-      uploadedImages.map([m
+[31m-        (image) => ({[m
+[31m-          url: image.url,[m
+[31m-          publicId:[m
+[31m-            image.publicId,[m
+[31m-        })[m
+[31m-      );[m
+[31m-  }[m
+[31m-[m
+[31m-  /* =======================================[m
+[31m-     FINAL IMAGE ARRAY[m
+[31m-  ======================================= */[m
+[31m-[m
+[31m-  /*[m
+[31m-   * Keep the existing images that the[m
+[31m-   * user did not remove, then append[m
+[31m-   * newly uploaded images.[m
+[31m-   */[m
+[31m-[m
+[31m-  data.images = [[m
+[31m-    ...existingImages,[m
+[31m-    ...newImages,[m
+[31m-  ];[m
+[31m-[m
+[31m-  /* =======================================[m
+[31m-     SECURITY CLEANUP[m
+[31m-  ======================================= */[m
+[31m-[m
+[31m-  /*[m
+[31m-   * Never allow the frontend to directly[m
+[31m-   * overwrite these server-controlled[m
+[31m-   * fields.[m
+[31m-   */[m
+[31m-[m
+[31m-  delete data._id;[m
+[31m-  delete data.sku;[m
+[31m-  delete data.views;[m
+[31m-  delete data.salesCount;[m
+[31m-  delete data.ratingsAverage;[m
+[31m-  delete data.ratingsCount;[m
+[31m-  delete data.createdAt;[m
+[31m-  delete data.updatedAt;[m
+[31m-[m
+[31m-  /* =======================================[m
+[31m-     UPDATE DATABASE[m
+[31m-  ======================================= */[m
+[31m-[m
+[31m-  const updatedProduct =[m
+[31m-    await Product.findByIdAndUpdate([m
+[31m-      id,[m
+[31m-      data,[m
+[31m-      {[m
+[31m-        new: true,[m
+[31m-        runValidators: true,[m
+[31m-      }[m
+[31m-    ).populate("category");[m
+[31m-[m
+[31m-  return updatedProduct;[m
+[31m-};[m
+[31m-[m
+[31m-/* =========================================[m
+[31m-   DELETE PRODUCT[m
+[31m-========================================= */[m
+[31m-[m
+[31m-const deleteProduct = async (id) => {[m
+[31m-  const product =[m
+[31m-    await Product.findById(id);[m
+[31m-[m
+[31m-  if (!product) {[m
+[31m-    throw new Error([m
+[31m-      "Product not found"[m
+[31m-    );[m
+[31m-  }[m
+[31m-[m
+[31m-  /*[m
+[31m-   * Delete product images from[m
+[31m-   * Cloudinary before deleting[m
+[31m-   * the product.[m
+[31m-   */[m
+[31m-  if ([m
+[31m-    product.images &&[m
+[31m-    product.images.length > 0[m
+[31m-  ) {[m
+[31m-    await Promise.all([m
+[31m-      product.images.map([m
+[31m-        async (image) => {[m
+[31m-          if (image.publicId) {[m
+[31m-            try {[m
+[31m-              await deleteImage([m
+[31m-                image.publicId[m
+[31m-              );[m
+[31m-            } catch (error) {[m
+[31m-              console.error([m
+[31m-                "Failed to delete Cloudinary image:",[m
+[31m-                error.message[m
+[31m-              );[m
+[31m-            }[m
+[31m-          }[m
+[31m-        }[m
+[31m-      )[m
+[31m-    );[m
+[31m-  }[m
+[31m-[m
+[31m-  await Product.findByIdAndDelete(id);[m
+[31m-[m
+[31m-  return {[m
+[31m-    message:[m
+[31m-      "Product deleted successfully",[m
+[31m-  };[m
+[31m-};[m
+[31m-[m
+ /* =========================================[m
+    GET FILTER OPTIONS[m
+ ========================================= */[m
+[36m@@ -633,13 +245,6 @@[m [mconst getFilterOptions = async () => {[m
+       }[m
+     );[m
+ [m
+[31m-  const categoryDetails =[m
+[31m-    await Product.find({[m
+[31m-      category: {[m
+[31m-        $in: categories,[m
+[31m-      },[m
+[31m-    }).distinct("category");[m
+[31m-[m
+   const Category = require([m
+     "../categories/categories_model"[m
+   );[m
+[36m@@ -647,7 +252,7 @@[m [mconst getFilterOptions = async () => {[m
+   const categoryList =[m
+     await Category.find({[m
+       _id: {[m
+[31m-        $in: categoryDetails,[m
+[32m+[m[32m        $in: categories,[m
+       },[m
+       isActive: true,[m
+     })[m
+[36m@@ -729,16 +334,9 @@[m [mconst getFilterOptions = async () => {[m
+   };[m
+ };[m
+ [m
+[31m-/* =========================================[m
+[31m-   EXPORTS[m
+[31m-========================================= */[m
+[31m-[m
+ module.exports = {[m
+[31m-  createProduct,[m
+   getAllProducts,[m
+   getProductById,[m
+   getProductBySlug,[m
+[31m-  updateProduct,[m
+[31m-  deleteProduct,[m
+   getFilterOptions,[m
+[31m-};[m
+[32m+[m[32m};[m
+\ No newline at end of file[m
+[1mdiff --git a/server/src/routes/index.js b/server/src/routes/index.js[m
+[1mindex 0d55a32..17c6457 100644[m
+[1m--- a/server/src/routes/index.js[m
+[1m+++ b/server/src/routes/index.js[m
+[36m@@ -2,6 +2,10 @@[m [mconst express = require("express");[m
+ [m
+ const router = express.Router();[m
+ [m
+[32m+[m[32mconst adminProductRoutes = require([m
+[32m+[m[32m  "../modules/products/admin/admin_product_routes"[m
+[32m+[m[32m);[m
+[32m+[m
+ const authRoutes = require("../modules/auth");[m
+ const categoryRoutes = require("../modules/categories");[m
+ const productRoutes = require("../modules/products");[m
+[36m@@ -19,4 +23,5 @@[m [mrouter.use("/coupons", couponRoutes);[m
+ router.use("/cart", cartRoutes);[m
+ router.use("/addresses", addressRoutes);[m
+ router.use("/orders", ordersRoutes);[m
+[32m+[m[32mrouter.use("/admin/products", adminProductRoutes);[m
+ module.exports = router;[m
+\ No newline at end of file[m

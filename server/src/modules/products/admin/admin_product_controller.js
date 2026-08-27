@@ -1,5 +1,5 @@
-const productService = require(
-  "./products_service"
+const adminProductService = require(
+  "./admin_product_service"
 );
 
 /* =========================================
@@ -12,7 +12,7 @@ const getAllProducts = async (
 ) => {
   try {
     const result =
-      await productService.getAllProducts(
+      await adminProductService.getAllProducts(
         req.query
       );
 
@@ -39,7 +39,7 @@ const getProductById = async (
 ) => {
   try {
     const product =
-      await productService.getProductById(
+      await adminProductService.getProductById(
         req.params.id
       );
 
@@ -56,25 +56,28 @@ const getProductById = async (
 };
 
 /* =========================================
-   GET PRODUCT BY SLUG
+   CREATE PRODUCT
 ========================================= */
 
-const getProductBySlug = async (
+const createProduct = async (
   req,
   res
 ) => {
   try {
     const product =
-      await productService.getProductBySlug(
-        req.params.slug
+      await adminProductService.createProduct(
+        req.body,
+        req.files
       );
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
+      message:
+        "Product created successfully",
       data: product,
     });
   } catch (error) {
-    res.status(404).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -82,23 +85,55 @@ const getProductBySlug = async (
 };
 
 /* =========================================
-   GET FILTER OPTIONS
+   UPDATE PRODUCT
 ========================================= */
 
-const getFilterOptions = async (
+const updateProduct = async (
   req,
   res
 ) => {
   try {
-    const options =
-      await productService.getFilterOptions();
+    const product =
+      await adminProductService.updateProduct(
+        req.params.id,
+        req.body,
+        req.files
+      );
 
     res.status(200).json({
       success: true,
-      data: options,
+      message:
+        "Product updated successfully",
+      data: product,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* =========================================
+   DELETE PRODUCT
+========================================= */
+
+const deleteProduct = async (
+  req,
+  res
+) => {
+  try {
+    const result =
+      await adminProductService.deleteProduct(
+        req.params.id
+      );
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -108,6 +143,7 @@ const getFilterOptions = async (
 module.exports = {
   getAllProducts,
   getProductById,
-  getProductBySlug,
-  getFilterOptions,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 };

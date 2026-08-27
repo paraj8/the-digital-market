@@ -4,27 +4,20 @@ import type { Product } from "../types/product";
 export interface ProductQuery {
   page?: number;
   limit?: number;
-
   category?: string;
   brand?: string;
-
   featured?: boolean;
   deals?: boolean;
   inStock?: boolean;
-
   sort?: string;
-
   minPrice?: number;
   maxPrice?: number;
-
   search?: string;
 }
 
 export interface ProductResponse {
   success: boolean;
-
   data: Product[];
-
   pagination: {
     total: number;
     page: number;
@@ -72,14 +65,3 @@ export const getProductsByCategory =
 
     return response.data.data;
   };
-
-  // Create a new product
-export const createProduct = 
-  async (data: FormData): Promise<Product> => {
-    const response = await api.post(
-      "/products",
-      data
-    );
-
-    return response.data.data;
-};

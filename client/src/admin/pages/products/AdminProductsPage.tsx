@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
+import { useAdminProduct } from "../../hooks/useAdminProduct";
+import ProductViewModal from "./components/productView/ProductViewModal";
+
 import ProductFormModal from "./components/productEditor/ProductFormModal";
 import ProductDeleteModal from "./components/deleteProduct/ProductDeleteModal";
 import ProductStats from "./components/ProductStats";
@@ -9,9 +12,10 @@ import ProductsTable from "./components/ProductsTable";
 
 import { useProducts } from "../../../features/products/hooks/useProducts";
 import { useCategories } from "../../../features/categories/hooks/useCategories";
-import { useCreateProduct } from "../../../features/products/hooks/useCreateProduct";
+
 
 import {
+  useCreateProduct,
   useDeleteProduct,
   useUpdateProduct,
 } from "../../hooks/useAdminProductMutations";
@@ -23,6 +27,12 @@ function AdminProductsPage() {
   /* ===================================== */
   /* MODAL STATE */
   /* ===================================== */
+
+  const [isViewModalOpen, setIsViewModalOpen] =
+  useState(false);
+
+const [viewProductId, setViewProductId] =
+  useState<string | null>(null);
 
   const [isProductModalOpen, setIsProductModalOpen] =
     useState(false);
@@ -66,6 +76,11 @@ function AdminProductsPage() {
     () => data?.data ?? [],
     [data?.data]
   );
+  
+  const {
+  data: viewedProduct,
+  isLoading: isViewLoading,
+} = useAdminProduct(viewProductId);
 
   /* ===================================== */
   /* CATEGORIES */
@@ -167,8 +182,14 @@ function AdminProductsPage() {
   const handleViewProduct = (
     product: Product
   ) => {
-    console.log("View product:", product);
+    setViewProductId(product._id);
+    setIsViewModalOpen(true);
   };
+
+  const handleCloseViewModal = () => {
+  setIsViewModalOpen(false);
+  setViewProductId(null);
+};
 
   /* ===================================== */
   /* EDIT PRODUCT */
@@ -515,6 +536,15 @@ function AdminProductsPage() {
           onDelete={handleDeleteProduct}
         />
       )}
+
+      {/* PRODUCT VIEW MODAL */}
+
+      <ProductViewModal
+        isOpen={isViewModalOpen}
+        product={viewedProduct ?? null}
+        isLoading={isViewLoading}
+        onClose={handleCloseViewModal}
+      />
 
       {/* PRODUCT FORM MODAL */}
 

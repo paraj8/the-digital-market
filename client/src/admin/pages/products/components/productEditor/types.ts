@@ -5,7 +5,6 @@ export type AdminProduct = Partial<
     Product,
     | "_id"
     | "slug"
-    | "sku"
     | "images"
     | "views"
     | "salesCount"
