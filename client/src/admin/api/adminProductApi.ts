@@ -12,6 +12,17 @@ export interface AdminDeleteProductResponse {
   message: string;
 }
 
+export const getAdminProductById = async (
+  id: string
+): Promise<Product> => {
+  const response =
+    await api.get<AdminProductResponse>(
+      `/admin/products/${id}`
+    );
+
+  return response.data.data;
+};
+
 export const createProduct = async (
   data: FormData
 ): Promise<Product> => {
