@@ -23,6 +23,9 @@ function AdminOrdersPage() {
 
     loading,
     error,
+
+    updateStatus,
+    updating,
   } = useAdminOrders();
 
   // =====================================
@@ -58,30 +61,34 @@ function AdminOrdersPage() {
   return (
     <div className="space-y-6">
 
-      {/* Stats */}
+      {/* =====================================
+          STATS
+      ===================================== */}
 
       <OrderStats
         orders={orders}
       />
 
-      {/* Filters */}
+      {/* =====================================
+          FILTERS
+      ===================================== */}
 
       <OrderFilters
         search={search}
         status={status}
-
         onSearchChange={(value) => {
           setPage(1);
           setSearch(value);
         }}
-
         onStatusChange={(value) => {
           setPage(1);
           setStatus(value);
         }}
       />
 
-      {/* Loading */}
+      {/* =====================================
+          LOADING
+      ===================================== */}
 
       {loading && (
         <div
@@ -100,7 +107,9 @@ function AdminOrdersPage() {
         </div>
       )}
 
-      {/* Error */}
+      {/* =====================================
+          ERROR
+      ===================================== */}
 
       {!loading && error && (
         <div
@@ -119,16 +128,30 @@ function AdminOrdersPage() {
         </div>
       )}
 
-      {/* Orders Table */}
+      {/* =====================================
+          ORDERS TABLE
+      ===================================== */}
 
       {!loading && !error && (
         <OrdersTable
           orders={orders}
           onView={handleViewOrder}
+          onUpdateStatus={(
+            orderId,
+            orderStatus
+          ) =>
+            updateStatus({
+              orderId,
+              orderStatus,
+            })
+          }
+          updating={updating}
         />
       )}
 
-      {/* Pagination */}
+      {/* =====================================
+          PAGINATION
+      ===================================== */}
 
       {!loading &&
         !error &&
@@ -150,13 +173,15 @@ function AdminOrdersPage() {
             "
           >
 
-            {/* Left */}
+            {/* LEFT */}
 
             <div className="flex items-center gap-4">
 
               <p className="text-sm text-gray-400">
-                Page {pagination.currentPage}{" "}
-                of {pagination.totalPages}
+                Page{" "}
+                {pagination.currentPage}{" "}
+                of{" "}
+                {pagination.totalPages}
               </p>
 
               <p className="text-sm text-gray-500">
@@ -165,11 +190,11 @@ function AdminOrdersPage() {
 
             </div>
 
-            {/* Right */}
+            {/* RIGHT */}
 
             <div className="flex items-center gap-3">
 
-              {/* Limit */}
+              {/* LIMIT */}
 
               <div className="flex items-center gap-2">
 
@@ -216,7 +241,7 @@ function AdminOrdersPage() {
 
               </div>
 
-              {/* Previous */}
+              {/* PREVIOUS */}
 
               <button
                 type="button"
@@ -241,7 +266,7 @@ function AdminOrdersPage() {
                 Previous
               </button>
 
-              {/* Next */}
+              {/* NEXT */}
 
               <button
                 type="button"
