@@ -17,24 +17,15 @@ function PaymentMethod({
   return (
     <div className="space-y-4">
       <PaymentOption
-        title="Razorpay"
+        title="CashFree"
         description="Pay securely using UPI, Cards, Net Banking or Wallets."
-        value="razorpay"
+        value="CashFree"
         selected={
-          selected === "razorpay"
+          selected === "CashFree"
         }
         onSelect={onChange}
       />
 
-      <PaymentOption
-        title="Cash on Delivery"
-        description="Pay when your order is delivered."
-        value="cod"
-        selected={
-          selected === "cod"
-        }
-        onSelect={onChange}
-      />
     </div>
   );
 }

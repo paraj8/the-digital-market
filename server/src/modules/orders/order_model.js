@@ -94,12 +94,8 @@ const orderSchema =
 
       paymentMethod: {
         type: String,
-        enum: [
-          "cod",
-          "razorpay",
-          "stripe",
-        ],
-        default: "cod",
+        enum: ["CashFree"],
+        default: "CashFree",
       },
 
       paymentStatus: {

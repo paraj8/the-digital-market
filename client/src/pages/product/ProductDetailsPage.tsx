@@ -63,6 +63,7 @@ const handleBuyNow = () => {
     state: {
       mode: "buyNow",
       productId: data._id,
+      productSlug: data.slug,
       quantity,
     },
   });

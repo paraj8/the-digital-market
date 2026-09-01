@@ -10,11 +10,11 @@ const authMiddleware = require(
   "../../middleware/auth_middleware"
 );
 
-const adminMiddleware = require(
-  "../../middleware/admin_middleware"
-);
-
-// Create Order
+/*
+====================================
+CREATE ORDER
+====================================
+*/
 
 router.post(
   "/",
@@ -22,7 +22,11 @@ router.post(
   orderController.createOrder
 );
 
-// Get My Orders
+/*
+====================================
+GET MY ORDERS
+====================================
+*/
 
 router.get(
   "/",
@@ -30,30 +34,16 @@ router.get(
   orderController.getOrders
 );
 
-// Get Single Order
+/*
+====================================
+GET SINGLE ORDER
+====================================
+*/
 
 router.get(
   "/:id",
   authMiddleware,
   orderController.getOrderById
-);
-
-// Admin - Get All Orders
-
-router.get(
-  "/admin/all",
-  authMiddleware,
-  adminMiddleware,
-  orderController.getAllOrders
-);
-
-// Admin - Update Status
-
-router.patch(
-  "/:id/status",
-  authMiddleware,
-  adminMiddleware,
-  orderController.updateOrderStatus
 );
 
 module.exports = router;

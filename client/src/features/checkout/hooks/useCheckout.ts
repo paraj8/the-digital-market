@@ -1,4 +1,19 @@
-import { useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  useMutation,
+} from "@tanstack/react-query";
+
+import { useCart } from "../../cart/hooks/useCart";
+import { useProduct } from "../../products/hooks/useProduct";
+import { useAddresses } from "../../addresses/hooks/useAddresses";
+
+import {
+  createCheckoutOrder,
+} from "../api/checkoutApi";
 
 import type {
   CheckoutAddress,
@@ -7,125 +22,261 @@ import type {
   PaymentMethod,
 } from "../types/checkout";
 
-interface BuyNowState {
-  mode?: "buyNow";
+interface CheckoutState {
+  mode?: "buyNow" | "cart";
   productId?: string;
+  productSlug?: string;
   quantity?: number;
 }
 
-export function useCheckout(state?: BuyNowState) {
+export function useCheckout(
+  state?: CheckoutState
+) {
   /*
   ====================================
-  Temporary Mock Data
-  Replace with API later
+  CHECKOUT MODE
   ====================================
   */
 
   const isBuyNow =
-  state?.mode === "buyNow";
-
-const buyNowItems: CheckoutItem[] = [
-  {
-    productId: state?.productId || "1",
-
-    title: "Samsung Galaxy S25 Ultra",
-
-    slug: "samsung-galaxy-s25-ultra",
-
-    image: "https://placehold.co/300x300",
-
-    brand: "Samsung",
-
-    price: 129999,
-
-    salePrice: 119999,
-
-    quantity: state?.quantity || 1,
-  },
-];
-
-const cartItems: CheckoutItem[] = [
-  {
-    productId: "1",
-
-    title: "Samsung Galaxy S25 Ultra",
-
-    slug: "samsung-galaxy-s25-ultra",
-
-    image: "https://placehold.co/300x300",
-
-    brand: "Samsung",
-
-    price: 129999,
-
-    salePrice: 119999,
-
-    quantity: 1,
-  },
-  {
-    productId: "2",
-
-    title: "Boat Airdopes",
-
-    slug: "boat-airdopes",
-
-    image: "https://placehold.co/300x300",
-
-    brand: "Boat",
-
-    price: 2999,
-
-    salePrice: 2499,
-
-    quantity: 2,
-  },
-];
-
-const [items] = useState<CheckoutItem[]>(
-  isBuyNow
-    ? buyNowItems
-    : cartItems
-);
-
-  const [addresses] = useState<
-    CheckoutAddress[]
-  >([
-    {
-      _id: "1",
-      fullName: "Paraj Mandal",
-      phone: "+91 9876543210",
-
-      addressLine1:
-        "Village Gokhul Chak",
-
-      city: "Bhagalpur",
-
-      state: "Bihar",
-
-      postalCode: "812001",
-
-      country: "India",
-
-      isDefault: true,
-    },
-  ]);
+    state?.mode === "buyNow";
 
   /*
   ====================================
-  Selected Address
+  CART
+  ====================================
+  */
+
+  const {
+    data: cart,
+    isLoading: isCartLoading,
+    error: cartError,
+  } = useCart();
+
+  /*
+  ====================================
+  BUY NOW PRODUCT
+  ====================================
+  */
+
+  const {
+    data: product,
+    isLoading: isProductLoading,
+    error: productError,
+  } = useProduct(
+    isBuyNow
+      ? state?.productSlug || ""
+      : ""
+  );
+
+  /*
+  ====================================
+  ADDRESSES
+  ====================================
+  */
+
+  const {
+    data: savedAddresses = [],
+    isLoading: isAddressesLoading,
+    error: addressesError,
+  } = useAddresses();
+
+  /*
+  ====================================
+  CHECKOUT ITEMS
+  ====================================
+  */
+
+  const items =
+    useMemo<CheckoutItem[]>(
+      () => {
+        /*
+        ====================================
+        BUY NOW
+        ====================================
+        */
+
+        if (isBuyNow) {
+          if (!product) {
+            return [];
+          }
+
+          const quantity =
+            state?.quantity &&
+            state.quantity > 0
+              ? state.quantity
+              : 1;
+
+          const salePrice =
+            product.salePrice > 0
+              ? product.salePrice
+              : product.price;
+
+          return [
+            {
+              productId:
+                product._id,
+
+              title:
+                product.title,
+
+              slug:
+                product.slug,
+
+              image:
+                product.images?.[0]?.url ||
+                "https://placehold.co/300x300",
+
+              brand:
+                product.brand,
+
+              price:
+                product.price,
+
+              salePrice,
+
+              quantity,
+            },
+          ];
+        }
+
+        /*
+        ====================================
+        CART
+        ====================================
+        */
+
+        if (!cart) {
+          return [];
+        }
+
+        return cart.items.map(
+          (item) => {
+            const product =
+              item.product;
+
+            const salePrice =
+              product.salePrice > 0
+                ? product.salePrice
+                : product.price;
+
+            return {
+              productId:
+                product._id,
+
+              title:
+                product.title,
+
+              slug:
+                product.slug,
+
+              image:
+                product.images?.[0]?.url ||
+                "https://placehold.co/300x300",
+
+              brand:
+                product.brand,
+
+              price:
+                product.price,
+
+              salePrice,
+
+              quantity:
+                item.quantity,
+            };
+          }
+        );
+      },
+      [
+        isBuyNow,
+        product,
+        cart,
+        state?.quantity,
+      ]
+    );
+
+  /*
+  ====================================
+  ADDRESSES
+  ====================================
+  */
+
+  const addresses =
+    useMemo<CheckoutAddress[]>(
+      () =>
+        savedAddresses.map(
+          (address) => ({
+            _id:
+              address._id,
+
+            fullName:
+              address.fullName,
+
+            phone:
+              address.phone,
+
+            addressLine1:
+              address.addressLine1,
+
+            addressLine2:
+              address.addressLine2,
+
+            city:
+              address.city,
+
+            state:
+              address.state,
+
+            postalCode:
+              address.postalCode,
+
+            country:
+              address.country,
+
+            isDefault:
+              address.isDefault,
+          })
+        ),
+      [savedAddresses]
+    );
+
+  /*
+  ====================================
+  SELECTED ADDRESS
   ====================================
   */
 
   const [
     selectedAddressId,
     setSelectedAddressId,
-  ] = useState(
-    addresses[0]?._id
-  );
+  ] =
+    useState<string | null>(
+      null
+    );
+
+  const defaultAddress =
+    addresses.find(
+      (address) =>
+        address.isDefault
+    ) ??
+    addresses[0];
+
+  const effectiveSelectedAddressId =
+    selectedAddressId ??
+    defaultAddress?._id ??
+    null;
+
+  const selectedAddress =
+    addresses.find(
+      (address) =>
+        address._id ===
+        effectiveSelectedAddressId
+    ) ?? null;
 
   /*
   ====================================
-  Payment
+  PAYMENT METHOD
   ====================================
   */
 
@@ -134,86 +285,210 @@ const [items] = useState<CheckoutItem[]>(
     setPaymentMethod,
   ] =
     useState<PaymentMethod>(
-      "razorpay"
+      "CashFree"
     );
 
   /*
   ====================================
-  Summary
+  SUMMARY
   ====================================
   */
 
   const summary =
-    useMemo<CheckoutSummary>(() => {
-      const subtotal = items.reduce(
-        (sum, item) =>
-          sum +
-          item.salePrice *
-            item.quantity,
-        0
-      );
+    useMemo<CheckoutSummary>(
+      () => {
+        const subtotal =
+          items.reduce(
+            (sum, item) =>
+              sum +
+              item.salePrice *
+                item.quantity,
+            0
+          );
 
-      const shipping =
-        subtotal > 5000 ? 0 : 99;
+        const discount =
+          items.reduce(
+            (sum, item) =>
+              sum +
+              (item.price -
+                item.salePrice) *
+                item.quantity,
+            0
+          );
 
-      const discount = items.reduce(
-        (sum, item) =>
-          sum +
-          (item.price -
-            item.salePrice) *
-            item.quantity,
-        0
-      );
+        /*
+        GST is already included
+        inside product prices.
+        */
 
-      const tax = Math.round(
-        subtotal * 0.18
-      );
+        const tax =
+          Math.round(
+            (subtotal * 18) /
+              118
+          );
 
-      const total =
-        subtotal +
-        shipping +
-        tax;
+        /*
+        Shipping will be
+        calculated later.
+        */
 
-      return {
-        subtotal,
-        shipping,
-        discount,
-        tax,
-        total,
-      };
-    }, [items]);
+        const shipping = 0;
+
+        const total =
+          subtotal +
+          shipping;
+
+        return {
+          subtotal,
+          shipping,
+          discount,
+          tax,
+          total,
+        };
+      },
+      [items]
+    );
 
   /*
   ====================================
-  Place Order
+  CREATE PENDING ORDER
   ====================================
   */
 
-  const placeOrder = () => {
-    console.log({
-      items,
-
-      address:
-        selectedAddressId,
-
-      paymentMethod,
-
-      summary,
+  const createOrderMutation =
+    useMutation({
+      mutationFn:
+        createCheckoutOrder,
     });
 
-    alert(
-      "Order Placed Successfully"
-    );
-  };
+  /*
+  ====================================
+  PLACE ORDER
+  ====================================
+  */
+
+  const placeOrder =
+    async (
+      couponCode?: string
+    ) => {
+      /*
+      Validate items
+      */
+
+      if (
+        items.length === 0
+      ) {
+        throw new Error(
+          "No items available for checkout"
+        );
+      }
+
+      /*
+      Validate address
+      */
+
+      if (
+        !effectiveSelectedAddressId
+      ) {
+        throw new Error(
+          "Please select a delivery address"
+        );
+      }
+
+      /*
+      Prevent duplicate
+      requests
+      */
+
+      if (
+        createOrderMutation.isPending
+      ) {
+        return;
+      }
+
+      /*
+      ====================================
+      CREATE PENDING ORDER
+      ====================================
+      */
+
+      const response =
+        await createOrderMutation.mutateAsync(
+          {
+            addressId:
+              effectiveSelectedAddressId,
+
+            couponCode:
+              couponCode?.trim() ||
+              undefined,
+
+            paymentMethod,
+          }
+        );
+
+      /*
+      Return the created
+      order to the checkout
+      page.
+
+      CashFree will be handled
+      separately by useCashfree().
+      */
+
+      return response.data;
+    };
+
+  /*
+  ====================================
+  LOADING
+  ====================================
+  */
+
+  const isLoading =
+    isBuyNow
+      ? isProductLoading ||
+        isAddressesLoading
+      : isCartLoading ||
+        isAddressesLoading;
+
+  /*
+  ====================================
+  ERROR
+  ====================================
+  */
+
+  const error =
+    isBuyNow
+      ? productError ||
+        addressesError
+      : cartError ||
+        addressesError;
+
+  /*
+  ====================================
+  ORDER CREATION ERROR
+  ====================================
+  */
+
+  const orderError =
+    createOrderMutation.error;
+
+  /*
+  ====================================
+  RETURN
+  ====================================
+  */
 
   return {
     /*
-    Data
+    Checkout data
     */
 
     items,
 
     addresses,
+
+    selectedAddress,
 
     summary,
 
@@ -221,7 +496,9 @@ const [items] = useState<CheckoutItem[]>(
     Address
     */
 
-    selectedAddressId,
+    selectedAddressId:
+      effectiveSelectedAddressId,
+
     setSelectedAddressId,
 
     /*
@@ -229,12 +506,27 @@ const [items] = useState<CheckoutItem[]>(
     */
 
     paymentMethod,
+
     setPaymentMethod,
 
     /*
-    Actions
+    Order
     */
 
     placeOrder,
+
+    creatingOrder:
+      createOrderMutation.isPending,
+
+    orderError,
+
+    /*
+    General loading/error
+    */
+
+    isLoading,
+
+    error,
   };
 }
+

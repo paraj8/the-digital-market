@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import CheckoutCard from "./CheckoutCard";
 
 interface CheckoutSectionProps {
-  title: string;
+  title: ReactNode;
   subtitle?: string;
   action?: ReactNode;
   children: ReactNode;
