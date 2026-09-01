@@ -1,10 +1,8 @@
-import type { CheckoutAddress } from "../../../features/checkout/types/checkout.ts";
+import type { CheckoutAddress } from "../../../features/checkout/types/checkout";
 
 interface AddressCardProps {
   address: CheckoutAddress;
-
   selected: boolean;
-
   onSelect: (id: string) => void;
 }
 
@@ -16,7 +14,9 @@ function AddressCard({
   return (
     <button
       type="button"
-      onClick={() => onSelect(address._id)}
+      onClick={() =>
+        onSelect(address._id)
+      }
       className={`
         w-full
         rounded-2xl
@@ -32,7 +32,7 @@ function AddressCard({
         }
       `}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="font-semibold">
             {address.fullName}
@@ -46,6 +46,7 @@ function AddressCard({
         {address.isDefault && (
           <span
             className="
+              shrink-0
               rounded-full
               bg-violet-600/20
               px-3
@@ -78,7 +79,8 @@ function AddressCard({
         </p>
 
         <p>
-          {address.postalCode}, {address.country}
+          {address.postalCode},{" "}
+          {address.country}
         </p>
       </div>
     </button>

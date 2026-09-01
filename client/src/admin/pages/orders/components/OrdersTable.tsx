@@ -1,27 +1,29 @@
+
 import OrderRow from "./OrderRow";
 
-interface Order {
-  _id: string;
-  totalAmount: number;
-  orderStatus: string;
-  paymentStatus: string;
-  paymentMethod: string;
-  createdAt: string;
-
-  user?: {
-    fullName: string;
-    email: string;
-  };
-}
+import type {
+  AdminOrder,
+  AdminOrderStatus,
+} from "../../../api/adminOrderApi";
 
 interface OrdersTableProps {
-  orders: Order[];
+  orders: AdminOrder[];
+
   onView: (orderId: string) => void;
+
+  onUpdateStatus: (
+    orderId: string,
+    orderStatus: AdminOrderStatus
+  ) => void;
+
+  updating: boolean;
 }
 
 function OrdersTable({
   orders,
   onView,
+  onUpdateStatus,
+  updating,
 }: OrdersTableProps) {
   return (
     <div
@@ -34,9 +36,10 @@ function OrdersTable({
       "
     >
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px]">
+        <table className="w-full min-w-[1100px]">
 
           {/* Header */}
+
           <thead
             className="
               border-b
@@ -84,6 +87,7 @@ function OrdersTable({
           </thead>
 
           {/* Body */}
+
           <tbody
             className="
               divide-y
@@ -96,6 +100,10 @@ function OrdersTable({
                   key={order._id}
                   order={order}
                   onView={onView}
+                  onUpdateStatus={
+                    onUpdateStatus
+                  }
+                  updating={updating}
                 />
               ))
             ) : (
@@ -123,3 +131,4 @@ function OrdersTable({
 }
 
 export default OrdersTable;
+

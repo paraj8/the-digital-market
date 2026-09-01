@@ -1,15 +1,20 @@
+
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
 import CheckoutHeader from "../../components/checkout/CheckoutHeader";
 import CheckoutItems from "../../components/checkout/items/CheckoutItems";
 import CheckoutAddress from "../../components/checkout/CheckoutAddress";
-import CheckoutPayment from "../../components/checkout/CheckoutPayment";
 import CheckoutDelivery from "../../components/checkout/CheckoutDelivery";
 import CheckoutSummary from "../../components/checkout/CheckoutSummary";
 
-import { useLocation } from "react-router-dom";
 import { useCheckout } from "../../features/checkout/hooks/useCheckout";
 
 function CheckoutPage() {
   const { state } = useLocation();
+  const navigate = useNavigate();
 
   const {
     items,
@@ -18,30 +23,37 @@ function CheckoutPage() {
     selectedAddressId,
     setSelectedAddressId,
 
-    paymentMethod,
-    setPaymentMethod,
-
     summary,
-
-    placeOrder,
   } = useCheckout(state);
+
+  const handleContinueToReview = () => {
+    if (!selectedAddressId) {
+      return;
+    }
+
+    navigate("/checkout/review", {
+      state: {
+        ...state,
+        selectedAddressId,
+      },
+    });
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-    
-     <CheckoutHeader
-  itemCount={items.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  )}
-/>
+      <CheckoutHeader
+        itemCount={items.reduce(
+          (sum, item) =>
+            sum + item.quantity,
+          0
+        )}
+      />
 
       <div
         className="
           mt-8
           grid
           gap-8
-
           lg:grid-cols-[2fr_1fr]
         "
       >
@@ -62,15 +74,6 @@ function CheckoutPage() {
             }
           />
 
-          <CheckoutPayment
-            paymentMethod={
-              paymentMethod
-            }
-            onChange={
-              setPaymentMethod
-            }
-          />
-
           <CheckoutDelivery />
         </div>
 
@@ -83,14 +86,16 @@ function CheckoutPage() {
             lg:top-24
           "
         >
-        <CheckoutSummary
-        subtotal={summary.subtotal}
-        shipping={summary.shipping}
-        discount={summary.discount}
-        tax={summary.tax}
-        total={summary.total}
-        onPlaceOrder={placeOrder}
-        />
+          <CheckoutSummary
+            subtotal={summary.subtotal}
+            shipping={summary.shipping}
+            discount={summary.discount}
+            tax={summary.tax}
+            total={summary.total}
+            onPlaceOrder={
+              handleContinueToReview
+            }
+          />
         </div>
       </div>
     </div>
@@ -98,3 +103,4 @@ function CheckoutPage() {
 }
 
 export default CheckoutPage;
+

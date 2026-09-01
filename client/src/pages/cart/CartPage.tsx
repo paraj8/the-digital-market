@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { FiTrash2 } from "react-icons/fi";
 
 import { useCart } from "../../features/cart/hooks/useCart";
@@ -19,6 +20,8 @@ function CartPage() {
 
   const updateMutation =
     useUpdateCartItem();
+
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -284,6 +287,13 @@ function CartPage() {
 
           <button
             type="button"
+            onClick={() =>
+              navigate("/checkout", {
+                state: {
+                  mode: "cart",    // Slug passing test
+                },
+              })
+            }
             className="
               mt-6
               w-full

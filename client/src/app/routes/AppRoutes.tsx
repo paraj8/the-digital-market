@@ -42,6 +42,8 @@ import OrdersPage from "../../pages/orders/OrdersPage";
 import WishlistPage from "../../pages/wishlist/WishlistPage";
 import CartPage from "../../pages/cart/CartPage";
 import CheckoutPage from "../../pages/checkout/CheckoutPage";
+import CheckoutReviewPage from "../../pages/checkout/CheckoutReviewPage";
+import CheckoutPaymentStatusPage from "../../pages/checkout/CheckoutPaymentStatusPage";
 
 import MessagesPage from "../../pages/messages/MessagesPage";
 import AiAssistantPage from "../../pages/ai/AiAssistantPage";
@@ -144,6 +146,16 @@ function AppRoutes() {
         <Route
           path="/checkout"
           element={<CheckoutPage />}
+        />
+
+        <Route
+          path="/checkout/review"
+          element={<CheckoutReviewPage />}
+        />
+
+        <Route
+          path="/checkout/payment-status"
+          element={<CheckoutPaymentStatusPage />}
         />
 
       </Route>

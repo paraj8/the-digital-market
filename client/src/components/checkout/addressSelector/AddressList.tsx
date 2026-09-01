@@ -4,8 +4,8 @@ import type { CheckoutAddress } from "../../../features/checkout/types/checkout"
 
 interface AddressListProps {
   addresses: CheckoutAddress[];
-
-  selectedAddressId?: string;
+  
+  selectedAddressId?: string | null;
 
   onSelect: (id: string) => void;
 }
@@ -15,36 +15,29 @@ function AddressList({
   selectedAddressId,
   onSelect,
 }: AddressListProps) {
+
+
   if (addresses.length === 0) {
     return (
       <div
         className="
           rounded-2xl
-          border border-dashed border-white/10
+          border
+          border-dashed
+          border-white/10
           bg-[#121826]
-          p-6
+          p-8
           text-center
         "
       >
-        <p className="text-slate-400">
+        <p className="font-medium text-slate-300">
           No saved addresses found.
         </p>
 
-        <button
-          className="
-            mt-4
-            rounded-xl
-            bg-violet-600
-            px-5
-            py-2
-            text-sm
-            font-medium
-            transition
-            hover:bg-violet-500
-          "
-        >
-          Add New Address
-        </button>
+        <p className="mt-1 text-sm text-slate-500">
+          Add a delivery address to continue.
+        </p>
+
       </div>
     );
   }
@@ -56,7 +49,8 @@ function AddressList({
           key={address._id}
           address={address}
           selected={
-            selectedAddressId === address._id
+            selectedAddressId ===
+            address._id
           }
           onSelect={onSelect}
         />
@@ -66,3 +60,4 @@ function AddressList({
 }
 
 export default AddressList;
+

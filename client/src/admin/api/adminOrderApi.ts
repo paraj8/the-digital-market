@@ -1,3 +1,4 @@
+
 import API from "../../api/axios";
 
 export type AdminOrderStatus =
@@ -31,8 +32,8 @@ export interface AdminOrder {
     fullName: string;
     phone: string;
     addressLine1: string;
-    addressLine2: string;
-    landmark: string;
+    addressLine2?: string;
+    landmark?: string;
     city: string;
     state: string;
     country: string;
@@ -53,7 +54,7 @@ export interface AdminOrder {
   tax: number;
   totalAmount: number;
 
-  paymentMethod: "cod" | "razorpay" | "stripe";
+  paymentMethod: "CashFree";
 
   paymentStatus:
     | "pending"
@@ -95,37 +96,57 @@ export interface GetAllOrdersParams {
   search?: string;
 }
 
+/*
+====================================
+GET ALL ORDERS - ADMIN
+====================================
+*/
+
 export const getAllOrders = async ({
   page = 1,
   limit = 20,
   status = "all",
   search = "",
 }: GetAllOrdersParams = {}): Promise<AdminOrdersResponse> => {
-  const response = await API.get<AdminOrdersResponse>(
-    "/orders/admin/all",
-    {
-      params: {
-        page,
-        limit,
-        status: status === "all" ? undefined : status,
-        search: search.trim() || undefined,
-      },
-    }
-  );
+  const response =
+    await API.get<AdminOrdersResponse>(
+      "/admin/orders",
+      {
+        params: {
+          page,
+          limit,
+          status:
+            status === "all"
+              ? undefined
+              : status,
+          search:
+            search.trim() || undefined,
+        },
+      }
+    );
 
   return response.data;
 };
 
-export const updateOrderStatus = async (
-  orderId: string,
-  orderStatus: AdminOrderStatus
-): Promise<AdminOrderResponse> => {
-  const response = await API.patch<AdminOrderResponse>(
-    `/orders/${orderId}/status`,
-    {
-      orderStatus,
-    }
-  );
+/*
+====================================
+UPDATE ORDER STATUS - ADMIN
+====================================
+*/
 
-  return response.data;
-};
+export const updateOrderStatus =
+  async (
+    orderId: string,
+    orderStatus: AdminOrderStatus
+  ): Promise<AdminOrderResponse> => {
+    const response =
+      await API.patch<AdminOrderResponse>(
+        `/admin/orders/${orderId}/status`,
+        {
+          orderStatus,
+        }
+      );
+
+    return response.data;
+  };
+

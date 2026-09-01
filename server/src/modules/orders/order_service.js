@@ -4,6 +4,12 @@ const Address = require("../address/address_model");
 const Coupon = require("../coupons/coupon_model");
 const Product = require("../products/products_model");
 
+/*
+====================================
+CREATE PENDING ORDER
+====================================
+*/
+
 const createOrder = async (
   userId,
   {
@@ -12,6 +18,14 @@ const createOrder = async (
     paymentMethod,
   }
 ) => {
+  // Validate payment method
+
+  if (paymentMethod !== "CashFree") {
+    throw new Error(
+      "Only CashFree payment is supported"
+    );
+  }
+
   // Validate Address
 
   const address =
@@ -44,6 +58,42 @@ const createOrder = async (
 
   let subtotal = 0;
 
+  /*
+  ====================================
+  VALIDATE PRODUCTS & INVENTORY
+  ====================================
+  */
+
+  for (const item of cartItems) {
+    const product = item.product;
+
+    if (!product) {
+      throw new Error(
+        "Product no longer exists"
+      );
+    }
+
+    if (product.stock <= 0) {
+      throw new Error(
+        `${product.title} is out of stock`
+      );
+    }
+
+    if (
+      item.quantity > product.stock
+    ) {
+      throw new Error(
+        `Only ${product.stock} units available for ${product.title}`
+      );
+    }
+  }
+
+  /*
+  ====================================
+  ORDER ITEMS
+  ====================================
+  */
+
   const orderItems =
     cartItems.map((item) => {
       const product =
@@ -61,16 +111,28 @@ const createOrder = async (
 
       return {
         product: product._id,
+
         title: product.title,
+
         image:
-          product.images?.[0] || "",
+          product.images?.[0]?.url ||
+          "",
+
         price,
-        quantity: item.quantity,
-        subtotal: itemSubtotal,
+
+        quantity:
+          item.quantity,
+
+        subtotal:
+          itemSubtotal,
       };
     });
 
-  // Coupon
+  /*
+  ====================================
+  COUPON
+  ====================================
+  */
 
   let coupon = null;
   let discount = 0;
@@ -119,8 +181,7 @@ const createOrder = async (
         100;
 
       if (
-        coupon
-          .maximumDiscountAmount >
+        coupon.maximumDiscountAmount >
           0 &&
         discount >
           coupon.maximumDiscountAmount
@@ -132,43 +193,72 @@ const createOrder = async (
       discount =
         coupon.discountValue;
     }
+
+    /*
+    Prevent discount from
+    exceeding subtotal.
+    */
+
+    discount = Math.min(
+      discount,
+      subtotal
+    );
   }
 
-  // Tax
+  /*
+  ====================================
+  TAX
+  ====================================
+
+  GST is already included
+  inside the product prices.
+  */
 
   const tax = 0;
 
-  // Shipping
+  /*
+  ====================================
+  SHIPPING
+  ====================================
+
+  Delhivery shipping calculation
+  will be added later.
+  */
 
   const shippingCharge = 0;
+
+  /*
+  ====================================
+  TOTAL
+  ====================================
+  */
 
   const totalAmount =
     subtotal -
     discount +
-    tax +
     shippingCharge;
 
-  // Validate Inventory
-
-for (const item of cartItems) {
-  const product = item.product;
-
-  if (product.stock <= 0) {
+  if (totalAmount <= 0) {
     throw new Error(
-      `${product.title} is out of stock`
+      "Invalid order amount"
     );
   }
 
-  if (
-    item.quantity > product.stock
-  ) {
-    throw new Error(
-      `Only ${product.stock} units available for ${product.title}`
-    );
-  }
-}
-  
-  // Create Order
+  /*
+  ====================================
+  CREATE PENDING ORDER
+  ====================================
+
+  We DO NOT:
+
+  - reduce stock
+  - increase sales
+  - update coupon usage
+  - clear cart
+
+  until CashFree confirms
+  successful payment.
+  */
 
   const order =
     await Order.create({
@@ -184,48 +274,160 @@ for (const item of cartItems) {
         : null,
 
       subtotal,
+
       discount,
+
       tax,
+
       shippingCharge,
+
       totalAmount,
 
       paymentMethod:
-        paymentMethod || "cod",
+        "CashFree",
+
+      paymentStatus:
+        "pending",
+
+      orderStatus:
+        "pending",
     });
-
-  // Reduce Stock & Increase Sales
-
-  for (const item of cartItems) {
-    await Product.findByIdAndUpdate(
-      item.product._id,
-      {
-        $inc: {
-          stock: -item.quantity,
-          salesCount:
-            item.quantity,
-        },
-      }
-    );
-  }
-
-  // Update Coupon Usage
-
-  if (coupon) {
-    coupon.usedCount += 1;
-
-    await coupon.save();
-  }
-
-  // Clear Cart
-
-  await Cart.deleteMany({
-    user: userId,
-  });
 
   return order;
 };
 
-// Get User Orders
+/*
+====================================
+COMPLETE PAID ORDER
+====================================
+
+Called after CashFree confirms
+successful payment.
+====================================
+*/
+
+const completePaidOrder =
+  async (orderId) => {
+    const order =
+      await Order.findById(
+        orderId
+      );
+
+    if (!order) {
+      throw new Error(
+        "Order not found"
+      );
+    }
+
+    /*
+    Prevent duplicate processing.
+    */
+
+    if (
+      order.paymentStatus ===
+      "paid"
+    ) {
+      return order;
+    }
+
+    /*
+    ====================================
+    VALIDATE INVENTORY AGAIN
+    ====================================
+    */
+
+    for (const item of order.items) {
+      const product =
+        await Product.findById(
+          item.product
+        );
+
+      if (!product) {
+        throw new Error(
+          `${item.title} is no longer available`
+        );
+      }
+
+      if (
+        product.stock <
+        item.quantity
+      ) {
+        throw new Error(
+          `Insufficient stock for ${item.title}`
+        );
+      }
+    }
+
+    /*
+    ====================================
+    REDUCE STOCK
+    ====================================
+    */
+
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(
+        item.product,
+        {
+          $inc: {
+            stock:
+              -item.quantity,
+
+            salesCount:
+              item.quantity,
+          },
+        }
+      );
+    }
+
+    /*
+    ====================================
+    UPDATE COUPON USAGE
+    ====================================
+    */
+
+    if (order.coupon) {
+      await Coupon.findByIdAndUpdate(
+        order.coupon,
+        {
+          $inc: {
+            usedCount: 1,
+          },
+        }
+      );
+    }
+
+    /*
+    ====================================
+    CLEAR CART
+    ====================================
+    */
+
+    await Cart.deleteMany({
+      user: order.user,
+    });
+
+    /*
+    ====================================
+    UPDATE PAYMENT
+    ====================================
+    */
+
+    order.paymentStatus =
+      "paid";
+
+    order.orderStatus =
+      "confirmed";
+
+    await order.save();
+
+    return order;
+  };
+
+/*
+====================================
+GET USER ORDERS
+====================================
+*/
 
 const getOrders = async (
   userId
@@ -241,7 +443,11 @@ const getOrders = async (
     );
 };
 
-// Get Order By ID
+/*
+====================================
+GET ORDER BY ID
+====================================
+*/
 
 const getOrderById = async (
   userId,
@@ -269,137 +475,9 @@ const getOrderById = async (
   return order;
 };
 
-// Get All Orders (Admin)
-const getAllOrders = async ({
-  page = 1,
-  limit = 20,
-  status,
-  search,
-}) => {
-  const currentPage = Math.max(
-    Number(page) || 1,
-    1
-  );
-
-  const perPage = Math.min(
-    Math.max(Number(limit) || 20, 1),
-    100
-  );
-
-  const skip =
-    (currentPage - 1) * perPage;
-
-  const filter = {};
-
-  // Status filter
-  if (status) {
-    filter.orderStatus = status;
-  }
-
-  // Search filter
-  if (search) {
-    const searchRegex =
-      new RegExp(search, "i");
-
-    const users =
-      await require("../users/user_model")
-        .find({
-          $or: [
-            {
-              fullName: searchRegex,
-            },
-            {
-              email: searchRegex,
-            },
-          ],
-        })
-        .select("_id");
-
-    filter.user = {
-      $in: users.map(
-        (user) => user._id
-      ),
-    };
-  }
-
-  const [
-    orders,
-    totalOrders,
-  ] = await Promise.all([
-    Order.find(filter)
-      .populate(
-        "user",
-        "fullName email"
-      )
-      .populate(
-        "shippingAddress",
-        "fullName phone addressLine1 addressLine2 landmark city state country postalCode addressType"
-      )
-      .populate(
-        "coupon",
-        "code discountType discountValue"
-      )
-      .sort({
-        createdAt: -1,
-      })
-      .skip(skip)
-      .limit(perPage),
-
-    Order.countDocuments(filter),
-  ]);
-
-  return {
-    orders,
-
-    pagination: {
-      currentPage,
-      limit: perPage,
-      totalOrders,
-
-      totalPages: Math.ceil(
-        totalOrders / perPage
-      ),
-    },
-  };
-};
-
-// Update Order Status (Admin)
-const updateOrderStatus =
-  async (
-    orderId,
-    orderStatus
-  ) => {
-    const order =
-      await Order.findById(
-        orderId
-      );
-
-    if (!order) {
-      throw new Error(
-        "Order not found"
-      );
-    }
-
-    order.orderStatus =
-      orderStatus;
-
-    if (
-      orderStatus ===
-      "delivered"
-    ) {
-      order.paymentStatus =
-        "paid";
-    }
-
-    await order.save();
-
-    return order;
-  };
-
 module.exports = {
   createOrder,
+  completePaidOrder,
   getOrders,
   getOrderById,
-  getAllOrders,
-  updateOrderStatus,
 };
