@@ -48,6 +48,7 @@ import MessagesPage from "../../pages/messages/MessagesPage";
 import AiAssistantPage from "../../pages/ai/AiAssistantPage";
 import AddressesPage from "../../pages/addresses/AddressesPage";
 import SettingsPage from "../../pages/settings/SettingsPage";
+import OrderDetailsPage from "../../pages/orders/OrderDetailsPage";
 
 // =====================================
 // APP ROUTES
@@ -195,6 +196,11 @@ function AppRoutes() {
         <Route
           path="/orders"
           element={<OrdersPage />}
+        />
+
+        <Route
+          path="/orders/:id"
+          element={<OrderDetailsPage />}
         />
 
         {/* Wishlist */}

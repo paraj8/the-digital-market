@@ -18,7 +18,7 @@ const getOrders = async (
       createdAt: -1,
     })
     .select(
-      "totalAmount checkoutMode orderStatus paymentStatus paymentMethod createdAt"
+      "items totalAmount checkoutMode orderStatus paymentStatus paymentMethod createdAt"
     );
 };
 
