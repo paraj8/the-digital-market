@@ -7,11 +7,10 @@ import Footer from "../components/layout/Footer";
 import { Outlet } from "react-router-dom";
 
 function MainLayout() {
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white">
+    <div className="min-h-screen bg-[#0B0F19] text-white flex flex-col">
       <Navbar
         onMenuClick={() =>
           setOpen(true)
@@ -25,7 +24,7 @@ function MainLayout() {
         }
       />
 
-      <main>
+      <main className="flex-1">
         <Outlet />
       </main>
 
