@@ -372,7 +372,9 @@ export function useCheckout(
       couponCode?: string
     ) => {
       /*
-      Validate items
+      --------------------------------
+      VALIDATE ITEMS
+      --------------------------------
       */
 
       if (
@@ -384,7 +386,9 @@ export function useCheckout(
       }
 
       /*
-      Validate address
+      --------------------------------
+      VALIDATE ADDRESS
+      --------------------------------
       */
 
       if (
@@ -396,8 +400,23 @@ export function useCheckout(
       }
 
       /*
+      --------------------------------
+      VALIDATE BUY NOW DATA
+      --------------------------------
+      */
+
+      if (
+        isBuyNow &&
+        !items[0]?.productId
+      ) {
+        throw new Error(
+          "Product information is missing"
+        );
+      }
+
+      /*
       Prevent duplicate
-      requests
+      requests.
       */
 
       if (
@@ -423,15 +442,44 @@ export function useCheckout(
               undefined,
 
             paymentMethod,
+
+            /*
+            --------------------------------
+            CHECKOUT MODE
+            --------------------------------
+            */
+
+            mode: isBuyNow
+              ? "buyNow"
+              : "cart",
+
+            /*
+            --------------------------------
+            BUY NOW DATA
+            --------------------------------
+
+            These fields are only sent
+            for Buy Now checkout.
+            */
+
+            ...(isBuyNow
+              ? {
+                  productId:
+                    items[0].productId,
+
+                  quantity:
+                    items[0].quantity,
+                }
+              : {}),
           }
         );
 
       /*
-      Return the created
-      order to the checkout
-      page.
+      ====================================
+      RETURN CREATED ORDER
+      ====================================
 
-      CashFree will be handled
+      CashFree payment is handled
       separately by useCashfree().
       */
 
@@ -529,4 +577,3 @@ export function useCheckout(
     error,
   };
 }
-
