@@ -23,6 +23,12 @@ const {
 );
 
 const {
+  markOrderAsFailed,
+} = require(
+  "./order_services/order_payment_service"
+);
+
+const {
   getOrders,
   getOrderById,
 } = require(
@@ -152,6 +158,36 @@ const completePaidOrder =
 
 /*
 ====================================
+FAIL ORDER PAYMENT
+====================================
+====================================
+
+Called when CashFree confirms
+that the payment failed.
+
+IMPORTANT:
+
+We DO NOT:
+
+- reduce stock
+- increase sales
+- update coupon usage
+- clear cart
+====================================
+*/
+
+const failOrder = async (
+  orderId,
+  reason = ""
+) => {
+  return await markOrderAsFailed(
+    orderId,
+    reason
+  );
+};
+
+/*
+====================================
 PUBLIC ORDER API
 ====================================
 */
@@ -159,6 +195,7 @@ PUBLIC ORDER API
 module.exports = {
   createOrder,
   completePaidOrder,
+  failOrder,
   getOrders,
   getOrderById,
 };

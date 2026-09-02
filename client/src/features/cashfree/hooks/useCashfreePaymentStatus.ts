@@ -12,7 +12,7 @@ import type {
 
 /*
 ====================================
-FINAL CASHFREE STATUSES
+FINAL APPLICATION STATUSES
 ====================================
 */
 
@@ -59,9 +59,12 @@ export function useCashfreePaymentStatus(
     ====================================
     POLLING
     ====================================
-    
-    Continue checking while the payment
-    has not reached a final state.
+
+    Use our application's payment status,
+    not CashFree's order_status.
+
+    CashFree order_status can remain ACTIVE
+    even when an individual payment fails.
     */
 
     refetchInterval: (
@@ -69,7 +72,7 @@ export function useCashfreePaymentStatus(
     ) => {
       const status =
         query.state.data?.data
-          ?.order_status
+          ?.application_payment_status
           ?.toUpperCase();
 
       if (
@@ -85,29 +88,25 @@ export function useCashfreePaymentStatus(
     },
 
     /*
-    Don't refetch unnecessarily
-    when the user switches tabs.
+    ====================================
+    QUERY OPTIONS
+    ====================================
     */
 
     refetchOnWindowFocus: false,
-
-    /*
-    Payment status should always
-    start from a fresh request.
-    */
 
     staleTime: 0,
   });
 
   /*
   ====================================
-  STATUS
+  APPLICATION PAYMENT STATUS
   ====================================
   */
 
   const status =
     query.data?.data
-      ?.order_status
+      ?.application_payment_status
       ?.toUpperCase() ?? null;
 
   /*
@@ -117,7 +116,6 @@ export function useCashfreePaymentStatus(
   */
 
   const isPending =
-    status === "ACTIVE" ||
     status === "PENDING";
 
   const isPaid =
@@ -146,10 +144,14 @@ export function useCashfreePaymentStatus(
 
   return {
     /*
-    Raw Cashfree status
+    Application payment status
     */
 
     status,
+
+    /*
+    Complete payment response
+    */
 
     payment:
       query.data?.data ??
