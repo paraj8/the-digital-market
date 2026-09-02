@@ -1,5 +1,6 @@
-
 const axios = require("axios");
+const Order = require("../orders/order_model");
+const orderService = require("../orders/order_service");
 
 const CASHFREE_BASE_URL =
   "https://sandbox.cashfree.com/pg";
@@ -39,6 +40,7 @@ const createCashfreeOrder = async ({
   customer,
   returnUrl,
   notifyUrl,
+
 }) => {
   try {
     const response =
@@ -102,6 +104,12 @@ GET CASHFREE PAYMENT STATUS
 const getCashfreePaymentStatus =
   async (orderId) => {
     try {
+      /*
+      --------------------------------
+      GET ORDER STATUS FROM CASHFREE
+      --------------------------------
+      */
+
       const response =
         await axios.get(
           `${CASHFREE_BASE_URL}/orders/${orderId}`,
@@ -111,7 +119,73 @@ const getCashfreePaymentStatus =
           }
         );
 
-      return response.data;
+      const cashfreeOrder =
+        response.data;
+
+      const cashfreeStatus =
+        String(
+          cashfreeOrder.order_status || ""
+        ).toUpperCase();
+
+      /*
+      --------------------------------
+      COMPLETE PAID ORDER
+      --------------------------------
+
+      This handles:
+
+      - stock reduction
+      - sales count
+      - coupon usage
+      - cart cleanup
+      - paymentStatus = paid
+      - orderStatus = confirmed
+
+      completePaidOrder() also prevents
+      duplicate processing.
+      --------------------------------
+      */
+
+      if (
+        cashfreeStatus === "PAID"
+      ) {
+        await orderService.completePaidOrder(
+          orderId
+        );
+      }
+
+      /*
+      --------------------------------
+      GET OUR UPDATED ORDER
+      --------------------------------
+      */
+
+      const order =
+        await Order.findById(
+          orderId
+        );
+
+      if (!order) {
+        throw new Error(
+          "Order not found"
+        );
+      }
+
+      /*
+      --------------------------------
+      RETURN STATUS
+      --------------------------------
+      */
+
+      return {
+        ...cashfreeOrder,
+
+        application_order_status:
+          order.orderStatus,
+
+        application_payment_status:
+          order.paymentStatus,
+      };
     } catch (error) {
       console.error(
         "Cashfree payment status check failed:",
@@ -120,7 +194,8 @@ const getCashfreePaymentStatus =
       );
 
       throw new Error(
-        "Failed to check Cashfree payment status"
+        error.message ||
+          "Failed to check Cashfree payment status"
       );
     }
   };
@@ -129,4 +204,3 @@ module.exports = {
   createCashfreeOrder,
   getCashfreePaymentStatus,
 };
-

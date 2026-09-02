@@ -17,7 +17,7 @@ const createOrder = async (
         req.body
       );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
 
       message:
@@ -26,7 +26,12 @@ const createOrder = async (
       data: order,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error(
+      "Create order error:",
+      error
+    );
+
+    return res.status(400).json({
       success: false,
 
       message:
@@ -51,13 +56,18 @@ const getOrders = async (
         req.user.id
       );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
 
       data: orders,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error(
+      "Get orders error:",
+      error
+    );
+
+    return res.status(400).json({
       success: false,
 
       message:
@@ -83,13 +93,18 @@ const getOrderById = async (
         req.params.id
       );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
 
       data: order,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error(
+      "Get order by ID error:",
+      error
+    );
+
+    return res.status(400).json({
       success: false,
 
       message:

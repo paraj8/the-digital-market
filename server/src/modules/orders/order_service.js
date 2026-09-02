@@ -1,304 +1,54 @@
-const Order = require("./order_model");
-const Cart = require("../carts/cart_model");
-const Address = require("../address/address_model");
-const Coupon = require("../coupons/coupon_model");
-const Product = require("../products/products_model");
+const Order = require(
+  "./order_model"
+);
+
+const {
+  createPendingOrder,
+} = require(
+  "./order_services/order_creation_service"
+);
+
+const {
+  validateOrderInventory,
+  reduceOrderStock,
+  cleanupCartAfterOrder,
+} = require(
+  "./order_services/order_inventory_service"
+);
+
+const {
+  incrementCouponUsage,
+} = require(
+  "./order_services/order_coupon_service"
+);
+
+const {
+  getOrders,
+  getOrderById,
+} = require(
+  "./order_services/order_query_service"
+);
 
 /*
 ====================================
-CREATE PENDING ORDER
+CREATE ORDER
 ====================================
 */
 
 const createOrder = async (
   userId,
-  {
-    addressId,
-    couponCode,
-    paymentMethod,
-  }
+  checkoutData
 ) => {
-  // Validate payment method
-
-  if (paymentMethod !== "CashFree") {
-    throw new Error(
-      "Only CashFree payment is supported"
-    );
-  }
-
-  // Validate Address
-
-  const address =
-    await Address.findOne({
-      _id: addressId,
-      user: userId,
-    });
-
-  if (!address) {
-    throw new Error(
-      "Address not found"
-    );
-  }
-
-  // Get Cart Items
-
-  const cartItems =
-    await Cart.find({
-      user: userId,
-    }).populate("product");
-
-  if (
-    !cartItems ||
-    cartItems.length === 0
-  ) {
-    throw new Error(
-      "Cart is empty"
-    );
-  }
-
-  let subtotal = 0;
-
-  /*
-  ====================================
-  VALIDATE PRODUCTS & INVENTORY
-  ====================================
-  */
-
-  for (const item of cartItems) {
-    const product = item.product;
-
-    if (!product) {
-      throw new Error(
-        "Product no longer exists"
-      );
-    }
-
-    if (product.stock <= 0) {
-      throw new Error(
-        `${product.title} is out of stock`
-      );
-    }
-
-    if (
-      item.quantity > product.stock
-    ) {
-      throw new Error(
-        `Only ${product.stock} units available for ${product.title}`
-      );
-    }
-  }
-
-  /*
-  ====================================
-  ORDER ITEMS
-  ====================================
-  */
-
-  const orderItems =
-    cartItems.map((item) => {
-      const product =
-        item.product;
-
-      const price =
-        product.salePrice > 0
-          ? product.salePrice
-          : product.price;
-
-      const itemSubtotal =
-        price * item.quantity;
-
-      subtotal += itemSubtotal;
-
-      return {
-        product: product._id,
-
-        title: product.title,
-
-        image:
-          product.images?.[0]?.url ||
-          "",
-
-        price,
-
-        quantity:
-          item.quantity,
-
-        subtotal:
-          itemSubtotal,
-      };
-    });
-
-  /*
-  ====================================
-  COUPON
-  ====================================
-  */
-
-  let coupon = null;
-  let discount = 0;
-
-  if (couponCode) {
-    coupon =
-      await Coupon.findOne({
-        code:
-          couponCode.toUpperCase(),
-        isActive: true,
-      });
-
-    if (!coupon) {
-      throw new Error(
-        "Invalid coupon"
-      );
-    }
-
-    const now = new Date();
-
-    if (
-      now < coupon.startDate ||
-      now > coupon.endDate
-    ) {
-      throw new Error(
-        "Coupon expired"
-      );
-    }
-
-    if (
-      subtotal <
-      coupon.minimumOrderAmount
-    ) {
-      throw new Error(
-        `Minimum order amount is ₹${coupon.minimumOrderAmount}`
-      );
-    }
-
-    if (
-      coupon.discountType ===
-      "percentage"
-    ) {
-      discount =
-        (subtotal *
-          coupon.discountValue) /
-        100;
-
-      if (
-        coupon.maximumDiscountAmount >
-          0 &&
-        discount >
-          coupon.maximumDiscountAmount
-      ) {
-        discount =
-          coupon.maximumDiscountAmount;
-      }
-    } else {
-      discount =
-        coupon.discountValue;
-    }
-
-    /*
-    Prevent discount from
-    exceeding subtotal.
-    */
-
-    discount = Math.min(
-      discount,
-      subtotal
-    );
-  }
-
-  /*
-  ====================================
-  TAX
-  ====================================
-
-  GST is already included
-  inside the product prices.
-  */
-
-  const tax = 0;
-
-  /*
-  ====================================
-  SHIPPING
-  ====================================
-
-  Delhivery shipping calculation
-  will be added later.
-  */
-
-  const shippingCharge = 0;
-
-  /*
-  ====================================
-  TOTAL
-  ====================================
-  */
-
-  const totalAmount =
-    subtotal -
-    discount +
-    shippingCharge;
-
-  if (totalAmount <= 0) {
-    throw new Error(
-      "Invalid order amount"
-    );
-  }
-
-  /*
-  ====================================
-  CREATE PENDING ORDER
-  ====================================
-
-  We DO NOT:
-
-  - reduce stock
-  - increase sales
-  - update coupon usage
-  - clear cart
-
-  until CashFree confirms
-  successful payment.
-  */
-
-  const order =
-    await Order.create({
-      user: userId,
-
-      items: orderItems,
-
-      shippingAddress:
-        address._id,
-
-      coupon: coupon
-        ? coupon._id
-        : null,
-
-      subtotal,
-
-      discount,
-
-      tax,
-
-      shippingCharge,
-
-      totalAmount,
-
-      paymentMethod:
-        "CashFree",
-
-      paymentStatus:
-        "pending",
-
-      orderStatus:
-        "pending",
-    });
-
-  return order;
+  return await createPendingOrder(
+    userId,
+    checkoutData
+  );
 };
 
 /*
 ====================================
 COMPLETE PAID ORDER
+====================================
 ====================================
 
 Called after CashFree confirms
@@ -308,6 +58,12 @@ successful payment.
 
 const completePaidOrder =
   async (orderId) => {
+    /*
+    ====================================
+    GET ORDER
+    ====================================
+    */
+
     const order =
       await Order.findById(
         orderId
@@ -320,7 +76,9 @@ const completePaidOrder =
     }
 
     /*
-    Prevent duplicate processing.
+    ====================================
+    PREVENT DUPLICATE PROCESSING
+    ====================================
     */
 
     if (
@@ -334,29 +92,14 @@ const completePaidOrder =
     ====================================
     VALIDATE INVENTORY AGAIN
     ====================================
+
+    Stock may have changed while
+    customer was completing payment.
     */
 
-    for (const item of order.items) {
-      const product =
-        await Product.findById(
-          item.product
-        );
-
-      if (!product) {
-        throw new Error(
-          `${item.title} is no longer available`
-        );
-      }
-
-      if (
-        product.stock <
-        item.quantity
-      ) {
-        throw new Error(
-          `Insufficient stock for ${item.title}`
-        );
-      }
-    }
+    await validateOrderInventory(
+      order
+    );
 
     /*
     ====================================
@@ -364,20 +107,9 @@ const completePaidOrder =
     ====================================
     */
 
-    for (const item of order.items) {
-      await Product.findByIdAndUpdate(
-        item.product,
-        {
-          $inc: {
-            stock:
-              -item.quantity,
-
-            salesCount:
-              item.quantity,
-          },
-        }
-      );
-    }
+    await reduceOrderStock(
+      order
+    );
 
     /*
     ====================================
@@ -386,29 +118,24 @@ const completePaidOrder =
     */
 
     if (order.coupon) {
-      await Coupon.findByIdAndUpdate(
-        order.coupon,
-        {
-          $inc: {
-            usedCount: 1,
-          },
-        }
+      await incrementCouponUsage(
+        order.coupon
       );
     }
 
     /*
     ====================================
-    CLEAR CART
+    CART CLEANUP
     ====================================
     */
 
-    await Cart.deleteMany({
-      user: order.user,
-    });
+    await cleanupCartAfterOrder(
+      order
+    );
 
     /*
     ====================================
-    UPDATE PAYMENT
+    UPDATE ORDER STATUS
     ====================================
     */
 
@@ -425,55 +152,9 @@ const completePaidOrder =
 
 /*
 ====================================
-GET USER ORDERS
+PUBLIC ORDER API
 ====================================
 */
-
-const getOrders = async (
-  userId
-) => {
-  return await Order.find({
-    user: userId,
-  })
-    .sort({
-      createdAt: -1,
-    })
-    .select(
-      "totalAmount orderStatus paymentStatus paymentMethod createdAt"
-    );
-};
-
-/*
-====================================
-GET ORDER BY ID
-====================================
-*/
-
-const getOrderById = async (
-  userId,
-  orderId
-) => {
-  const order =
-    await Order.findOne({
-      _id: orderId,
-      user: userId,
-    })
-      .populate(
-        "shippingAddress"
-      )
-      .populate(
-        "coupon",
-        "code discountType discountValue"
-      );
-
-  if (!order) {
-    throw new Error(
-      "Order not found"
-    );
-  }
-
-  return order;
-};
 
 module.exports = {
   createOrder,

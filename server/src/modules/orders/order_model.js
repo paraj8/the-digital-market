@@ -44,6 +44,12 @@ const orderItemSchema =
 const orderSchema =
   new mongoose.Schema(
     {
+      /*
+      ====================================
+      USER
+      ====================================
+      */
+
       user: {
         type:
           mongoose.Schema.Types.ObjectId,
@@ -51,7 +57,19 @@ const orderSchema =
         required: true,
       },
 
+      /*
+      ====================================
+      ORDER ITEMS
+      ====================================
+      */
+
       items: [orderItemSchema],
+
+      /*
+      ====================================
+      SHIPPING ADDRESS
+      ====================================
+      */
 
       shippingAddress: {
         type:
@@ -60,12 +78,24 @@ const orderSchema =
         required: true,
       },
 
+      /*
+      ====================================
+      COUPON
+      ====================================
+      */
+
       coupon: {
         type:
           mongoose.Schema.Types.ObjectId,
         ref: "Coupon",
         default: null,
       },
+
+      /*
+      ====================================
+      AMOUNTS
+      ====================================
+      */
 
       subtotal: {
         type: Number,
@@ -92,11 +122,46 @@ const orderSchema =
         required: true,
       },
 
+      /*
+      ====================================
+      CHECKOUT MODE
+      ====================================
+
+      cart:
+      Customer checked out the
+      entire shopping cart.
+
+      buyNow:
+      Customer purchased a specific
+      product directly.
+      */
+
+      checkoutMode: {
+        type: String,
+        enum: [
+          "cart",
+          "buyNow",
+        ],
+        default: "cart",
+      },
+
+      /*
+      ====================================
+      PAYMENT METHOD
+      ====================================
+      */
+
       paymentMethod: {
         type: String,
         enum: ["CashFree"],
         default: "CashFree",
       },
+
+      /*
+      ====================================
+      PAYMENT STATUS
+      ====================================
+      */
 
       paymentStatus: {
         type: String,
@@ -108,6 +173,12 @@ const orderSchema =
         ],
         default: "pending",
       },
+
+      /*
+      ====================================
+      ORDER STATUS
+      ====================================
+      */
 
       orderStatus: {
         type: String,
@@ -121,6 +192,12 @@ const orderSchema =
         ],
         default: "pending",
       },
+
+      /*
+      ====================================
+      NOTES
+      ====================================
+      */
 
       notes: {
         type: String,
