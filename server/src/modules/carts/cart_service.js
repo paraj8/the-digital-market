@@ -41,39 +41,42 @@ const addToCart = async (
 
 // Get Cart Items
 
-const getCart = async (
-  userId
-) => {
-  const items =
-    await Cart.find({
-      user: userId,
-    }).populate("product");
+const getCart = async (userId) => {
+  const items = await Cart.find({
+    user: userId,
+  }).populate("product");
 
   let totalItems = 0;
   let totalAmount = 0;
 
-  const cartItems = items.map(
-    (item) => {
-      const price =
-        item.product.salePrice > 0
-          ? item.product.salePrice
-          : item.product.price;
+  const validItems = [];
 
-      const subtotal =
-        price * item.quantity;
-
-      totalItems += item.quantity;
-      totalAmount += subtotal;
-
-      return {
-        ...item.toObject(),
-        subtotal,
-      };
+  for (const item of items) {
+    // Product no longer exists
+    if (!item.product) {
+      await Cart.findByIdAndDelete(item._id);
+      continue;
     }
-  );
+
+    const price =
+      item.product.salePrice > 0
+        ? item.product.salePrice
+        : item.product.price;
+
+    const subtotal =
+      price * item.quantity;
+
+    totalItems += item.quantity;
+    totalAmount += subtotal;
+
+    validItems.push({
+      ...item.toObject(),
+      subtotal,
+    });
+  }
 
   return {
-    items: cartItems,
+    items: validItems,
     totalItems,
     totalAmount,
   };

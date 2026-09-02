@@ -4,7 +4,7 @@ import MainLayout from "../../layouts/MainLayout";
 
 // =====================================
 // ADMIN
-
+// =====================================
 
 import AdminProtectedRoute from "../../admin/components/auth/AdminProtectedRoute";
 import AdminLayout from "../../admin/components/layout/AdminLayout";
@@ -19,8 +19,6 @@ import AdminStaffPage from "../../admin/pages/staff/AdminStaffPage";
 import AdminCouponsPage from "../../admin/pages/coupons/AdminCouponsPage";
 import AdminAnalyticsPage from "../../admin/pages/analytics/AdminAnalyticsPage";
 import AdminSettingsPage from "../../admin/pages/settings/AdminSettingsPage";
-
-// ==================================ADMIN END====================================
 
 // =====================================
 // CUSTOMER
@@ -41,6 +39,7 @@ import ProfilePage from "../../pages/profile/ProfilePage";
 import OrdersPage from "../../pages/orders/OrdersPage";
 import WishlistPage from "../../pages/wishlist/WishlistPage";
 import CartPage from "../../pages/cart/CartPage";
+
 import CheckoutPage from "../../pages/checkout/CheckoutPage";
 import CheckoutReviewPage from "../../pages/checkout/CheckoutReviewPage";
 import CheckoutPaymentStatusPage from "../../pages/checkout/CheckoutPaymentStatusPage";
@@ -50,7 +49,9 @@ import AiAssistantPage from "../../pages/ai/AiAssistantPage";
 import AddressesPage from "../../pages/addresses/AddressesPage";
 import SettingsPage from "../../pages/settings/SettingsPage";
 
-// ================================CUSTOMER END====================================
+// =====================================
+// APP ROUTES
+// =====================================
 
 function AppRoutes() {
   return (
@@ -81,83 +82,49 @@ function AppRoutes() {
             path="orders"
             element={<AdminOrdersPage />}
           />
-          
+
           {/* Products */}
           <Route
             path="products"
             element={<AdminProductsPage />}
           />
 
+          {/* Categories */}
           <Route
             path="categories"
             element={<AdminCategoriesPage />}
           />
 
+          {/* Customers */}
           <Route
             path="customers"
             element={<AdminCustomersPage />}
           />
 
+          {/* Staff */}
           <Route
             path="staff"
             element={<AdminStaffPage />}
           />
 
+          {/* Coupons */}
           <Route
             path="coupons"
             element={<AdminCouponsPage />}
           />
 
+          {/* Analytics */}
           <Route
             path="analytics"
             element={<AdminAnalyticsPage />}
           />
 
+          {/* Settings */}
           <Route
             path="settings"
             element={<AdminSettingsPage />}
           />
-
-          
         </Route>
-      </Route>
-
-      {/* ===================================== */}
-      {/* CUSTOMER MAIN */}
-      {/* ===================================== */}
-
-      <Route element={<MainLayout />}>
-
-        <Route
-          path="/"
-          element={<HomePage />}
-        />
-
-        <Route
-          path="/products"
-          element={<ProductListingPage />}
-        />
-
-        <Route
-          path="/product/:slug"
-          element={<ProductDetailsPage />}
-        />
-
-        <Route
-          path="/checkout"
-          element={<CheckoutPage />}
-        />
-
-        <Route
-          path="/checkout/review"
-          element={<CheckoutReviewPage />}
-        />
-
-        <Route
-          path="/checkout/payment-status"
-          element={<CheckoutPaymentStatusPage />}
-        />
-
       </Route>
 
       {/* ===================================== */}
@@ -171,10 +138,8 @@ function AppRoutes() {
 
       <Route
         path="/verify-otp"
-        element={
-          <VerifyOtpPage />
-        }
-      /> 
+        element={<VerifyOtpPage />}
+      />
 
       <Route
         path="/login"
@@ -197,48 +162,96 @@ function AppRoutes() {
       />
 
       {/* ===================================== */}
-      {/* CUSTOMER USER */}
+      {/* CUSTOMER MAIN */}
       {/* ===================================== */}
 
-      <Route
-        path="/profile"
-        element={<ProfilePage />}
-      />
+      <Route element={<MainLayout />}>
 
-      <Route
-        path="/orders"
-        element={<OrdersPage />}
-      />
+        {/* Home */}
+        <Route
+          path="/"
+          element={<HomePage />}
+        />
 
-      <Route
-        path="/wishlist"
-        element={<WishlistPage />}
-      />
+        {/* Products */}
+        <Route
+          path="/products"
+          element={<ProductListingPage />}
+        />
 
-      <Route
-        path="/cart"
-        element={<CartPage />}
-      />
+        {/* Product Details */}
+        <Route
+          path="/product/:slug"
+          element={<ProductDetailsPage />}
+        />
 
-      <Route
-        path="/messages"
-        element={<MessagesPage />}
-      />
+        {/* Profile */}
+        <Route
+          path="/profile"
+          element={<ProfilePage />}
+        />
 
-      <Route
-        path="/ai"
-        element={<AiAssistantPage />}
-      />
+        {/* Orders */}
+        <Route
+          path="/orders"
+          element={<OrdersPage />}
+        />
 
-      <Route
-        path="/addresses"
-        element={<AddressesPage />}
-      />
+        {/* Wishlist */}
+        <Route
+          path="/wishlist"
+          element={<WishlistPage />}
+        />
 
-      <Route
-        path="/settings"
-        element={<SettingsPage />}
-      />
+        {/* Cart */}
+        <Route
+          path="/cart"
+          element={<CartPage />}
+        />
+
+        {/* Messages */}
+        <Route
+          path="/messages"
+          element={<MessagesPage />}
+        />
+
+        {/* AI Assistant */}
+        <Route
+          path="/ai"
+          element={<AiAssistantPage />}
+        />
+
+        {/* Addresses */}
+        <Route
+          path="/addresses"
+          element={<AddressesPage />}
+        />
+
+        {/* Settings */}
+        <Route
+          path="/settings"
+          element={<SettingsPage />}
+        />
+
+        {/* Checkout */}
+        <Route
+          path="/checkout"
+          element={<CheckoutPage />}
+        />
+
+        {/* Checkout Review */}
+        <Route
+          path="/checkout/review"
+          element={<CheckoutReviewPage />}
+        />
+
+        {/* Payment Status */}
+        <Route
+          path="/checkout/payment-status"
+          element={<CheckoutPaymentStatusPage />}
+        />
+
+      </Route>
 
     </Routes>
   );
