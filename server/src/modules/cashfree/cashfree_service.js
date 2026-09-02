@@ -1,6 +1,12 @@
 const axios = require("axios");
-const Order = require("../orders/order_model");
-const orderService = require("../orders/order_service");
+
+const Order = require(
+  "../orders/order_model"
+);
+
+const orderService = require(
+  "../orders/order_service"
+);
 
 const CASHFREE_BASE_URL =
   "https://sandbox.cashfree.com/pg";
@@ -40,7 +46,6 @@ const createCashfreeOrder = async ({
   customer,
   returnUrl,
   notifyUrl,
-
 }) => {
   try {
     const response =
@@ -106,11 +111,11 @@ const getCashfreePaymentStatus =
     try {
       /*
       --------------------------------
-      GET ORDER STATUS FROM CASHFREE
+      GET CASHFREE ORDER
       --------------------------------
       */
 
-      const response =
+      const orderResponse =
         await axios.get(
           `${CASHFREE_BASE_URL}/orders/${orderId}`,
           {
@@ -120,34 +125,64 @@ const getCashfreePaymentStatus =
         );
 
       const cashfreeOrder =
-        response.data;
+        orderResponse.data;
 
-      const cashfreeStatus =
+      /*
+      --------------------------------
+      GET ALL PAYMENTS FOR ORDER
+      --------------------------------
+      */
+
+      const paymentsResponse =
+        await axios.get(
+          `${CASHFREE_BASE_URL}/orders/${orderId}/payments`,
+          {
+            headers:
+              getCashfreeHeaders(),
+          }
+        );
+
+      const payments =
+        paymentsResponse.data;
+
+      /*
+      --------------------------------
+      FIND LATEST PAYMENT
+      --------------------------------
+      */
+
+      let latestPayment = null;
+
+      if (
+        Array.isArray(payments) &&
+        payments.length > 0
+      ) {
+        latestPayment =
+          payments[
+            payments.length - 1
+          ];
+      }
+
+      /*
+      --------------------------------
+      PAYMENT STATUS
+      --------------------------------
+      */
+
+      const paymentStatus =
         String(
-          cashfreeOrder.order_status || ""
+          latestPayment?.payment_status ||
+            ""
         ).toUpperCase();
 
       /*
       --------------------------------
-      COMPLETE PAID ORDER
-      --------------------------------
-
-      This handles:
-
-      - stock reduction
-      - sales count
-      - coupon usage
-      - cart cleanup
-      - paymentStatus = paid
-      - orderStatus = confirmed
-
-      completePaidOrder() also prevents
-      duplicate processing.
+      SUCCESS
       --------------------------------
       */
 
       if (
-        cashfreeStatus === "PAID"
+        paymentStatus === "SUCCESS"
       ) {
         await orderService.completePaidOrder(
           orderId
@@ -156,7 +191,23 @@ const getCashfreePaymentStatus =
 
       /*
       --------------------------------
-      GET OUR UPDATED ORDER
+      FAILURE
+      --------------------------------
+      */
+
+      if (
+        paymentStatus === "FAILED"
+      ) {
+        await orderService.failOrder(
+          orderId,
+          latestPayment?.payment_message ||
+            "CashFree payment failed"
+        );
+      }
+
+      /*
+      --------------------------------
+      GET UPDATED APPLICATION ORDER
       --------------------------------
       */
 
@@ -173,12 +224,14 @@ const getCashfreePaymentStatus =
 
       /*
       --------------------------------
-      RETURN STATUS
+      RETURN COMBINED RESPONSE
       --------------------------------
       */
 
       return {
         ...cashfreeOrder,
+
+        payments,
 
         application_order_status:
           order.orderStatus,
@@ -194,7 +247,8 @@ const getCashfreePaymentStatus =
       );
 
       throw new Error(
-        error.message ||
+        error.response?.data?.message ||
+          error.message ||
           "Failed to check Cashfree payment status"
       );
     }
