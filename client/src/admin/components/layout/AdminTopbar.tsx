@@ -1,11 +1,19 @@
+
 import {
   FiSearch,
   FiBell,
   FiMail,
   FiChevronDown,
+  FiMenu,
 } from "react-icons/fi";
 
-function AdminTopbar() {
+interface AdminTopbarProps {
+  onMenuClick: () => void;
+}
+
+function AdminTopbar({
+  onMenuClick,
+}: AdminTopbarProps) {
   return (
     <header
       className="
@@ -22,7 +30,8 @@ function AdminTopbar() {
         items-center
         justify-between
 
-        px-8
+        px-4
+        md:px-8
       "
     >
       {/* Left */}
@@ -31,13 +40,54 @@ function AdminTopbar() {
         className="
           flex
           items-center
-          gap-4
+          gap-3
+          md:gap-4
         "
       >
+        {/* Mobile Menu Button */}
+
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="
+            flex
+            h-11
+            w-11
+            shrink-0
+
+            items-center
+            justify-center
+
+            rounded-xl
+
+            border
+            border-white/10
+
+            bg-slate-900
+
+            text-gray-300
+
+            transition
+
+            hover:border-violet-500
+            hover:text-white
+
+            md:hidden
+          "
+          aria-label="Open menu"
+        >
+          <FiMenu size={22} />
+        </button>
+
+        {/* Search */}
+
         <div
           className="
             relative
-            w-[420px]
+
+            w-[180px]
+            sm:w-[280px]
+            md:w-[420px]
           "
         >
           <FiSearch
@@ -69,6 +119,7 @@ function AdminTopbar() {
               pl-12
               pr-4
 
+              text-sm
               text-white
 
               outline-none
@@ -87,17 +138,21 @@ function AdminTopbar() {
         className="
           flex
           items-center
-          gap-4
+          gap-2
+          md:gap-4
         "
       >
         {/* Notifications */}
 
         <button
+          type="button"
           className="
             relative
 
             h-11
             w-11
+
+            shrink-0
 
             rounded-xl
 
@@ -137,11 +192,17 @@ function AdminTopbar() {
         {/* Messages */}
 
         <button
+          type="button"
           className="
             relative
 
+            hidden
+            sm:flex
+
             h-11
             w-11
+
+            shrink-0
 
             rounded-xl
 
@@ -150,7 +211,6 @@ function AdminTopbar() {
             border
             border-white/10
 
-            flex
             items-center
             justify-center
 
@@ -181,12 +241,15 @@ function AdminTopbar() {
         {/* Profile */}
 
         <button
+          type="button"
           className="
-            ml-2
+            ml-0
+            md:ml-2
 
             flex
             items-center
-            gap-3
+            gap-2
+            md:gap-3
 
             rounded-xl
 
@@ -195,7 +258,9 @@ function AdminTopbar() {
 
             bg-slate-900
 
-            px-4
+            px-2
+            md:px-4
+
             py-2
 
             transition
@@ -207,8 +272,10 @@ function AdminTopbar() {
             src="https://ui-avatars.com/api/?name=Admin"
             alt="Admin"
             className="
-              h-10
-              w-10
+              h-9
+              w-9
+              md:h-10
+              md:w-10
 
               rounded-full
             "
@@ -216,6 +283,9 @@ function AdminTopbar() {
 
           <div
             className="
+              hidden
+              md:block
+
               text-left
             "
           >
@@ -238,7 +308,7 @@ function AdminTopbar() {
             </p>
           </div>
 
-          <FiChevronDown />
+          <FiChevronDown className="hidden sm:block" />
         </button>
       </div>
     </header>
@@ -246,3 +316,4 @@ function AdminTopbar() {
 }
 
 export default AdminTopbar;
+
