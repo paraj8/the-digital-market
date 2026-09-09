@@ -29,6 +29,19 @@ router.get(
 
 /*
 ====================================
+GET ORDER BY ID - ADMIN
+====================================
+*/
+
+router.get(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  adminOrderController.getOrderById
+);
+
+/*
+====================================
 UPDATE ORDER STATUS - ADMIN
 ====================================
 */

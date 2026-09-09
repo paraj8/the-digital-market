@@ -150,3 +150,20 @@ export const updateOrderStatus =
     return response.data;
   };
 
+ /*
+====================================
+GET ORDER BY ID - ADMIN
+====================================
+*/
+
+export const getOrderById =
+  async (
+    orderId: string
+  ): Promise<AdminOrderResponse> => {
+    const response =
+      await API.get<AdminOrderResponse>(
+        `/admin/orders/${orderId}`
+      );
+
+    return response.data;
+  };

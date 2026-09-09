@@ -1,8 +1,11 @@
+import { useState } from "react";
+
 import { useAdminOrders } from "../../../admin/hooks/useAdminOrders";
 
 import OrderStats from "./components/OrderStats";
 import OrderFilters from "./components/OrderFilters";
 import OrdersTable from "./components/OrdersTable";
+import OrderViewModal from "./components/OrderViewModal";
 
 function AdminOrdersPage() {
   const {
@@ -29,18 +32,37 @@ function AdminOrdersPage() {
   } = useAdminOrders();
 
   // =====================================
+  // ORDER VIEW MODAL
+  // =====================================
+
+  const [
+    selectedOrderId,
+    setSelectedOrderId,
+  ] = useState<string | null>(null);
+
+  const [
+    isOrderModalOpen,
+    setIsOrderModalOpen,
+  ] = useState(false);
+
+  // =====================================
   // VIEW ORDER
   // =====================================
 
   const handleViewOrder = (
     orderId: string
   ) => {
-    console.log(
-      "View order:",
-      orderId
-    );
+    setSelectedOrderId(orderId);
+    setIsOrderModalOpen(true);
+  };
 
-    // Order details will be connected later.
+  // =====================================
+  // CLOSE ORDER MODAL
+  // =====================================
+
+  const handleCloseOrderModal = () => {
+    setIsOrderModalOpen(false);
+    setSelectedOrderId(null);
   };
 
   // =====================================
@@ -297,6 +319,16 @@ function AdminOrdersPage() {
             </div>
           </div>
         )}
+
+      {/* =====================================
+          ORDER VIEW MODAL
+      ===================================== */}
+
+      <OrderViewModal
+        isOpen={isOrderModalOpen}
+        orderId={selectedOrderId}
+        onClose={handleCloseOrderModal}
+      />
 
     </div>
   );
