@@ -213,8 +213,42 @@ const updateOrderStatus =
     return order;
   };
 
+  /*
+====================================
+GET ORDER BY ID - ADMIN
+====================================
+*/
+
+const getOrderById = async (
+  orderId
+) => {
+  const order =
+    await Order.findById(orderId)
+      .populate(
+        "user",
+        "fullName email"
+      )
+      .populate(
+        "shippingAddress",
+        "fullName phone addressLine1 addressLine2 landmark city state country postalCode addressType"
+      )
+      .populate(
+        "coupon",
+        "code discountType discountValue"
+      );
+
+  if (!order) {
+    throw new Error(
+      "Order not found"
+    );
+  }
+
+  return order;
+};
+
 module.exports = {
   getAllOrders,
   updateOrderStatus,
+  getOrderById,
 };
 

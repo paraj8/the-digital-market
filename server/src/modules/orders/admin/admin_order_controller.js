@@ -49,6 +49,40 @@ const getAllOrders = async (
 
 /*
 ====================================
+GET ORDER BY ID - ADMIN
+====================================
+*/
+
+const getOrderById = async (
+  req,
+  res
+) => {
+  try {
+    const order =
+      await adminOrderService.getOrderById(
+        req.params.id
+      );
+
+    res.status(200).json({
+      success: true,
+
+      message:
+        "Order fetched successfully",
+
+      data: order,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+
+      message:
+        error.message,
+    });
+  }
+};
+
+/*
+====================================
 UPDATE ORDER STATUS
 ====================================
 */
@@ -98,5 +132,6 @@ const updateOrderStatus =
 module.exports = {
   getAllOrders,
   updateOrderStatus,
+  getOrderById
 };
 

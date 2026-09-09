@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { FiPlus } from "react-icons/fi";
+import AdminProductsMobile from "./AdminProductsMobile";
 
 import { useAdminProduct } from "../../hooks/useAdminProduct";
 import ProductViewModal from "./components/productView/ProductViewModal";
@@ -436,7 +437,14 @@ const [viewProductId, setViewProductId] =
   /* ===================================== */
 
   return (
-    <div className="space-y-6">
+
+  <div className="space-y-6">
+
+    {/* =====================================
+        DESKTOP
+    ===================================== */}
+
+    <div className="hidden md:block">
 
       {/* HEADER */}
 
@@ -537,41 +545,88 @@ const [viewProductId, setViewProductId] =
         />
       )}
 
-      {/* PRODUCT VIEW MODAL */}
+    </div>
 
-      <ProductViewModal
-        isOpen={isViewModalOpen}
-        product={viewedProduct ?? null}
-        isLoading={isViewLoading}
-        onClose={handleCloseViewModal}
-      />
+    {/* =====================================
+        MOBILE
+    ===================================== */}
 
-      {/* PRODUCT FORM MODAL */}
+    <div className="block md:hidden">
 
-      <ProductFormModal
-        isOpen={isProductModalOpen}
-        mode={formMode}
-        product={selectedProduct}
-        categories={categories}
-        isSubmitting={isSubmitting}
-        onClose={handleCloseModal}
-        onSubmit={handleFormSubmit}
-      />
-
-      {/* DELETE PRODUCT MODAL */}
-
-      <ProductDeleteModal
-        isOpen={isDeleteModalOpen}
-        product={selectedProduct}
-        isDeleting={
-          deleteProductMutation.isPending
-        }
-        onClose={handleCloseDeleteModal}
-        onConfirm={handleConfirmDelete}
-      />
+      {isError ? (
+        <div
+          className="
+            rounded-2xl
+            border border-red-500/20
+            bg-red-500/5
+            p-6
+            text-center
+          "
+        >
+          <p className="text-sm text-red-400">
+            {error instanceof Error
+              ? error.message
+              : "Failed to load products."}
+          </p>
+        </div>
+      ) : (
+        <AdminProductsMobile
+          products={filteredProducts}
+          isLoading={isLoading}
+          search={search}
+          category={categoryFilter}
+          status={statusFilter}
+          categories={categories}
+          total={totalProducts}
+          active={activeProducts}
+          lowStock={lowStockProducts}
+          outOfStock={outOfStockProducts}
+          onSearchChange={setSearch}
+          onCategoryChange={setCategoryFilter}
+          onStatusChange={setStatusFilter}
+          onClear={handleClearFilters}
+          onAdd={handleAddProduct}
+          onView={handleViewProduct}
+          onEdit={handleEditProduct}
+          onDelete={handleDeleteProduct}
+        />
+      )}
 
     </div>
-  );
+
+    {/* =====================================
+        MODALS
+    ===================================== */}
+
+    <ProductViewModal
+      isOpen={isViewModalOpen}
+      product={viewedProduct ?? null}
+      isLoading={isViewLoading}
+      onClose={handleCloseViewModal}
+    />
+
+    <ProductFormModal
+      isOpen={isProductModalOpen}
+      mode={formMode}
+      product={selectedProduct}
+      categories={categories}
+      isSubmitting={isSubmitting}
+      onClose={handleCloseModal}
+      onSubmit={handleFormSubmit}
+    />
+
+    <ProductDeleteModal
+      isOpen={isDeleteModalOpen}
+      product={selectedProduct}
+      isDeleting={
+        deleteProductMutation.isPending
+      }
+      onClose={handleCloseDeleteModal}
+      onConfirm={handleConfirmDelete}
+    />
+
+  </div>
+);
 }
 
 export default AdminProductsPage;

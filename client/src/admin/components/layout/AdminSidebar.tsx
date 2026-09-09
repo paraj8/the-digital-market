@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   FiGrid,
   FiShoppingBag,
@@ -10,6 +10,7 @@ import {
   FiBarChart2,
   FiSettings,
   FiLogOut,
+  FiX,
 } from "react-icons/fi";
 
 const menu = [
@@ -60,147 +61,274 @@ const menu = [
   },
 ];
 
-function AdminSidebar() {
+interface AdminSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+function AdminSidebar({
+  isOpen,
+  onClose,
+}: AdminSidebarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
 
-const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
-  navigate("/admin/login", {
-    replace: true,
-  });
-};
+    navigate("/admin/login", {
+      replace: true,
+    });
+  };
+
+  const handleNavigation = (href: string) => {
+    navigate(href);
+    onClose();
+  };
 
   return (
-    <aside
-      className="
-        w-72
-        h-screen
-        bg-slate-950
-        border-r
-        border-white/10
-        flex
-        flex-col
-      "
-    >
-      {/* Logo */}
+    <>
+      {/* =====================================
+          MOBILE OVERLAY
+      ===================================== */}
 
       <div
-        className="
-          h-20
+        className={`
+          fixed
+          inset-0
+          z-40
+          bg-black/60
+          backdrop-blur-sm
+          transition-opacity
+          duration-300
+          md:hidden
+
+          ${
+            isOpen
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-0"
+          }
+        `}
+        onClick={onClose}
+      />
+
+      {/* =====================================
+          SIDEBAR
+      ===================================== */}
+
+      <aside
+        className={`
+          fixed
+          left-0
+          top-0
+          z-50
+
           flex
-          items-center
-          justify-center
-          border-b
+          h-screen
+          w-72
+          flex-col
+
+          border-r
           border-white/10
-        "
+
+          bg-slate-950
+
+          transition-transform
+          duration-300
+          ease-in-out
+
+          ${
+            isOpen
+              ? "translate-x-0"
+              : "-translate-x-full"
+          }
+
+          md:static
+          md:z-auto
+          md:translate-x-0
+        `}
       >
-        <div>
-          <h1
-            className="
-              text-xl
-              font-bold
-              text-violet-400
-            "
-          >
-            The Digital Market
-          </h1>
+        {/* =====================================
+            LOGO
+        ===================================== */}
 
-          <p
-            className="
-              text-xs
-              text-gray-400
-              text-center
-            "
-          >
-            Admin Panel
-          </p>
-        </div>
-      </div>
-
-      {/* Menu */}
-
-      <nav
-        className="
-          flex-1
-          py-6
-          px-4
-          space-y-2
-        "
-      >
-        {menu.map((item) => {
-          const Icon = item.icon;
-
-          return (
-            <a
-              key={item.title}
-              href={item.href}
-              className="
-                flex
-                items-center
-                gap-4
-
-                px-4
-                py-3
-
-                rounded-xl
-
-                text-gray-300
-
-                transition
-
-                hover:bg-violet-600/20
-                hover:text-white
-              "
-            >
-              <Icon size={20} />
-
-              <span>{item.title}</span>
-            </a>
-          );
-        })}
-      </nav>
-
-      {/* Logout */}
-
-      <div
-        className="
-          p-4
-          border-t
-          border-white/10
-        "
-      >
-        <button
-          type="button"
-          onClick={handleLogout}
+        <div
           className="
-            w-full
+            relative
 
             flex
+            h-20
+            shrink-0
             items-center
             justify-center
-            gap-3
 
-            rounded-xl
+            border-b
+            border-white/10
 
-            bg-red-600
-
-            py-3
-
-            font-medium
-
-            transition
-
-            hover:bg-red-500
+            px-4
           "
         >
-          <FiLogOut />
+          <div>
+            <h1
+              className="
+                text-center
+                text-xl
+                font-bold
+                text-violet-400
+              "
+            >
+              The Digital Market
+            </h1>
 
-          Logout
-        </button>
-      </div>
-    </aside>
+            <p
+              className="
+                text-center
+                text-xs
+                text-gray-400
+              "
+            >
+              Admin Panel
+            </p>
+          </div>
+
+          {/* MOBILE CLOSE */}
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="
+              absolute
+              right-4
+              top-5
+
+              rounded-lg
+              p-2
+
+              text-gray-400
+
+              transition
+
+              hover:bg-white/5
+              hover:text-white
+
+              md:hidden
+            "
+            aria-label="Close menu"
+          >
+            <FiX size={20} />
+          </button>
+        </div>
+
+        {/* =====================================
+            MENU
+        ===================================== */}
+
+        <nav
+          className="
+            flex-1
+            overflow-y-auto
+
+            px-4
+            py-6
+          "
+        >
+          <div className="space-y-2">
+            {menu.map((item) => {
+              const Icon = item.icon;
+
+              const isActive =
+                item.href === "/admin"
+                  ? location.pathname === "/admin"
+                  : location.pathname.startsWith(
+                      item.href
+                    );
+
+              return (
+                <button
+                  key={item.title}
+                  type="button"
+                  onClick={() =>
+                    handleNavigation(item.href)
+                  }
+                  className={`
+                    flex
+                    w-full
+                    items-center
+                    gap-4
+
+                    rounded-xl
+
+                    px-4
+                    py-3
+
+                    text-left
+
+                    transition
+
+                    ${
+                      isActive
+                        ? "bg-violet-600/20 text-violet-400"
+                        : "text-gray-300 hover:bg-violet-600/20 hover:text-white"
+                    }
+                  `}
+                >
+                  <Icon size={20} />
+
+                  <span>
+                    {item.title}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* =====================================
+            LOGOUT
+        ===================================== */}
+
+        <div
+          className="
+            shrink-0
+
+            border-t
+            border-white/10
+
+            p-4
+          "
+        >
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="
+              flex
+              w-full
+              items-center
+              justify-center
+              gap-3
+
+              rounded-xl
+
+              bg-red-600
+
+              py-3
+
+              font-medium
+              text-white
+
+              transition
+
+              hover:bg-red-500
+            "
+          >
+            <FiLogOut />
+
+            Logout
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
 
