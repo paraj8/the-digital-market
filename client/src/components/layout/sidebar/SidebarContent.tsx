@@ -10,6 +10,8 @@ import {
 
 import { useNavigate } from "react-router-dom";
 
+import Logo from "../navbar/Logo";
+
 const links = [
   {
     icon: <FiHome />,
@@ -43,30 +45,29 @@ const links = [
   },
 ];
 
-function SidebarContent() {
+interface Props {
+  onClose: () => void;
+}
+
+function SidebarContent({ onClose }: Props) {
   const navigate = useNavigate();
 
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-
-      <div className="border-b border-white/10 p-5">
-        <h2 className="text-lg font-bold">
-          🛍 Shop
-        </h2>
-
-        <p className="mt-1 text-sm text-slate-400">
-          Discover amazing products
-        </p>
+      <div className="flex ml-3 justify-between border-b border-white/10 p-5">
+        <Logo theme="dark" />
       </div>
 
       {/* Navigation */}
-
       <div className="flex-1 overflow-y-auto p-3">
         {links.map((item) => (
           <button
             key={item.label}
-            onClick={() => navigate(item.path)}
+            onClick={() => {
+              navigate(item.path);
+              onClose();
+            }}
             className="
               mb-2
               flex
@@ -94,7 +95,6 @@ function SidebarContent() {
       </div>
 
       {/* Footer */}
-
       <div className="border-t border-white/10 p-3">
         <button
           className="

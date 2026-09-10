@@ -34,7 +34,7 @@ function Sidebar({
           }
         `}
       >
-        <SidebarContent />
+        <SidebarContent onClose={onClose} />
       </aside>
     </>
   );
