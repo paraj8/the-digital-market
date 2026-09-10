@@ -7,6 +7,10 @@ import {
   FiGrid,
 } from "react-icons/fi";
 
+import { useNavigate } from "react-router-dom";
+
+import { useFilterOptions } from "../../../features/products/hooks/useFilterOptions";
+
 const categories = [
   {
     name: "Electronics",
@@ -35,6 +39,36 @@ const categories = [
 ];
 
 function CategoryStrip() {
+  const navigate = useNavigate();
+
+  const { data: filterOptions } =
+    useFilterOptions();
+
+  const handleCategoryClick = (
+    categoryName: string
+  ) => {
+    if (categoryName === "More") {
+      navigate("/products");
+      return;
+    }
+
+    const category =
+      filterOptions?.categories.find(
+        (item) =>
+          item.name.toLowerCase() ===
+          categoryName.toLowerCase()
+      );
+
+    if (!category) {
+      navigate("/products");
+      return;
+    }
+
+    navigate(
+      `/products?category=${category._id}`
+    );
+  };
+
   return (
     <section className="px-4 pb-6 lg:px-6">
       <div
@@ -52,6 +86,11 @@ function CategoryStrip() {
           return (
             <button
               key={category.name}
+              onClick={() =>
+                handleCategoryClick(
+                  category.name
+                )
+              }
               className="
                 rounded-2xl
                 border border-white/10

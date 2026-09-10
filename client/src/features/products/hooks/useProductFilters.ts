@@ -1,12 +1,25 @@
-import { useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  useSearchParams,
+} from "react-router-dom";
 
 import type { ProductFiltersState } from "../types/filter";
 
 export function useProductFilters() {
+  const [searchParams] =
+    useSearchParams();
+
   /* Search */
 
   const [search, setSearch] =
-    useState("");
+    useState(
+      () =>
+        searchParams.get("search") ?? ""
+    );
 
   /* Pagination */
 
@@ -18,14 +31,29 @@ export function useProductFilters() {
   /* Filters */
 
   const [filters, setFilters] =
-    useState<ProductFiltersState>({
-      categories: [],
-      brands: [],
-      ratings: [],
-      availability: [],
-      sort: [],
-      minPrice: undefined,
-      maxPrice: undefined,
+    useState<ProductFiltersState>(() => {
+      const category =
+        searchParams.get("category");
+
+      return {
+        categories: category
+          ? category
+              .split(",")
+              .filter(Boolean)
+          : [],
+
+        brands: [],
+
+        ratings: [],
+
+        availability: [],
+
+        sort: [],
+
+        minPrice: undefined,
+
+        maxPrice: undefined,
+      };
     });
 
   /* Update one filter */
