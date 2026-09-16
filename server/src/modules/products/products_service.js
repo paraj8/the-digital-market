@@ -33,9 +33,9 @@ const getAllProducts = async (query) => {
     };
   }
 
-  if (category) {
-    filters.category = category;
-  }
+if (category) {
+  filters.category = category;
+}
 
   if (brand) {
     filters.brand = brand;

@@ -55,6 +55,13 @@ function ProductFilterBar({
   onRemoveFilter,
   onClearFilters,
 }: ProductFilterBarProps) {
+  const handleRemovePrice = () => {
+    onPriceChange(
+      undefined,
+      undefined
+    );
+  };
+
   return (
     <div
       className="
@@ -76,7 +83,6 @@ function ProductFilterBar({
       "
     >
       <div className="mb-3 flex flex-wrap gap-3">
-
         {options && (
           <>
             <CategoryFilter
@@ -159,7 +165,9 @@ function ProductFilterBar({
 
       <ActiveFilters
         filters={filters}
+        options={options}
         onRemove={onRemoveFilter}
+        onRemovePrice={handleRemovePrice}
         onClearAll={onClearFilters}
       />
 

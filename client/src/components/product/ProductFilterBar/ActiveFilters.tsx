@@ -1,13 +1,14 @@
 import { FiX } from "react-icons/fi";
 
+import type {
+  FilterOptions,
+  ProductFiltersState,
+} from "../../../features/products/types/filter";
+
 interface ActiveFiltersProps {
-  filters: {
-    categories: string[];
-    brands: string[];
-    ratings: string[];
-    availability: string[];
-    sort: string[];
-  };
+  filters: ProductFiltersState;
+
+  options?: FilterOptions;
 
   onRemove: (
     key:
@@ -19,20 +20,32 @@ interface ActiveFiltersProps {
     value: string
   ) => void;
 
+  onRemovePrice: () => void;
+
   onClearAll: () => void;
 }
 
 function ActiveFilters({
   filters,
+  options,
   onRemove,
+  onRemovePrice,
   onClearAll,
 }: ActiveFiltersProps) {
   const chips = [
-    ...filters.categories.map((value) => ({
-      key: "categories" as const,
-      value,
-      label: value,
-    })),
+    ...filters.categories.map((value) => {
+      const category =
+        options?.categories.find(
+          (item) => item._id === value
+        );
+
+      return {
+        key: "categories" as const,
+        value,
+        label:
+          category?.name ?? value,
+      };
+    }),
 
     ...filters.brands.map((value) => ({
       key: "brands" as const,
@@ -62,7 +75,14 @@ function ActiveFilters({
     })),
   ];
 
-  if (chips.length === 0) {
+  const hasPriceFilter =
+    filters.minPrice !== undefined ||
+    filters.maxPrice !== undefined;
+
+  if (
+    chips.length === 0 &&
+    !hasPriceFilter
+  ) {
     return null;
   }
 
@@ -102,6 +122,44 @@ function ActiveFilters({
           <FiX size={14} />
         </button>
       ))}
+
+      {hasPriceFilter && (
+        <button
+          onClick={onRemovePrice}
+          className="
+            flex
+            items-center
+            gap-2
+
+            rounded-full
+
+            border border-violet-500/30
+            bg-violet-500/10
+
+            px-4
+            py-2
+
+            text-sm
+
+            transition
+
+            hover:bg-violet-500/20
+          "
+        >
+          <span>
+            Price:{" "}
+            {filters.minPrice !== undefined
+              ? `₹${filters.minPrice}`
+              : "₹0"}
+            {" – "}
+            {filters.maxPrice !== undefined
+              ? `₹${filters.maxPrice}`
+              : "Any"}
+          </span>
+
+          <FiX size={14} />
+        </button>
+      )}
 
       <button
         onClick={onClearAll}
