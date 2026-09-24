@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
 
-import SectionHeader from "../../../components/common/SectionHeader";
+import SectionHeader from "../../../../components/common/SectionHeader";
 
-import { useCategories } from "../../../features/categories/hooks/useCategories";
-import type { Category } from "../../../features/categories/types/category";
+import { useCategories } from "../../../../features/categories/hooks/useCategories";
+import type { Category } from "../../../../features/categories/types/category";
 
-function CategorySection() {
+function MobileCategorySection() {
   const {
     data: categories,
     isLoading,
@@ -15,7 +15,7 @@ function CategorySection() {
 
   if (isLoading) {
     return (
-      <section className="px-4 py-6 lg:px-6">
+      <section className="px-4 py-6">
         <SectionHeader
           title="Shop by Category"
           subtitle="Explore our product categories"
@@ -23,19 +23,20 @@ function CategorySection() {
 
         <div
           className="
-            grid
-            grid-cols-2
-            gap-4
-            sm:grid-cols-3
-            lg:grid-cols-4
-            xl:grid-cols-5
-            2xl:grid-cols-6
+            flex
+            gap-3
+            overflow-x-auto
+            pb-2
+            scrollbar-hide
           "
         >
-          {Array.from({ length: 6 }).map((_, index) => (
+          {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
               className="
+                min-w-[140px]
+                max-w-[140px]
+                shrink-0
                 overflow-hidden
                 rounded-2xl
                 border
@@ -44,12 +45,11 @@ function CategorySection() {
                 animate-pulse
               "
             >
-              <div className="aspect-[4/3] bg-white/5" />
+              <div className="aspect-square bg-white/5" />
 
-              <div className="space-y-2 p-4">
-                <div className="h-4 w-2/3 rounded bg-white/5" />
-                <div className="h-3 w-full rounded bg-white/5" />
-                <div className="h-3 w-1/2 rounded bg-white/5" />
+              <div className="p-3">
+                <div className="h-4 w-3/4 rounded bg-white/5" />
+                <div className="mt-2 h-3 w-1/2 rounded bg-white/5" />
               </div>
             </div>
           ))}
@@ -60,14 +60,14 @@ function CategorySection() {
 
   if (error) {
     return (
-      <section className="px-4 py-6 lg:px-6">
+      <section className="px-4 py-6">
         <div
           className="
-            rounded-2xl
+            rounded-xl
             border
             border-white/10
             bg-white/5
-            p-5
+            p-4
             text-sm
             text-red-400
           "
@@ -88,7 +88,7 @@ function CategorySection() {
   }
 
   return (
-    <section className="px-4 py-6 lg:px-6">
+    <section className="px-4 py-6">
       <SectionHeader
         title="Shop by Category"
         subtitle="Explore our product categories"
@@ -97,13 +97,13 @@ function CategorySection() {
 
       <div
         className="
-          grid
-          grid-cols-2
-          gap-4
-          sm:grid-cols-3
-          lg:grid-cols-4
-          xl:grid-cols-5
-          2xl:grid-cols-6
+          flex
+          gap-3
+          overflow-x-auto
+          pb-2
+          scrollbar-hide
+          snap-x
+          snap-mandatory
         "
       >
         {activeCategories.map(
@@ -113,6 +113,10 @@ function CategorySection() {
               to={`/products?category=${category._id}`}
               className="
                 group
+                min-w-[140px]
+                max-w-[140px]
+                shrink-0
+                snap-start
                 overflow-hidden
                 rounded-2xl
                 border
@@ -120,13 +124,10 @@ function CategorySection() {
                 bg-[#121826]
                 transition
                 duration-200
-                hover:-translate-y-1
-                hover:border-violet-500/40
-                hover:shadow-lg
-                hover:shadow-violet-950/20
+                active:scale-[0.98]
               "
             >
-              <div className="relative aspect-[4/3] overflow-hidden">
+              <div className="relative aspect-square overflow-hidden">
                 {category.image?.url ? (
                   <img
                     src={category.image.url}
@@ -137,7 +138,7 @@ function CategorySection() {
                       w-full
                       object-cover
                       transition
-                      duration-500
+                      duration-300
                       group-hover:scale-105
                     "
                   />
@@ -153,7 +154,7 @@ function CategorySection() {
                       from-violet-600/20
                       via-blue-600/10
                       to-cyan-500/10
-                      text-sm
+                      text-xs
                       text-gray-500
                     "
                   >
@@ -167,65 +168,37 @@ function CategorySection() {
                     absolute
                     inset-0
                     bg-gradient-to-t
-                    from-black/60
-                    via-black/10
+                    from-black/50
+                    via-transparent
                     to-transparent
                   "
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-3 p-4">
-                <div className="min-w-0">
-                  <h3
-                    className="
-                      truncate
-                      text-sm
-                      font-semibold
-                      text-white
-                      transition
-                      group-hover:text-violet-300
-                      sm:text-base
-                    "
-                  >
-                    {category.name}
-                  </h3>
-
-                  {category.description && (
-                    <p
-                      className="
-                        mt-1
-                        line-clamp-2
-                        text-xs
-                        leading-5
-                        text-gray-500
-                      "
-                    >
-                      {category.description}
-                    </p>
-                  )}
-                </div>
-
-                <span
+              <div className="flex items-center justify-between gap-2 p-3">
+                <h3
                   className="
-                    flex
-                    h-8
-                    w-8
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-full
-                    border
-                    border-white/10
-                    bg-white/5
-                    text-gray-400
-                    transition
-                    group-hover:border-violet-500/30
-                    group-hover:bg-violet-500/10
+                    min-w-0
+                    truncate
+                    text-sm
+                    font-semibold
+                    text-white
                     group-hover:text-violet-300
                   "
                 >
-                  <FiArrowRight size={15} />
-                </span>
+                  {category.name}
+                </h3>
+
+                <FiArrowRight
+                  size={14}
+                  className="
+                    shrink-0
+                    text-gray-500
+                    transition
+                    group-hover:translate-x-0.5
+                    group-hover:text-violet-300
+                  "
+                />
               </div>
             </Link>
           )
@@ -235,4 +208,4 @@ function CategorySection() {
   );
 }
 
-export default CategorySection;
+export default MobileCategorySection;
