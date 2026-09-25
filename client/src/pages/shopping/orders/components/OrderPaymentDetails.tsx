@@ -1,4 +1,4 @@
-import type { Order } from "../../../features/orders/types/order";
+import type { Order } from "../../../../features/orders/types/order";
 
 interface OrderPaymentDetailsProps {
   order: Order;

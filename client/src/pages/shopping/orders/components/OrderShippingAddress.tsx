@@ -1,4 +1,4 @@
-import type { ShippingAddress } from "../../../features/orders/types/order";
+import type { ShippingAddress } from "../../../../features/orders/types/order";
 
 interface OrderShippingAddressProps {
   address: ShippingAddress;

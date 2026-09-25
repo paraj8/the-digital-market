@@ -1,4 +1,4 @@
-import type { OrderItem } from "../../../features/orders/types/order";
+import type { OrderItem } from "../../../../features/orders/types/order";
 
 interface OrderItemsProps {
   items: OrderItem[];

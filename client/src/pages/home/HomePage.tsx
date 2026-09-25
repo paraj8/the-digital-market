@@ -1,14 +1,14 @@
 
 import { useEffect, useState } from "react";
 
-import HeroCarousel from "./components/HeroCarousel";
-import CategoryStrip from "./components/CategoryStrip";
-import FeaturedProducts from "./components/FeaturedProducts";
-import BestSellers from "./components/BestSellers";
-import CategorySection from "./components/CategorySection";
-import NewArrivals from "./components/NewArrivals";
-import Newsletter from "./components/Newsletter";
-import PromotionalBanner from "./components/PromotionalBanner";
+import HeroCarousel from "./components/desktop/HeroCarousel";
+import CategoryStrip from "./components/desktop/CategoryStrip";
+import FeaturedProducts from "./components/desktop/FeaturedProducts";
+import BestSellers from "./components/desktop/BestSellers";
+import CategorySection from "./components/desktop/CategorySection";
+import NewArrivals from "./components/desktop/NewArrivals";
+import Newsletter from "./components/desktop/Newsletter";
+import PromotionalBanner from "./components/desktop/PromotionalBanner";
 
 import MobileHeroCarousel from "./components/mobile/MobileHeroCarousel";
 import MobileCategoryStrip from "./components/mobile/MobileCategoryStrip";

@@ -35,20 +35,20 @@ import ForgotPasswordPage from "../../pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "../../pages/auth/ResetPasswordPage";
 import VerifyForgotPasswordOtpPage from "../../pages/auth/VerifyForgotPasswordOtpPage";
 
-import ProfilePage from "../../pages/profile/ProfilePage";
-import OrdersPage from "../../pages/orders/OrdersPage";
-import WishlistPage from "../../pages/wishlist/WishlistPage";
-import CartPage from "../../pages/cart/CartPage";
+import ProfilePage from "../../pages/account/profile/ProfilePage";
+import OrdersPage from "../../pages/shopping/orders/OrdersPage";
+import WishlistPage from "../../pages/shopping/wishlist/WishlistPage";
+import CartPage from "../../pages/shopping/cart/CartPage";
 
-import CheckoutPage from "../../pages/checkout/CheckoutPage";
-import CheckoutReviewPage from "../../pages/checkout/CheckoutReviewPage";
-import CheckoutPaymentStatusPage from "../../pages/checkout/CheckoutPaymentStatusPage";
+import CheckoutPage from "../../pages/shopping/checkout/CheckoutPage";
+import CheckoutReviewPage from "../../pages/shopping/checkout/CheckoutReviewPage";
+import CheckoutPaymentStatusPage from "../../pages/shopping/checkout/CheckoutPaymentStatusPage";
 
-import MessagesPage from "../../pages/messages/MessagesPage";
-import AiAssistantPage from "../../pages/ai/AiAssistantPage";
-import AddressesPage from "../../pages/addresses/AddressesPage";
-import SettingsPage from "../../pages/settings/SettingsPage";
-import OrderDetailsPage from "../../pages/orders/OrderDetailsPage";
+import MessagesPage from "../../pages/communication/messages/MessagesPage";
+import AiAssistantPage from "../../pages/communication/ai/AiAssistantPage";
+import AddressesPage from "../../pages/account/addresses/AddressesPage";
+import SettingsPage from "../../pages/account/settings/SettingsPage";
+import OrderDetailsPage from "../../pages/shopping/orders/OrderDetailsPage";
 
 // =====================================
 // APP ROUTES

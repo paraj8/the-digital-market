@@ -8,11 +8,11 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import CheckoutHeader from "../../components/checkout/CheckoutHeader";
-import CheckoutReview from "../../components/checkout/review/CheckoutReview";
+import CheckoutHeader from "../../../components/checkout/CheckoutHeader";
+import CheckoutReview from "../../../components/checkout/review/CheckoutReview";
 
-import { useCheckout } from "../../features/checkout/hooks/useCheckout";
-import { useCashfree } from "../../features/cashfree/hooks/useCashfree";
+import { useCheckout } from "../../../features/checkout/hooks/useCheckout";
+import { useCashfree } from "../../../features/cashfree/hooks/useCashfree";
 
 function CheckoutReviewPage() {
   const { state } = useLocation();

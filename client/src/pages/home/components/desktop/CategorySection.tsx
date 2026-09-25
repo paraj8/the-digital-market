@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
 
-import SectionHeader from "../../../components/common/SectionHeader";
+import SectionHeader from "../../../../components/common/SectionHeader";
 
-import { useCategories } from "../../../features/categories/hooks/useCategories";
-import type { Category } from "../../../features/categories/types/category";
+import { useCategories } from "../../../../features/categories/hooks/useCategories";
+import type { Category } from "../../../../features/categories/types/category";
 
 function CategorySection() {
   const {

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { useOrders } from "../../features/orders/hooks/useOrders";
+import { useOrders } from "../../../features/orders/hooks/useOrders";
 import OrderStatusBadge from "./components/OrderStatusBadge";
 
 function OrdersPage() {

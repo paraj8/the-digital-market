@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { FiTrash2 } from "react-icons/fi";
 
-import { useCart } from "../../features/cart/hooks/useCart";
+import { useCart } from "../../../features/cart/hooks/useCart";
 
 import {
   useRemoveCartItem,
   useUpdateCartItem,
-} from "../../features/cart/hooks/useCartMutations";
+} from "../../../features/cart/hooks/useCartMutations";
 
 function CartPage() {
   const {

@@ -1,22 +1,26 @@
-import ProductCard from "../../../components/product/ProductCard";
-import SectionHeader from "../../../components/common/SectionHeader";
-import ProductCardSkeleton from "../../../components/common/ProductCardSkeleton";
 
-import { useProducts } from "../../../features/products/hooks/useProducts";
-import type { Product } from "../../../features/products/types/product";
+import ProductCard from "../../../../components/product/ProductCard";
+import SectionHeader from "../../../../components/common/SectionHeader";
+import ProductCardSkeleton from "../../../../components/common/ProductCardSkeleton";
 
-function FeaturedProducts() {
+import { useProducts } from "../../../../features/products/hooks/useProducts";
+import type { Product } from "../../../../features/products/types/product";
+
+function NewArrivals() {
   const {
     data,
     isLoading,
     error,
-  } = useProducts({featured: true, limit: 8,});
+  } = useProducts({
+    sort: "newest",
+    limit: 8,
+  });
 
   if (isLoading) {
     return (
       <section className="px-4 py-6 lg:px-6">
         <SectionHeader
-          title="Featured Products"
+          title="New Arrivals"
           subtitle="Loading products..."
         />
 
@@ -45,17 +49,21 @@ function FeaturedProducts() {
 
   if (error) {
     return (
-      <div className="p-6">
-        Failed to load products
-      </div>
+      <section className="px-4 py-6 lg:px-6">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-red-400">
+          Failed to load products
+        </div>
+      </section>
     );
   }
+
+  const products = data?.data ?? [];
 
   return (
     <section className="px-4 py-6 lg:px-6">
       <SectionHeader
-        title="Featured Products"
-        subtitle="Popular products for you"
+        title="New Arrivals"
+        subtitle="Fresh products just added"
         actionText="View All"
       />
 
@@ -70,15 +78,18 @@ function FeaturedProducts() {
           2xl:grid-cols-6
         "
       >
-        {data?.data.map((product: Product) => (
-          <ProductCard
-            key={product._id}
-            product={product}
-          />
-        ))}
+        {products.map(
+          (product: Product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+            />
+          )
+        )}
       </div>
     </section>
   );
 }
 
-export default FeaturedProducts;
+export default NewArrivals;
+

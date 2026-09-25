@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 
-import { useOrder } from "../../features/orders/hooks/useOrder";
+import { useOrder } from "../../../features/orders/hooks/useOrder";
 
 import OrderItems from "./components/OrderItems";
 import OrderStatusBadge from "./components/OrderStatusBadge";

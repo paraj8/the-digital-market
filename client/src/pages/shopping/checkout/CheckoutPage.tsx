@@ -4,13 +4,13 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import CheckoutHeader from "../../components/checkout/CheckoutHeader";
-import CheckoutItems from "../../components/checkout/items/CheckoutItems";
-import CheckoutAddress from "../../components/checkout/CheckoutAddress";
-import CheckoutDelivery from "../../components/checkout/CheckoutDelivery";
-import CheckoutSummary from "../../components/checkout/CheckoutSummary";
+import CheckoutHeader from "../../../components/checkout/CheckoutHeader";
+import CheckoutItems from "../../../components/checkout/items/CheckoutItems";
+import CheckoutAddress from "../../../components/checkout/CheckoutAddress";
+import CheckoutDelivery from "../../../components/checkout/CheckoutDelivery";
+import CheckoutSummary from "../../../components/checkout/CheckoutSummary";
 
-import { useCheckout } from "../../features/checkout/hooks/useCheckout";
+import { useCheckout } from "../../../features/checkout/hooks/useCheckout";
 
 function CheckoutPage() {
   const { state } = useLocation();

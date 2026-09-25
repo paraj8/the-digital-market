@@ -6,13 +6,13 @@ import {
 
 import {
   useWishlist,
-} from "../../features/wishlist/hooks/useWishlist";
+} from "../../../features/wishlist/hooks/useWishlist";
 
-import type { WishlistItem } from "../../features/wishlist/types/wishlist";
+import type { WishlistItem } from "../../../features/wishlist/types/wishlist";
 
 import {
   useRemoveFromWishlist,
-} from "../../features/wishlist/hooks/useRemoveFromWishlist";
+} from "../../../features/wishlist/hooks/useRemoveFromWishlist";
 
 function WishlistPage() {
   const { data, isLoading } = useWishlist();

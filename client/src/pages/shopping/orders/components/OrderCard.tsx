@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import type { OrderSummary } from "../../../features/orders/api/orderApi";
+import type { OrderSummary } from "../../../../features/orders/api/orderApi";
 
 import OrderItems from "./OrderItems";
 import OrderStatusBadge from "./OrderStatusBadge";

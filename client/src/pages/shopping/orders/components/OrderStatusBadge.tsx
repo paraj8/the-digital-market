@@ -1,4 +1,4 @@
-import type { OrderStatus } from "../../../features/orders/types/order";
+import type { OrderStatus } from "../../../../features/orders/types/order";
 
 interface OrderStatusBadgeProps {
   status: OrderStatus;

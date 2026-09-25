@@ -1,10 +1,10 @@
 
-import ProductCard from "../../../components/product/ProductCard";
-import SectionHeader from "../../../components/common/SectionHeader";
-import ProductCardSkeleton from "../../../components/common/ProductCardSkeleton";
+import ProductCard from "../../../../components/product/ProductCard";
+import SectionHeader from "../../../../components/common/SectionHeader";
+import ProductCardSkeleton from "../../../../components/common/ProductCardSkeleton";
 
-import { useProducts } from "../../../features/products/hooks/useProducts";
-import type { Product } from "../../../features/products/types/product";
+import { useProducts } from "../../../../features/products/hooks/useProducts";
+import type { Product } from "../../../../features/products/types/product";
 
 function BestSellers() {
   const {

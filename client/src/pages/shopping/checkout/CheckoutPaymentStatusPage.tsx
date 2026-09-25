@@ -5,9 +5,9 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
-import PaymentStatusCard from "../../components/checkout/payment_status/PaymentStatusCard";
+import PaymentStatusCard from "../../../components/checkout/payment_status/PaymentStatusCard";
 
-import { useCashfreePaymentStatus } from "../../features/cashfree/hooks/useCashfreePaymentStatus";
+import { useCashfreePaymentStatus } from "../../../features/cashfree/hooks/useCashfreePaymentStatus";
 
 function CheckoutPaymentStatusPage() {
   const navigate = useNavigate();

@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
-import AddressList from "../../components/address/AddressList";
-import AddressFormModal from "../../components/address/AddressFormModal";
-import AddressDeleteModal from "../../components/address/AddressDeleteModal";
+import AddressList from "../../../components/address/AddressList";
+import AddressFormModal from "../../../components/address/AddressFormModal";
+import AddressDeleteModal from "../../../components/address/AddressDeleteModal";
 
-import { useAddresses } from "../../features/addresses/hooks/useAddresses";
+import { useAddresses } from "../../../features/addresses/hooks/useAddresses";
 
 import {
   useCreateAddress,
   useUpdateAddress,
   useDeleteAddress,
   useSetDefaultAddress,
-} from "../../features/addresses/hooks/useAddressMutations";
+} from "../../../features/addresses/hooks/useAddressMutations";
 
-import type { Address } from "../../features/addresses/types/address";
+import type { Address } from "../../../features/addresses/types/address";
 
 function AddressesPage() {
   /* ===================================== */

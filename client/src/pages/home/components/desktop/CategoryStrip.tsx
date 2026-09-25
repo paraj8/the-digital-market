@@ -9,7 +9,7 @@ import {
 
 import { useNavigate } from "react-router-dom";
 
-import { useFilterOptions } from "../../../features/products/hooks/useFilterOptions";
+import { useFilterOptions } from "../../../../features/products/hooks/useFilterOptions";
 
 const categories = [
   {
