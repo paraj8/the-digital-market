@@ -1,588 +1,195 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { FiHeart } from "react-icons/fi";
-import { FaHeart } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-
-import { useWishlist } from "../../features/wishlist/hooks/useWishlist";
-import { useAddToWishlist } from "../../features/wishlist/hooks/useAddToWishlist";
-import { useRemoveFromWishlist } from "../../features/wishlist/hooks/useRemoveFromWishlist";
-import { useProduct } from "../../features/products/hooks/useProduct";
-import { addToCart } from "../../features/cart/api/cartApi";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
+import { addToCart } from "../../features/cart/api/cartApi";
+import { useProduct } from "../../features/products/hooks/useProduct";
+import { useAddToWishlist } from "../../features/wishlist/hooks/useAddToWishlist";
+import { useRemoveFromWishlist } from "../../features/wishlist/hooks/useRemoveFromWishlist";
+import { useWishlist } from "../../features/wishlist/hooks/useWishlist";
+import type { WishlistItem } from "../../features/wishlist/types/wishlist";
+
+import ProductBreadcrumbs from "./components/desktop/ProductBreadcrumbs";
+import ProductDescription from "./components/desktop/ProductDescription";
+import ProductDetailsCard from "./components/desktop/ProductDetailsCard";
+import ProductGallery from "./components/desktop/ProductGallery";
+import ProductInfo from "./components/desktop/ProductInfo";
+import MobileProductActions from "./components/mobile/MobileProductActions";
+import MobileProductBreadcrumbs from "./components/mobile/MobileProductBreadcrumbs";
+import MobileProductDescription from "./components/mobile/MobileProductDescription";
+import MobileProductDetailsCard from "./components/mobile/MobileProductDetailsCard";
+import MobileProductGallery from "./components/mobile/MobileProductGallery";
+import MobileProductInfo from "./components/mobile/MobileProductInfo";
 import RelatedProducts from "./components/RelatedProducts";
 
 function ProductDetailsPage() {
-  const { slug } = useParams<{
-    slug: string;
-  }>();
+  const { slug } = useParams<{ slug: string }>();
+  const { data, isLoading, error } = useProduct(slug || "");
+  const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useProduct(slug || "");
+  const [quantity, setQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
 
-  const [selectedImage, setSelectedImage] =
-  useState(0);
+  const { data: wishlist = [] } = useWishlist();
+  const addWishlist = useAddToWishlist();
+  const removeWishlist = useRemoveFromWishlist();
 
-const [quantity, setQuantity] =
-  useState(1);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
 
-const [addingToCart, setAddingToCart] =
-  useState(false);
+    const updateIsMobile = () => {
+      setIsMobile(mediaQuery.matches);
+    };
 
-const navigate = useNavigate();
+    updateIsMobile();
+    mediaQuery.addEventListener("change", updateIsMobile);
 
-  // Wishlist Hooks
-  const { data: wishlist = [] } =
-    useWishlist();
+    return () => {
+      mediaQuery.removeEventListener("change", updateIsMobile);
+    };
+  }, []);
 
-  const addWishlist =
-    useAddToWishlist();
-
-  const removeWishlist =
-    useRemoveFromWishlist();
-
-
-    // Navigation
-const handleBuyNow = () => {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    toast("Please login to continue", {
-      icon: "🔐",
-    });
-    return;
-  }
-
-  if (!data) return;
-
-  navigate("/checkout", {
-    state: {
-      mode: "buyNow",
-      productId: data._id,
-      productSlug: data.slug,
-      quantity,
-    },
-  });
-};
-
-// Add to Cart Handler
-    const handleAddToCart = async () => {
-  try {
+  const handleBuyNow = () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      toast("Please login to add items to cart", {
-        icon: "🔐",
-      });
+      toast("Please login to continue", { icon: "🔐" });
       return;
     }
 
     if (!data) return;
 
-    setAddingToCart(true);
+    navigate("/checkout", {
+      state: {
+        mode: "buyNow",
+        productId: data._id,
+        productSlug: data.slug,
+        quantity,
+      },
+    });
+  };
 
-    await addToCart(data._id, quantity);
+  const handleAddToCart = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-    toast.success("Product added to cart 🛒");
-  } catch (error) {
-    console.error(error);
+      if (!token) {
+        toast("Please login to add items to cart", { icon: "🔐" });
+        return;
+      }
 
-    toast.error("Failed to add product to cart");
-  } finally {
-    setAddingToCart(false);
-  }
-};
+      if (!data) return;
+
+      setAddingToCart(true);
+      await addToCart(data._id, quantity);
+      toast.success("Product added to cart 🛒");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to add product to cart");
+    } finally {
+      setAddingToCart(false);
+    }
+  };
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        Loading product...
-      </div>
-    );
+    return <div className="p-6">Loading product...</div>;
   }
 
   if (error || !data) {
-    return (
-      <div className="p-6">
-        Product not found
-      </div>
-    );
+    return <div className="p-6">Product not found</div>;
   }
 
-  const isWishlisted =
-    wishlist.some(
-      (item: {
-        product?: {
-          _id: string;
-        };
-      }) =>
-        item.product?._id ===
-        data._id
-    );
+  if (!isMobile && typeof window !== "undefined") {
+    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+
+    if (!isDesktop) {
+      return null;
+    }
+  }
+
+  const isWishlisted = wishlist.some(
+    (item: WishlistItem) => item.product._id === data._id
+  );
 
   const handleWishlist = () => {
-    const token =
-      localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
     if (!token) {
-      toast("Please login first", {
-        icon: "🔒",
-      });
+      toast("Please login first", { icon: "🔒" });
       return;
     }
 
     if (isWishlisted) {
-      removeWishlist.mutate(
-        data._id
-      );
+      removeWishlist.mutate(data._id);
     } else {
-      addWishlist.mutate(
-        data._id
-      );
+      addWishlist.mutate(data._id);
     }
   };
 
-  const displayPrice =
-    data.salePrice > 0
-      ? data.salePrice
-      : data.price;
-
-  const discountPercent =
-    data.salePrice > 0
-      ? Math.round(
-          ((data.price -
-            data.salePrice) /
-            data.price) *
-            100
-        )
-      : 0;
-
-  
-
   return (
     <section className="mx-auto max-w-7xl px-4 py-8">
-      <div
-        className="
-          grid
-          gap-10
-          lg:grid-cols-2
-        "
-      >
-        {/* LEFT SIDE */}
+      {isMobile ? (
+        <>
+          <MobileProductBreadcrumbs title={data.title} />
+          <MobileProductGallery images={data.images} title={data.title} />
+          <MobileProductInfo
+            product={data}
+            quantity={quantity}
+            onQuantityChange={setQuantity}
+          />
+          <MobileProductActions
+            onAddToCart={handleAddToCart}
+            onBuyNow={handleBuyNow}
+            onWishlist={handleWishlist}
+            addingToCart={addingToCart}
+            isWishlisted={isWishlisted}
+            wishlistPending={
+              addWishlist.isPending || removeWishlist.isPending
+            }
+          />
+          <MobileProductDetailsCard product={data} />
+          <MobileProductDescription
+            description={data.description}
+            shortDescription={data.shortDescription}
+          />
+        </>
+      ) : (
+        <>
+          <div className="grid gap-10 lg:grid-cols-2">
+            <ProductGallery images={data.images} title={data.title} />
 
-        <div>
-          {/* Main Image */}
-
-          <div
-            className="
-              overflow-hidden
-              rounded-2xl
-              border border-white/10
-              bg-[#121826]
-            "
-          >
-            <img
-              src={
-                data.images?.[selectedImage]?.url ||
-                "https://placehold.co/800x800"
-              }
-              alt={data.title}
-              className="
-                aspect-square
-                w-full
-                object-cover
-              "
-            />
-          </div>
-
-          {/* Thumbnails */}
-
-          {data.images?.length >
-            1 && (
-            <div className="mt-4 flex gap-3 overflow-auto">
-              {data.images.map(
-                (
-                  image: string,
-                  index: number
-                ) => (
-                  <button
-                    key={index}
-                    onClick={() =>
-                      setSelectedImage(
-                        index
-                      )
-                    }
-                    className={`
-                      overflow-hidden
-                      rounded-xl
-                      border
-                      ${
-                        selectedImage ===
-                        index
-                          ? "border-violet-500"
-                          : "border-white/10"
-                      }
-                    `}
-                  >
-                    <img
-                      src={image}
-                      alt=""
-                      className="
-                        h-20
-                        w-20
-                        object-cover
-                      "
-                    />
-                  </button>
-                )
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT SIDE */}
-
-        <div>
-
- {/* Breadcrumbs */}
-
-        <div className="mb-4 text-sm text-slate-400">
-  Home /
-  <span className="mx-2">
-    Products
-  </span>
-  /
-  <span className="ml-2 text-white">
-    {data.title}
-  </span>
-</div>  
-
-          {/* Brand */}
-
-          <p className="text-sm text-slate-300 ">
-            {data.brand}
-          </p>
-          {/* Title */}
-
-          <h1
-            className="
-              mt-2
-              text-3xl
-              font-bold
-            "
-          >
-            {data.title}
-          </h1>
-
-          {/* Price */}
-
-          <div className="mt-6">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl font-bold">
-                ₹{displayPrice}
-              </span>
-
-              {data.salePrice >
-                0 && (
-                <>
-                  <span
-                    className="
-                      text-lg
-                      text-slate-500
-                      line-through
-                    "
-                  >
-                    ₹{data.price}
-                  </span>
-
-                  <span
-                    className="
-                      rounded-full
-                      bg-green-500/20
-                      px-3
-                      py-1
-                      text-sm
-                      text-green-400
-                    "
-                  >
-                    {discountPercent}% OFF
-                  </span>
-                </>
-              )}
+            <div>
+              <ProductBreadcrumbs title={data.title} />
+              <ProductInfo
+                product={data}
+                quantity={quantity}
+                onQuantityChange={setQuantity}
+                onAddToCart={handleAddToCart}
+                onBuyNow={handleBuyNow}
+                onWishlist={handleWishlist}
+                addingToCart={addingToCart}
+                isWishlisted={isWishlisted}
+                wishlistPending={
+                  addWishlist.isPending || removeWishlist.isPending
+                }
+              />
+              <ProductDetailsCard product={data} />
             </div>
           </div>
 
-          {/* Stock */}
+          <ProductDescription
+            description={data.description}
+            shortDescription={data.shortDescription}
+          />
+        </>
+      )}
 
-          <div className="mt-6">
-            {data.stock > 0 ? (
-              <div
-                className="
-                    inline-flex
-                    items-center
-                    gap-2
-                    rounded-full
-                    bg-green-500/10
-                    px-3
-                    py-1
-                    text-sm
-                    text-green-400
-                "
-                >
-                <span className="h-2 w-2 rounded-full bg-green-400" />
-                In Stock ({data.stock})
-                </div>
-            ) : (
-              <span className="text-red-400">
-                Out of Stock
-              </span>
-            )}
-          </div>
-
-    {/* Quantity Selector */}
-
-<div className="mt-6">
-  <p className="mb-2 text-sm text-slate-400">
-    Quantity
-  </p>
-
-  <div
-    className="
-      flex
-      w-fit
-      items-center
-      rounded-xl
-      border border-white/10
-      bg-[#121826]
-    "
-  >
-<button
-  onClick={() =>
-    setQuantity((prev) =>
-      Math.max(1, prev - 1)
-    )
-  }
-  className="px-4 py-2"
->
-  -
-</button>
-
-<span className="px-4">
-  {quantity}
-</span>
-
-<button
-  onClick={() =>
-    setQuantity((prev) =>
-      prev + 1
-    )
-  }
-  className="px-4 py-2"
->
-  +
-</button>
-  </div>
-</div>
-
-{/* Buttons */}
-
-<div className="mt-8 flex flex-col gap-3 sm:flex-row">
-
-  <button
-    onClick={handleAddToCart}
-    disabled={addingToCart}
-    className="
-      flex-1
-      rounded-xl
-      bg-gradient-to-r
-      from-violet-600
-      to-blue-600
-      py-3
-      font-semibold
-      transition
-      hover:scale-[1.02]
-      disabled:opacity-50
-    "
-  >
-    {addingToCart
-      ? "Adding..."
-      : "Add To Cart"}
-  </button>
-
-<button
-  onClick={handleBuyNow}
-  className="
-    flex-1
-    rounded-xl
-    border
-    border-white/10
-    bg-[#121826]
-    py-3
-    font-semibold
-    transition
-    hover:border-violet-500/50
-    hover:scale-[1.02]
-  "
->
-  Buy Now
-</button>
-
-  <button
-    onClick={handleWishlist}
-    disabled={
-      addWishlist.isPending ||
-      removeWishlist.isPending
-    }
-    className="
-      flex
-      h-12
-      w-12
-      items-center
-      justify-center
-      rounded-xl
-      border
-      border-white/10
-      bg-[#121826]
-      transition
-      hover:border-pink-500
-      hover:bg-pink-500/10
-    "
-  >
-    {isWishlisted ? (
-      <FaHeart
-        className="text-pink-500"
-        size={20}
+      <RelatedProducts
+        categoryId={data.category?._id}
+        currentProductId={data._id}
       />
-    ) : (
-      <FiHeart size={20} />
-    )}
-  </button>
-
-</div>
-
-          {/* Product Details */}
-
-<div
-  className="
-    mt-8
-    rounded-2xl
-    border border-white/10
-    bg-[#121826]
-    p-5
-  "
->
-  <h3
-    className="
-      mb-4
-      text-lg
-      font-semibold
-    "
-  >
-    Product Details
-  </h3>
-
-  <div className="space-y-3">
-    <div className="flex justify-between">
-      <span className="text-slate-400">
-        SKU
-      </span>
-
-      <span>{data.sku}</span>
-    </div>
-
-    <div className="flex justify-between">
-      <span className="text-slate-400">
-        Brand
-      </span>
-
-      <span>{data.brand}</span>
-    </div>
-
-    <div className="flex justify-between">
-      <span className="text-slate-400">
-        Stock
-      </span>
-
-      <span>{data.stock}</span>
-    </div>
-
-    <div className="flex justify-between">
-      <span className="text-slate-400">
-        Returnable
-      </span>
-
-      <span>
-        {data.returnable
-          ? "Yes"
-          : "No"}
-      </span>
-    </div>
-
-    <div className="flex justify-between">
-      <span className="text-slate-400">
-        COD
-      </span>
-
-      <span>
-        {data.codAvailable
-          ? "Available"
-          : "Unavailable"}
-      </span>
-    </div>
-  </div>
-</div>
-        </div>
-</div>
-
-{/* Description Section */}
-
-<div
-  className="
-    mt-12
-    rounded-2xl
-    border border-white/10
-    bg-[#121826]
-    p-6
-  "
->
-  <h2
-    className="
-      mb-4
-      text-xl
-      font-semibold
-    "
-  >
-    Description
-  </h2>
-
-  <p
-    className="
-      leading-7
-      text-slate-300
-    "
-  >
-    {data.description ||
-      data.shortDescription}
-  </p>
-</div>
-
-<RelatedProducts
-  categoryId={
-    data.category?._id
-  }
-  currentProductId={
-    data._id
-  }
-/>
-
-</section>
-
-
-
+    </section>
   );
 }
 
