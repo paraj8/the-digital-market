@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import type { Category } from "../../../../../features/categories/types/category";
-import { useCreateCategory } from "../../../../../features/categories/hooks/useCreateCategory";
-import { useUpdateCategory } from "../../../../../features/categories/hooks/useUpdateCategory";
+import type { Category } from "../../../../../shared/types/category";
+import { useCreateCategory } from "../../../../../user/features/categories/hooks/useCreateCategory";
+import { useUpdateCategory } from "../../../../../user/features/categories/hooks/useUpdateCategory";
 
 import CategoryFormFields from "./CategoryFormFields";
 import CategoryFormActions from "./CategoryFormActions";

@@ -1,4 +1,4 @@
-import type { Product } from "../../../../../features/products/types/product";
+import type { Product } from "../../../../../shared/types/product";
 import type { AdminProduct } from "./types";
 import ProductForm from "./ProductForm";
 

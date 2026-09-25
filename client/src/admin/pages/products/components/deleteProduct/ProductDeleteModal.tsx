@@ -4,7 +4,7 @@ import {
   FiX,
 } from "react-icons/fi";
 
-import type { Product } from "../../../../../features/products/types/product";
+import type { Product } from "../../../../../shared/types/product";
 
 interface ProductDeleteModalProps {
   isOpen: boolean;

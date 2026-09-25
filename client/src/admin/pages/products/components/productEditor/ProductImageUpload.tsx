@@ -1,4 +1,4 @@
-import type { ProductImage } from "../../../../../features/products/types/product";
+import type { ProductImage } from "../../../../../shared/types/product";
 
 import {
   useRef,
