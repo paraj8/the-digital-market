@@ -11,8 +11,8 @@ import ProductStats from "./components/ProductStats";
 import ProductFilters from "./components/ProductFilters";
 import ProductsTable from "./components/ProductsTable";
 
-import { useProducts } from "../../../features/products/hooks/useProducts";
-import { useCategories } from "../../../features/categories/hooks/useCategories";
+import { useProducts } from "../../../user/features/products/hooks/useProducts";
+import { useCategories } from "../../../user/features/categories/hooks/useCategories";
 
 
 import {
@@ -21,7 +21,7 @@ import {
   useUpdateProduct,
 } from "../../hooks/useAdminProductMutations";
 
-import type { Product } from "../../../features/products/types/product";
+import type { Product } from "../../../shared/types/product";
 import type { AdminProduct } from "./components/productEditor/types";
 
 function AdminProductsPage() {

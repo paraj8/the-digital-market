@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 
-import MainLayout from "../../layouts/MainLayout";
+import MainLayout from "../../user/layouts/MainLayout";
 
 // =====================================
 // ADMIN
@@ -24,31 +24,31 @@ import AdminSettingsPage from "../../admin/pages/settings/AdminSettingsPage";
 // CUSTOMER
 // =====================================
 
-import HomePage from "../../pages/home/HomePage";
-import ProductDetailsPage from "../../pages/product/ProductDetailsPage";
-import ProductListingPage from "../../pages/product/ProductListingPage";
+import HomePage from "../../user/pages/home/HomePage";
+import ProductDetailsPage from "../../user/pages/product/ProductDetailsPage";
+import ProductListingPage from "../../user/pages/product/ProductListingPage";
 
-import RegisterPage from "../../pages/auth/RegisterPage";
-import VerifyOtpPage from "../../pages/auth/VerifyOtpPage";
-import LoginPage from "../../pages/auth/LoginPage";
-import ForgotPasswordPage from "../../pages/auth/ForgotPasswordPage";
-import ResetPasswordPage from "../../pages/auth/ResetPasswordPage";
-import VerifyForgotPasswordOtpPage from "../../pages/auth/VerifyForgotPasswordOtpPage";
+import RegisterPage from "../../user/pages/auth/RegisterPage";
+import VerifyOtpPage from "../../user/pages/auth/VerifyOtpPage";
+import LoginPage from "../../user/pages/auth/LoginPage";
+import ForgotPasswordPage from "../../user/pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "../../user/pages/auth/ResetPasswordPage";
+import VerifyForgotPasswordOtpPage from "../../user/pages/auth/VerifyForgotPasswordOtpPage";
 
-import ProfilePage from "../../pages/account/profile/ProfilePage";
-import OrdersPage from "../../pages/shopping/orders/OrdersPage";
-import WishlistPage from "../../pages/shopping/wishlist/WishlistPage";
-import CartPage from "../../pages/shopping/cart/CartPage";
+import ProfilePage from "../../user/pages/account/profile/ProfilePage";
+import OrdersPage from "../../user/pages/shopping/orders/OrdersPage";
+import WishlistPage from "../../user/pages/shopping/wishlist/WishlistPage";
+import CartPage from "../../user/pages/shopping/cart/CartPage";
 
-import CheckoutPage from "../../pages/shopping/checkout/CheckoutPage";
-import CheckoutReviewPage from "../../pages/shopping/checkout/CheckoutReviewPage";
-import CheckoutPaymentStatusPage from "../../pages/shopping/checkout/CheckoutPaymentStatusPage";
+import CheckoutPage from "../../user/pages/shopping/checkout/CheckoutPage";
+import CheckoutReviewPage from "../../user/pages/shopping/checkout/CheckoutReviewPage";
+import CheckoutPaymentStatusPage from "../../user/pages/shopping/checkout/CheckoutPaymentStatusPage";
 
-import MessagesPage from "../../pages/communication/messages/MessagesPage";
-import AiAssistantPage from "../../pages/communication/ai/AiAssistantPage";
-import AddressesPage from "../../pages/account/addresses/AddressesPage";
-import SettingsPage from "../../pages/account/settings/SettingsPage";
-import OrderDetailsPage from "../../pages/shopping/orders/OrderDetailsPage";
+import MessagesPage from "../../user/pages/communication/messages/MessagesPage";
+import AiAssistantPage from "../../user/pages/communication/ai/AiAssistantPage";
+import AddressesPage from "../../user/pages/account/addresses/AddressesPage";
+import SettingsPage from "../../user/pages/account/settings/SettingsPage";
+import OrderDetailsPage from "../../user/pages/shopping/orders/OrderDetailsPage";
 
 // =====================================
 // APP ROUTES

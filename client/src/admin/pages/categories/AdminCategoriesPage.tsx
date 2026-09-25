@@ -3,9 +3,9 @@ import { FiPlus } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { isAxiosError } from "axios";
 
-import type { Category } from "../../../features/categories/types/category";
-import { useCategories } from "../../../features/categories/hooks/useCategories";
-import { useDeleteCategory } from "../../../features/categories/hooks/useDeleteCategory";
+import type { Category } from "../../../shared/types/category";
+import { useCategories } from "../../../user/features/categories/hooks/useCategories";
+import { useDeleteCategory } from "../../../user/features/categories/hooks/useDeleteCategory";
 
 import CategoryFilters from "./components/CategoryFilters";
 import CategoryStats from "./components/CategoryStats";

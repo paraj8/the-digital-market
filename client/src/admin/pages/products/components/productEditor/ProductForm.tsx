@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 
-import type { Product } from "../../../../../features/products/types/product";
+import type { Product } from "../../../../../shared/types/product";
 import type { AdminProduct } from "./types";
 
 import ProductImageUpload from "./ProductImageUpload";

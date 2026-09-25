@@ -1,4 +1,4 @@
-import type { Category } from "../../../../features/categories/types/category";
+import type { Category } from "../../../../shared/types/category";
 
 import CategoryRow from "./CategoryRow";
 
