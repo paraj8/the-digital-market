@@ -1,8 +1,49 @@
+import {
+  useState,
+} from "react";
+import type { FormEvent } from "react";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
 
 function SearchBar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [search, setSearch] = useState(
+    () =>
+      new URLSearchParams(location.search).get(
+        "search"
+      ) ?? ""
+  );
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const trimmedSearch = search.trim();
+    const searchParams = new URLSearchParams(
+      location.search
+    );
+
+    searchParams.delete("search");
+
+    const query = searchParams.toString();
+    const encodedSearch = trimmedSearch
+      ? `search=${encodeURIComponent(trimmedSearch)}`
+      : "";
+    const nextQuery = [query, encodedSearch]
+      .filter(Boolean)
+      .join("&");
+
+    navigate(
+      `/products${nextQuery ? `?${nextQuery}` : ""}`
+    );
+  };
+
   return (
-    <div
+    <form
+      onSubmit={handleSubmit}
       className="
         flex w-full items-center
         rounded-xl
@@ -16,6 +57,10 @@ function SearchBar() {
       <input
         type="text"
         placeholder="Search products..."
+        value={search}
+        onChange={(event) =>
+          setSearch(event.target.value)
+        }
         className="
           w-full
           bg-transparent
@@ -24,7 +69,7 @@ function SearchBar() {
           outline-none
         "
       />
-    </div>
+    </form>
   );
 }
 

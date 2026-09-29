@@ -6,32 +6,37 @@ import { Link } from "react-router-dom";
  * Structure (all real, animation-ready SVG — no raster image, no CSS shapes):
  *
  * Logo
- * ├── Logo Mark        (tdm-mark)      — one <svg>, viewBox 0 0 573 563
- * │   ├── D            (tdm-d)         — <path>, stroked outline (traced
- * │   │                                  from source vector, stroke-width 61)
- * │   └── Checkmark    (tdm-check)     — <path>, filled chevron (traced
- * │                                       from source vector, #6645FA)
- * ├── Divider          (tdm-divider)   — one <svg>, viewBox 0 0 80 446,
- * │                                       tapered organic bar (tdm-divider-line)
+ * ├── Logo Mark        (tdm-mark)      — one <svg>, viewBox 0 0 748 608
+ * │   ├── Top bar      (tdm-bar)       — <path>, stroked capsule (source
+ * │   │                                  vector, stroke-width 83)
+ * │   ├── D            (tdm-d)         — <path>, stroked outline (source
+ * │   │                                  vector, stroke-width 83)
+ * │   ├── Checkmark    (tdm-check)     — <path>, filled chevron (source
+ * │   │                                  vector, #6645FA)
+ * │   └── Divider      (tdm-divider)   — <path>, tapered organic bar
+ * │                                       (source vector)
  * └── Wordmark         (tdm-wordmark)  — one <svg>, viewBox 0 0 260 190
  *     ├── THE          (tdm-wordmark-top)
  *     ├── DIGITAL      (tdm-wordmark-middle)
  *     └── MARKET       (tdm-wordmark-bottom)
  *
- * The mark, divider, and wordmark are separate <svg> elements (rather than
- * one nested SVG) so the wordmark can be hidden on small screens with plain
- * Tailwind classes without uniformly scaling down the mark as well. Each
- * internal shape keeps its own class/id so individual pieces (the D, the
- * checkmark, each wordmark line) can be targeted later with CSS transitions,
+ * The mark's four shapes are positioned from the source vectors to match
+ * the reference artwork exactly (verified pixel-for-pixel against it).
+ * The divider lives inside the mark <svg> (rather than as a third <svg>)
+ * because the checkmark's right arm passes above it — a separate flex
+ * item could not reproduce that overlap. The wordmark stays a separate
+ * <svg> so it can be hidden on small screens with plain Tailwind classes
+ * without uniformly scaling down the mark. Each internal shape keeps its
+ * own class/id so individual pieces (the bar, the D, the checkmark, the
+ * divider, each wordmark line) can be targeted later with CSS transitions,
  * stroke-dasharray draw-ins, or Framer Motion — no redesign needed.
  *
- * The D, divider, and wordmark are drawn in `currentColor` (not a hardcoded
- * black) so the logo can sit on either a light or dark navbar. The
- * checkmark stays the fixed brand blue in both cases. Pass `theme="dark"`
- * (the default) when the logo sits on a dark/black background — this
- * renders the D/divider/wordmark in white, matching the reference mark on
- * black. Pass `theme="light"` for a light background, which renders them
- * in black.
+ * The bar, D, divider, and wordmark are drawn in `currentColor` (not a
+ * hardcoded color) so the logo can sit on either a light or dark navbar.
+ * The checkmark stays the fixed brand blue in both cases. Pass
+ * `theme="dark"` (the default) when the logo sits on a dark background —
+ * this renders the mark in white, matching the reference. Pass
+ * `theme="light"` for a light background, which renders it in black.
  */
 interface LogoProps {
   theme?: "dark" | "light";
@@ -62,16 +67,17 @@ function Logo({ theme = "dark" }: LogoProps) {
       `}
     >
       {/* =========================
-          LOGO MARK — always visible
-          viewBox tightly cropped (10px pad) around the traced D + check
-          geometry from the source vectors, so translate() offsets below
-          are the source bounding-box positions shifted by (-153, -66).
+          LOGO MARK — always visible.
+          Bar, D, check, and divider are placed with the source vectors'
+          own coordinates (translated into the tight 748×608 viewBox)
+          to match the reference artwork.
       ========================== */}
       <svg
         className="
           tdm-mark
-          h-10 w-10
-          sm:h-11 sm:w-11
+          h-10
+          w-auto
+          sm:h-11
           shrink-0
           overflow-visible
           transition-transform
@@ -79,50 +85,62 @@ function Logo({ theme = "dark" }: LogoProps) {
           ease-out
           group-hover:scale-[1.03]
         "
-        viewBox="0 0 573 563"
+        viewBox="0 0 748 608"
         fill="none"
         aria-hidden="true"
       >
-        {/* D — open-top stroked outline, follows theme via currentColor */}
-        <g transform="translate(10 65)">
+        {/* Top bar — horizontal capsule the D's stem hangs from */}
+        <g transform="translate(5 83)">
           <path
-            id="tdm-d"
-            className="tdm-d"
-            d="M130 30.5H112H30.5V454.5C107.833 458.833 250.5 479.5 314.5 367.5C359.237 289.211 353.167 205.5 346.5 174.5"
+            id="tdm-bar"
+            className="tdm-bar"
+            d="M41.5 41.5L242.5 41.5"
             stroke="currentColor"
-            strokeWidth="61"
+            strokeWidth="83"
             strokeLinecap="round"
             fill="none"
           />
         </g>
 
-        {/* Checkmark — crosses the D's open top, fixed brand blue-violet */}
-        <g transform="translate(135 10)">
+        {/* D — stroked outline, follows theme via currentColor */}
+        <g transform="translate(112 83)">
           <path
-            id="tdm-check"
-            className="tdm-check"
-            d="M410.929 2.05685C413.313 0.365528 416.327 -0.308979 419.271 0.131064C422.216 0.574216 424.85 2.09534 426.631 4.41134C428.412 6.72736 429.205 9.66352 428.876 12.6242C428.545 15.5821 427.118 18.3226 424.87 20.1916C418.403 25.5646 411.935 30.9378 405.468 36.3108L172.914 229.504L155.491 241.88L141.901 227.797L28.6056 126.895C22.3267 121.303 16.0476 115.71 9.76871 110.118C3.72076 104.738 0.164172 97.2408 0.00601634 89.1496C-0.159236 81.0662 3.08655 73.05 8.90543 66.9934C14.7246 60.9367 22.6057 57.3721 30.6896 57.2141C38.7803 57.0487 46.4123 60.3025 52.0304 66.1301C57.8692 72.1804 63.7083 78.2311 69.547 84.2815C100.134 115.977 130.721 147.672 161.308 179.367C237.66 125.133 314.012 70.8988 390.363 16.6643C397.218 11.795 404.074 6.92608 410.929 2.05685Z"
-            fill="#6645FA"
-          />
-
-          <path
-            id="tdm-divider-line"
-            className="tdm-divider-line"
-            d="M43.5322 0.294277C35.9078 0.196186 28.2835 0.0980949 20.6591 3.55853e-06C18.026 7.09231 15.647 14.1879 13.5222 21.2867C5.02284 49.6821 0.58984 78.1298 0.223173 106.63C-1.06016 206.38 3.19123 306.201 12.9774 406.093C13.6764 413.229 14.4036 420.364 15.1591 427.5C22.7835 427.598 30.4078 427.696 38.0322 427.794C38.971 420.68 39.8816 413.566 40.7639 406.451C53.1167 306.843 59.9348 207.164 61.2181 107.415C61.5848 78.9145 57.8851 50.3622 50.1191 21.7576C48.1776 14.6064 45.982 7.45198 43.5322 0.294277Z"
-            transform="translate(345 115)"
-            fill="currentColor"
-            
+            id="tdm-d"
+            className="tdm-d"
+            d="M141 41.5H123H41.5V465.5C118.833 469.833 261.5 490.5 325.5 378.5C370.237 300.211 364.167 216.5 357.5 185.5"
+            stroke="currentColor"
+            strokeWidth="83"
+            strokeLinecap="round"
+            fill="none"
           />
         </g>
 
-        
+        {/* Checkmark — crosses the D, fixed brand blue-violet */}
+        <g transform="translate(245 5)">
+          <path
+            id="tdm-check"
+            className="tdm-check"
+            d="M477.08 2.41396C477.08 2.41417 477.08 2.4142 477.081 2.41403C479.846 0.43027 483.344 -0.362634 486.762 0.153589C486.766 0.154221 486.77 0.153944 486.774 0.154565C490.19 0.677014 493.244 2.46363 495.309 5.17996L495.499 5.43679C497.432 8.1142 498.285 11.4546 497.915 14.8225C497.53 18.2966 495.873 21.5137 493.265 23.7073L482.002 33.1702C478.248 36.3247 474.493 39.4781 470.738 42.6331L200.743 269.473L195.356 273.343C186.85 279.453 175.142 278.362 167.911 270.785L164.88 267.607L164.749 267.47L164.608 267.343L33.2109 148.991C25.944 142.446 18.6086 135.839 11.3418 129.294L11.3398 129.292L10.6904 128.694C4.0709 122.43 0.191192 113.891 0.00683594 104.699L0 103.761C0.0588202 94.5818 3.80053 85.5424 10.3384 78.6599C10.3387 78.6597 10.3387 78.6592 10.3384 78.659C10.3381 78.6587 10.3381 78.6582 10.3384 78.658L10.9785 78.0022C17.6628 71.2948 26.5234 67.3632 35.6055 67.177L36.5303 67.1702C45.5835 67.2297 54.089 71.0196 60.4043 77.6438L60.4062 77.6458L80.7422 98.9583C112.049 131.768 143.358 164.578 174.665 197.387C181.896 204.964 193.604 206.055 202.109 199.945C285.807 139.819 369.506 79.6928 453.203 19.5667C457.183 16.7073 461.161 13.8492 465.141 10.9905C469.119 8.13306 473.099 5.27348 477.078 2.4155C477.078 2.41537 477.078 2.41521 477.078 2.41501L477.079 2.41412C477.079 2.41374 477.079 2.41366 477.08 2.41396Z"
+            fill="#6645FA"
+          />
+        </g>
+
+        {/* Divider — tapered organic bar, follows theme via currentColor */}
+        <g transform="translate(622 124)">
+          <path
+            id="tdm-divider-line"
+            className="tdm-divider-line"
+            d="M52.688 -4.74362e-06C43.0631 0.0200892 33.4381 0.0401831 23.8131 0.060277C20.6214 8.05031 17.7506 16.0397 15.2006 24.0284C5.00064 55.9831 -0.0660172 87.9272 0.000649471 119.861C0.233983 231.627 7.45434 343.379 21.6617 455.117C22.6765 463.098 23.727 471.079 24.8131 479.06C34.4381 479.04 44.0631 479.02 53.688 479C54.7408 471.014 55.7579 463.029 56.7394 455.044C70.4801 343.248 77.2338 231.466 77.0005 119.7C76.9338 87.7664 71.7338 55.8438 61.4005 23.9319C58.8172 15.9539 55.913 7.97663 52.688 -4.74362e-06Z"
+            fill="currentColor"
+          />
+        </g>
       </svg>
 
       {/* =========================
           WORDMARK — hidden on small screens, mark stays visible
       ========================== */}
       <svg
-        className="tdm-wordmark hidden h-10 shrink-0 sm:block sm:h-11 md:h-12"
+        className="tdm-wordmark hidden h-10 w-auto shrink-0 sm:block sm:h-11 md:h-12"
         viewBox="0 0 260 190"
         fill="none"
         aria-hidden="true"
