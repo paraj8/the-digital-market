@@ -1,4 +1,5 @@
 import ProductFilterBar from "../../components/product/ProductFilterBar";
+import { useSearchParams } from "react-router-dom";
 
 import ProductGrid from "../../components/product/ProductGrid";
 import ProductPagination from "../../components/product/ProductPagination";
@@ -15,6 +16,9 @@ type ArrayFilterKey =
   | "sort";
 
 function ProductListingPage() {
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get("search") ?? "";
+
   const {
     query,
     filters,
@@ -29,7 +33,10 @@ function ProductListingPage() {
     data: productData,
     isLoading,
     error,
-  } = useProducts(query);
+  } = useProducts({
+    ...query,
+    search: search.trim() || undefined,
+  });
 
   const {
     data: filterOptions,
