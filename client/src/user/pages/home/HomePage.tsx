@@ -65,9 +65,9 @@ function HomePage() {
 
           <MobileCategoryStrip />
 
-          <MobileFeaturedProducts />
-
           <MobileBestSellers />
+
+          <MobileFeaturedProducts />
 
           <MobileCategorySection />
 
@@ -81,15 +81,15 @@ function HomePage() {
 
           <CategoryStrip />
 
-          <FeaturedProducts />
-
           <BestSellers />
+
+          <FeaturedProducts />
+          
+          <PromotionalBanner />
 
           <CategorySection />
 
           <NewArrivals />
-
-          <PromotionalBanner />
 
           <Newsletter />
         </>

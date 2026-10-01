@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    phoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+
     password: {
       type: String,
       required: true,
@@ -50,6 +55,11 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+
     authProvider: {
       type: String,
       enum: ["local", "google"],
@@ -73,6 +83,14 @@ orderCount: {
   },
   {
     timestamps: true,
+  }
+);
+
+userSchema.index(
+  { phone: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { phoneVerified: true },
   }
 );
 

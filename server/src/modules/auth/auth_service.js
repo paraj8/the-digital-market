@@ -12,11 +12,6 @@ const registerUser = async ({ fullName, email, password }) => {
   if (existingUser) {
     throw new Error("User already exists");
   }
-console.log("Request Body:",{
-  fullName,
-  email,
-  password,
-});
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await User.create({

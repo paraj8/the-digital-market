@@ -23,6 +23,7 @@ const addressRoutes = require("../modules/address");
 const cashfreeRoutes = require("../modules/cashfree");
 const couponRoutes = require("../modules/coupons");
 const ordersRoutes = require("../modules/orders");
+const usersRoutes = require("../modules/users");
 
 // User Routes
 router.use("/auth", authRoutes);
@@ -34,6 +35,7 @@ router.use("/coupons", couponRoutes);
 router.use("/cart", cartRoutes);
 router.use("/addresses", addressRoutes);
 router.use("/orders", ordersRoutes);
+router.use("/users", usersRoutes);
 
 // Admin Routes
 router.use("/admin/products", adminProductRoutes);
