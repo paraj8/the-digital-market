@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 
 import {
@@ -10,85 +11,126 @@ import { useNavigate } from "react-router-dom";
 
 import ProfileDropdown from "./ProfileDropdown";
 
+import { useCart } from "../../../features/cart/hooks/useCart";
+import { useWishlist } from "../../../features/wishlist/hooks/useWishlist";
+
 function NavActions() {
   const navigate = useNavigate();
 
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
 
-  const token =
-    localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   const user = JSON.parse(
-    localStorage.getItem("user") ||
-      "null"
+    localStorage.getItem("user") || "null"
   );
+
+  const isLoggedIn = Boolean(token && user);
+
+  const { data: cart } = useCart();
+  const { wishlist } = useWishlist();
+
+  const cartCount = cart?.totalItems ?? 0;
+  const wishlistCount = wishlist.length;
 
   return (
     <div className="flex items-center gap-2">
       {/* Wishlist */}
 
       <button
-        onClick={() =>
-          navigate("/wishlist")
-        }
+        onClick={() => navigate("/wishlist")}
         className="
-          hidden sm:flex
+          relative
+          hidden
           h-10 w-10
           items-center
           justify-center
           rounded-xl
-          hover:bg-white/10
           transition
+          hover:bg-white/10
+          sm:flex
         "
       >
         <FiHeart size={20} />
+
+        {isLoggedIn && wishlistCount > 0 && (
+          <span
+            className="
+              absolute
+              -right-1
+              -top-1
+              flex
+              min-h-5
+              min-w-5
+              items-center
+              justify-center
+              rounded-full
+              bg-violet-600
+              px-1
+              text-[10px]
+              font-semibold
+              leading-none
+              text-white
+            "
+          >
+            {wishlistCount > 99
+              ? "99+"
+              : wishlistCount}
+          </span>
+        )}
       </button>
 
       {/* Cart */}
 
       <button
-        onClick={() =>
-          navigate("/cart")
-        }
+        onClick={() => navigate("/cart")}
         className="
           relative
-          flex h-10 w-10
+          flex
+          h-10 w-10
           items-center
           justify-center
           rounded-xl
-          hover:bg-white/10
           transition
+          hover:bg-white/10
         "
       >
         <FiShoppingCart size={20} />
 
-        <span
-          className="
-            absolute
-            -right-1
-            -top-1
-            flex h-5 w-5
-            items-center
-            justify-center
-            rounded-full
-            bg-violet-600
-            text-xs
-          "
-        >
-          0
-        </span>
+        {isLoggedIn && cartCount > 0 && (
+          <span
+            className="
+              absolute
+              -right-1
+              -top-1
+              flex
+              min-h-5
+              min-w-5
+              items-center
+              justify-center
+              rounded-full
+              bg-violet-600
+              px-1
+              text-[10px]
+              font-semibold
+              leading-none
+              text-white
+            "
+          >
+            {cartCount > 99
+              ? "99+"
+              : cartCount}
+          </span>
+        )}
       </button>
 
       {/* User */}
 
       <div className="relative">
-        {token && user ? (
+        {isLoggedIn ? (
           <>
             <button
-              onClick={() =>
-                setOpen(!open)
-              }
+              onClick={() => setOpen(!open)}
               className="
                 flex
                 h-10
@@ -112,24 +154,21 @@ function NavActions() {
             {open && (
               <ProfileDropdown
                 user={user}
-                onClose={() =>
-                  setOpen(false)
-                }
+                onClose={() => setOpen(false)}
               />
             )}
           </>
         ) : (
           <button
-            onClick={() =>
-              navigate("/login")
-            }
+            onClick={() => navigate("/login")}
             className="
-              flex h-10 w-10
+              flex
+              h-10 w-10
               items-center
               justify-center
               rounded-xl
-              hover:bg-white/10
               transition
+              hover:bg-white/10
             "
           >
             <FiUser size={20} />
@@ -141,3 +180,4 @@ function NavActions() {
 }
 
 export default NavActions;
+

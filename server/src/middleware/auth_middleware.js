@@ -33,6 +33,13 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
+    if (user.deletedAt) {
+      return res.status(401).json({
+        success: false,
+        message: "This account is no longer available",
+      });
+    }
+
     if (user.isBlocked) {
       return res.status(403).json({
         success: false,

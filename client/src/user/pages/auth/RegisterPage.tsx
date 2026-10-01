@@ -31,12 +31,6 @@ function RegisterPage() {
     try {
       setServerError("");
       setIsSubmitting(true);
-      console.log("Sending:",{
-        fullName: data.fullName,
-        email: data.email,
-        password: data.password,}
-      );
-      console.log(data);
       await registerUser({
         fullName: data.fullName,
         email: data.email,
