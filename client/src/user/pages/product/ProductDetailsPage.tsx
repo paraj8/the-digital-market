@@ -21,6 +21,7 @@ import MobileProductDetailsCard from "./components/mobile/MobileProductDetailsCa
 import MobileProductGallery from "./components/mobile/MobileProductGallery";
 import MobileProductInfo from "./components/mobile/MobileProductInfo";
 import RelatedProducts from "./components/RelatedProducts";
+import ReviewList from "../../features/reviews/components/ReviewList";
 
 function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -184,6 +185,8 @@ function ProductDetailsPage() {
           />
         </>
       )}
+
+      <ReviewList productId={data._id} />
 
       <RelatedProducts
         categoryId={data.category?._id}

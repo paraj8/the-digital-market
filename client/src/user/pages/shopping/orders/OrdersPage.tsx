@@ -1,6 +1,12 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useOrders } from "../../../features/orders/hooks/useOrders";
+import ReviewDialog from "../../../features/reviews/components/ReviewDialog";
+import ReviewOrderItemAction from "../../../features/reviews/components/ReviewOrderItemAction";
+import { useMyReviews } from "../../../features/reviews/hooks/useMyReviews";
+import type { ReviewTarget } from "../../../features/reviews/types/review";
+import { isProductReviewed } from "../../../features/reviews/utils/reviewUtils";
 import OrderStatusBadge from "./components/OrderStatusBadge";
 
 function OrdersPage() {
@@ -9,6 +15,17 @@ function OrdersPage() {
     isLoading,
     isError,
   } = useOrders();
+  const { data: myReviews = [] } = useMyReviews();
+  const [selectedReviewTarget, setSelectedReviewTarget] =
+    useState<ReviewTarget | null>(null);
+
+  const handleOpenReview = (target: ReviewTarget) => {
+    setSelectedReviewTarget(target);
+  };
+
+  const handleCloseReview = () => {
+    setSelectedReviewTarget(null);
+  };
 
   if (isLoading) {
     return (
@@ -205,6 +222,20 @@ function OrdersPage() {
                             "en-IN"
                           )}
                         </p>
+
+                        <ReviewOrderItemAction
+                          productId={item.product}
+                          orderId={order._id}
+                          productTitle={item.title}
+                          productImage={item.image}
+                          paymentStatus={order.paymentStatus}
+                          orderStatus={order.orderStatus}
+                          hasReviewed={isProductReviewed(
+                            item.product,
+                            myReviews
+                          )}
+                          onWriteReview={handleOpenReview}
+                        />
                       </div>
                     </div>
                   )
@@ -274,6 +305,12 @@ function OrdersPage() {
           </article>
         ))}
       </div>
+
+      <ReviewDialog
+        target={selectedReviewTarget}
+        onClose={handleCloseReview}
+        onSuccess={handleCloseReview}
+      />
     </section>
   );
 }
