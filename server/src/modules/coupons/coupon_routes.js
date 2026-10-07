@@ -12,6 +12,11 @@ router.post(
 );
 
 router.get(
+  "/available",
+  couponController.getAvailableCoupons
+);
+
+router.get(
   "/",
   couponController.getCoupons
 );

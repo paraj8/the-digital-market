@@ -56,6 +56,8 @@ export interface CheckoutOrder {
 
   discount: number;
 
+  additionalDiscount: number;
+
   tax: number;
 
   shippingCharge: number;

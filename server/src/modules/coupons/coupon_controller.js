@@ -46,6 +46,28 @@ const getCoupons = async (
   }
 };
 
+const getAvailableCoupons = async (
+  req,
+  res
+) => {
+  try {
+    const coupons =
+      await couponService.getAvailableCoupons(
+        req.query.productId
+      );
+
+    res.status(200).json({
+      success: true,
+      data: coupons,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 const getCouponById = async (
   req,
   res
@@ -123,7 +145,8 @@ const validateCoupon = async (
     const result =
       await couponService.validateCoupon(
         req.body.code,
-        req.body.orderAmount
+        req.body.orderAmount,
+        req.body.items
       );
 
     res.status(200).json({
@@ -141,6 +164,7 @@ const validateCoupon = async (
 module.exports = {
   createCoupon,
   getCoupons,
+  getAvailableCoupons,
   getCouponById,
   updateCoupon,
   deleteCoupon,

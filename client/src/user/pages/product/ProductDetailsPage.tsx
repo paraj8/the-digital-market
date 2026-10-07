@@ -14,12 +14,14 @@ import ProductDescription from "./components/desktop/ProductDescription";
 import ProductDetailsCard from "./components/desktop/ProductDetailsCard";
 import ProductGallery from "./components/desktop/ProductGallery";
 import ProductInfo from "./components/desktop/ProductInfo";
+import ProductOffers from "./components/desktop/ProductOffers";
 import MobileProductActions from "./components/mobile/MobileProductActions";
 import MobileProductBreadcrumbs from "./components/mobile/MobileProductBreadcrumbs";
 import MobileProductDescription from "./components/mobile/MobileProductDescription";
 import MobileProductDetailsCard from "./components/mobile/MobileProductDetailsCard";
 import MobileProductGallery from "./components/mobile/MobileProductGallery";
 import MobileProductInfo from "./components/mobile/MobileProductInfo";
+import MobileProductOffers from "./components/mobile/MobileProductOffers";
 import RelatedProducts from "./components/RelatedProducts";
 import ReviewList from "../../features/reviews/components/ReviewList";
 
@@ -27,7 +29,13 @@ function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const { data, isLoading, error } = useProduct(slug || "");
   const navigate = useNavigate();
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
 
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -37,6 +45,10 @@ function ProductDetailsPage() {
   const removeWishlist = useRemoveFromWishlist();
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const mediaQuery = window.matchMedia("(max-width: 767px)");
 
     const updateIsMobile = () => {
@@ -44,10 +56,19 @@ function ProductDetailsPage() {
     };
 
     updateIsMobile();
-    mediaQuery.addEventListener("change", updateIsMobile);
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", updateIsMobile);
+
+      return () => {
+        mediaQuery.removeEventListener("change", updateIsMobile);
+      };
+    }
+
+    mediaQuery.addListener(updateIsMobile);
 
     return () => {
-      mediaQuery.removeEventListener("change", updateIsMobile);
+      mediaQuery.removeListener(updateIsMobile);
     };
   }, []);
 
@@ -101,14 +122,6 @@ function ProductDetailsPage() {
     return <div className="p-6">Product not found</div>;
   }
 
-  if (!isMobile && typeof window !== "undefined") {
-    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-
-    if (!isDesktop) {
-      return null;
-    }
-  }
-
   const isWishlisted = wishlist.some(
     (item: WishlistItem) => item.product._id === data._id
   );
@@ -149,6 +162,7 @@ function ProductDetailsPage() {
               addWishlist.isPending || removeWishlist.isPending
             }
           />
+          <MobileProductOffers productId={data._id} />
           <MobileProductDetailsCard product={data} />
           <MobileProductDescription
             description={data.description}
@@ -175,6 +189,7 @@ function ProductDetailsPage() {
                   addWishlist.isPending || removeWishlist.isPending
                 }
               />
+              <ProductOffers productId={data._id} />
               <ProductDetailsCard product={data} />
             </div>
           </div>

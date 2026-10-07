@@ -33,6 +33,12 @@ const {
   "./order_calculation_service"
 );
 
+const {
+  calculateApplicableDiscount,
+} = require(
+  "../../discounts/discount_service"
+);
+
 /*
 ====================================
 CREATE PENDING ORDER
@@ -224,7 +230,16 @@ const createPendingOrder =
       await validateCoupon({
         couponCode,
         subtotal,
+        items: checkoutItems,
       });
+
+    const {
+      amount: additionalDiscount,
+    } = await calculateApplicableDiscount(checkoutItems);
+    const cappedAdditionalDiscount = Math.min(
+      additionalDiscount,
+      Math.max(0, subtotal - discount)
+    );
 
     /*
     ====================================
@@ -251,7 +266,7 @@ const createPendingOrder =
     } =
       calculateOrderTotal({
         subtotal,
-        discount,
+        discount: discount + cappedAdditionalDiscount,
         shippingCharge,
       });
 
@@ -277,6 +292,8 @@ const createPendingOrder =
         subtotal,
 
         discount,
+
+        additionalDiscount: cappedAdditionalDiscount,
 
         tax,
 

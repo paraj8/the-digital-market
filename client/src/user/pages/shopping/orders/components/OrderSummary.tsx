@@ -28,18 +28,25 @@ function OrderSummary({
           </span>
         </div>
 
-        {/* Discount */}
+        {/* Coupon Discount */}
         {order.discount > 0 && (
           <div className="flex items-center justify-between">
-            <span className="text-slate-400">
-              Discount
-            </span>
+            <span className="text-slate-400">Coupon Discount</span>
 
             <span className="text-emerald-400">
               - ₹
               {order.discount.toLocaleString(
                 "en-IN"
               )}
+            </span>
+          </div>
+        )}
+
+        {(order.additionalDiscount ?? 0) > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400">Additional Discount</span>
+            <span className="text-emerald-400">
+              - ₹{order.additionalDiscount?.toLocaleString("en-IN")}
             </span>
           </div>
         )}

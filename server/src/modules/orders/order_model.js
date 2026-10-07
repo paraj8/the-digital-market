@@ -107,6 +107,12 @@ const orderSchema =
         default: 0,
       },
 
+      additionalDiscount: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
       shippingCharge: {
         type: Number,
         default: 0,

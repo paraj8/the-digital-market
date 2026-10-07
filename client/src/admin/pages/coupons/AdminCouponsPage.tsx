@@ -1,535 +1,258 @@
+import { useMemo, useState } from "react";
+import { isAxiosError } from "axios";
+import { toast } from "react-toastify";
+
+import type { Coupon } from "../../../shared/types/coupon";
+import { useAdminCoupon, useAdminCoupons, useCreateAdminCoupon, useDeleteAdminCoupon, useUpdateAdminCoupon } from "../../hooks/useAdminCoupons";
+import AdminCouponsDesktop from "./components/desktop/AdminCouponsDesktop";
+import AdminCouponsMobile from "./components/mobile/AdminCouponsMobile";
+import CouponDetailsModal from "./components/CouponDetailsModal";
+import CouponFormModal from "./components/CouponFormModal";
+import DeleteCouponModal from "./components/DeleteCouponModal";
 import {
-  FiSearch,
-  FiPlus,
-  FiEdit2,
-  FiTrash2,
-  FiEye,
-  FiChevronDown,
-  FiCopy,
-} from "react-icons/fi";
-
-const coupons = [
-  {
-    id: "CPN-001",
-    code: "WELCOME10",
-    type: "Percentage",
-    value: "10%",
-    minOrder: "₹499",
-    usage: 128,
-    limit: 500,
-    status: "Active",
-    expires: "Aug 31, 2026",
-  },
-  {
-    id: "CPN-002",
-    code: "SAVE200",
-    type: "Fixed",
-    value: "₹200",
-    minOrder: "₹1,499",
-    usage: 76,
-    limit: 200,
-    status: "Active",
-    expires: "Sep 15, 2026",
-  },
-  {
-    id: "CPN-003",
-    code: "FESTIVE20",
-    type: "Percentage",
-    value: "20%",
-    minOrder: "₹999",
-    usage: 342,
-    limit: 500,
-    status: "Active",
-    expires: "Oct 10, 2026",
-  },
-  {
-    id: "CPN-004",
-    code: "NEWUSER50",
-    type: "Fixed",
-    value: "₹50",
-    minOrder: "₹299",
-    usage: 500,
-    limit: 500,
-    status: "Expired",
-    expires: "Jul 31, 2026",
-  },
-  {
-    id: "CPN-005",
-    code: "ELECTRO15",
-    type: "Percentage",
-    value: "15%",
-    minOrder: "₹2,000",
-    usage: 42,
-    limit: 100,
-    status: "Inactive",
-    expires: "Dec 31, 2026",
-  },
-];
-
-const statusStyles: Record<string, string> = {
-  Active:
-    "border-green-500/20 bg-green-500/10 text-green-400",
-
-  Inactive:
-    "border-gray-500/20 bg-gray-500/10 text-gray-400",
-
-  Expired:
-    "border-red-500/20 bg-red-500/10 text-red-400",
-};
+  getCouponStatus,
+  type CouponDiscountTypeFilter,
+  type CouponFormMode,
+  type CouponFormValues,
+  type CouponStatusFilter,
+} from "./couponUtils";
 
 function AdminCouponsPage() {
+  const {
+    data: coupons = [],
+    isLoading,
+    isError,
+    error,
+  } = useAdminCoupons();
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<CouponStatusFilter>("all");
+  const [discountTypeFilter, setDiscountTypeFilter] = useState<CouponDiscountTypeFilter>("all");
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<CouponFormMode>("create");
+  const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
+
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [viewCouponId, setViewCouponId] = useState<string | null>(null);
+
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [couponToDelete, setCouponToDelete] = useState<Coupon | null>(null);
+
+  const createCouponMutation = useCreateAdminCoupon();
+  const updateCouponMutation = useUpdateAdminCoupon();
+  const deleteCouponMutation = useDeleteAdminCoupon();
+
+  const { data: viewedCoupon, isLoading: isDetailsLoading } = useAdminCoupon(viewCouponId);
+
+  const filteredCoupons = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    return coupons.filter((coupon) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        coupon.code.toLowerCase().includes(normalizedSearch) ||
+        coupon.description.toLowerCase().includes(normalizedSearch);
+
+      const status = getCouponStatus(coupon).toLowerCase().replace(/ /g, "-");
+      const matchesStatus =
+        statusFilter === "all" || status === statusFilter;
+
+      const matchesDiscountType =
+        discountTypeFilter === "all" || coupon.discountType === discountTypeFilter;
+
+      return matchesSearch && matchesStatus && matchesDiscountType;
+    });
+  }, [coupons, discountTypeFilter, search, statusFilter]);
+
+  const handleAddCoupon = () => {
+    setSelectedCoupon(null);
+    setFormMode("create");
+    setIsFormOpen(true);
+  };
+
+  const handleEditCoupon = (coupon: Coupon) => {
+    setSelectedCoupon(coupon);
+    setFormMode("edit");
+    setIsFormOpen(true);
+  };
+
+  const handleViewCoupon = (coupon: Coupon) => {
+    setViewCouponId(coupon._id);
+    setIsDetailsOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    if (createCouponMutation.isPending || updateCouponMutation.isPending) {
+      return;
+    }
+
+    setIsFormOpen(false);
+    setSelectedCoupon(null);
+  };
+
+  const handleCloseDetails = () => {
+    setIsDetailsOpen(false);
+    setViewCouponId(null);
+  };
+
+  const handleDeleteCoupon = (coupon: Coupon) => {
+    setCouponToDelete(coupon);
+    setIsDeleteOpen(true);
+  };
+
+  const handleCloseDelete = () => {
+    if (deleteCouponMutation.isPending) {
+      return;
+    }
+
+    setIsDeleteOpen(false);
+    setCouponToDelete(null);
+  };
+
+  const handleFormSubmit = async (values: CouponFormValues) => {
+    try {
+      if (formMode === "create") {
+        await createCouponMutation.mutateAsync(values);
+        toast.success("Coupon created successfully");
+      } else if (selectedCoupon) {
+        await updateCouponMutation.mutateAsync({
+          id: selectedCoupon._id,
+          data: values,
+        });
+        toast.success("Coupon updated successfully");
+      }
+
+      handleCloseForm();
+    } catch (submissionError: unknown) {
+      const message = isAxiosError(submissionError)
+        ? submissionError.response?.data?.message || "Failed to save coupon."
+        : "Failed to save coupon.";
+
+      toast.error(message);
+    }
+  };
+
+  const handleToggleCouponActive = async (coupon: Coupon) => {
+    try {
+      await updateCouponMutation.mutateAsync({
+        id: coupon._id,
+        data: {
+          isActive: !coupon.isActive,
+        },
+      });
+
+      toast.success(
+        coupon.isActive ? "Coupon deactivated successfully" : "Coupon activated successfully"
+      );
+    } catch (toggleError: unknown) {
+      const message = isAxiosError(toggleError)
+        ? toggleError.response?.data?.message || "Failed to update coupon status."
+        : "Failed to update coupon status.";
+
+      toast.error(message);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!couponToDelete) {
+      return;
+    }
+
+    try {
+      await deleteCouponMutation.mutateAsync(couponToDelete._id);
+      toast.success("Coupon deleted successfully");
+      setIsDeleteOpen(false);
+      setCouponToDelete(null);
+    } catch (deleteError: unknown) {
+      const message = isAxiosError(deleteError)
+        ? deleteError.response?.data?.message || "Failed to delete coupon."
+        : "Failed to delete coupon.";
+
+      toast.error(message);
+    }
+  };
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+    setDiscountTypeFilter("all");
+  };
+
   return (
     <div className="space-y-6">
-
-      {/* ===================================== */}
-      {/* HEADER */}
-      {/* ===================================== */}
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            Coupons
-          </h1>
-
-          <p className="mt-1 text-sm text-gray-400">
-            Create and manage discount coupons for customers.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          className="
-            inline-flex
-            items-center
-            justify-center
-            gap-2
-            rounded-xl
-            bg-violet-600
-            px-5
-            py-3
-            text-sm
-            font-semibold
-            text-white
-            transition
-            hover:bg-violet-500
-          "
-        >
-          <FiPlus size={18} />
-
-          Create Coupon
-        </button>
-
+      <div className="hidden md:block">
+        <AdminCouponsDesktop
+          coupons={filteredCoupons}
+          isLoading={isLoading}
+          isError={isError}
+          search={search}
+          status={statusFilter}
+          discountType={discountTypeFilter}
+          onSearchChange={setSearch}
+          onStatusChange={setStatusFilter}
+          onDiscountTypeChange={setDiscountTypeFilter}
+          onClearFilters={handleClearFilters}
+          onAdd={handleAddCoupon}
+          onView={handleViewCoupon}
+          onEdit={handleEditCoupon}
+          onToggleActive={handleToggleCouponActive}
+          onDelete={handleDeleteCoupon}
+        />
       </div>
 
-      {/* ===================================== */}
-      {/* STATS */}
-      {/* ===================================== */}
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-gray-400">
-            Total Coupons
-          </p>
-
-          <p className="mt-2 text-2xl font-bold text-white">
-            38
-          </p>
-
-          <p className="mt-1 text-xs text-green-400">
-            +6 this month
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-gray-400">
-            Active Coupons
-          </p>
-
-          <p className="mt-2 text-2xl font-bold text-green-400">
-            24
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-gray-400">
-            Total Usage
-          </p>
-
-          <p className="mt-2 text-2xl font-bold text-violet-400">
-            4,826
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-          <p className="text-sm text-gray-400">
-            Discount Given
-          </p>
-
-          <p className="mt-2 text-2xl font-bold text-white">
-            ₹2.84L
-          </p>
-        </div>
-
+      <div className="block md:hidden">
+        <AdminCouponsMobile
+          coupons={filteredCoupons}
+          isLoading={isLoading}
+          isError={isError}
+          search={search}
+          status={statusFilter}
+          discountType={discountTypeFilter}
+          onSearchChange={setSearch}
+          onStatusChange={setStatusFilter}
+          onDiscountTypeChange={setDiscountTypeFilter}
+          onClearFilters={handleClearFilters}
+          onAdd={handleAddCoupon}
+          onView={handleViewCoupon}
+          onEdit={handleEditCoupon}
+          onToggleActive={handleToggleCouponActive}
+          onDelete={handleDeleteCoupon}
+        />
       </div>
 
-      {/* ===================================== */}
-      {/* SEARCH / FILTER */}
-      {/* ===================================== */}
-
-      <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4">
-
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-          <div className="relative w-full lg:max-w-md">
-
-            <FiSearch
-              size={18}
-              className="
-                absolute
-                left-3
-                top-1/2
-                -translate-y-1/2
-                text-gray-500
-              "
-            />
-
-            <input
-              type="text"
-              placeholder="Search coupon code..."
-              className="
-                w-full
-                rounded-xl
-                border
-                border-white/10
-                bg-slate-800/70
-                py-2.5
-                pl-10
-                pr-4
-                text-sm
-                text-white
-                outline-none
-                placeholder:text-gray-500
-                focus:border-violet-500
-              "
-            />
-
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-
-            <button
-              type="button"
-              className="
-                inline-flex
-                items-center
-                gap-2
-                rounded-xl
-                border
-                border-white/10
-                bg-slate-800/70
-                px-4
-                py-2.5
-                text-sm
-                text-gray-300
-                transition
-                hover:bg-slate-800
-              "
-            >
-              All Status
-
-              <FiChevronDown size={15} />
-            </button>
-
-            <button
-              type="button"
-              className="
-                inline-flex
-                items-center
-                gap-2
-                rounded-xl
-                border
-                border-white/10
-                bg-slate-800/70
-                px-4
-                py-2.5
-                text-sm
-                text-gray-300
-                transition
-                hover:bg-slate-800
-              "
-            >
-              All Types
-
-              <FiChevronDown size={15} />
-            </button>
-
-          </div>
-
+      {isError && (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
+          {error instanceof Error ? error.message : "Failed to load coupons."}
         </div>
-
-      </div>
-
-      {/* ===================================== */}
-      {/* COUPON TABLE */}
-      {/* ===================================== */}
-
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60">
-
-        <div className="overflow-x-auto">
-
-          <table className="w-full min-w-[1150px]">
-
-            <thead className="border-b border-white/10 bg-slate-800/40">
-
-              <tr className="text-left text-xs uppercase tracking-wider text-gray-500">
-
-                <th className="px-6 py-4">
-                  Coupon
-                </th>
-
-                <th className="px-6 py-4">
-                  Discount
-                </th>
-
-                <th className="px-6 py-4">
-                  Min. Order
-                </th>
-
-                <th className="px-6 py-4">
-                  Usage
-                </th>
-
-                <th className="px-6 py-4">
-                  Status
-                </th>
-
-                <th className="px-6 py-4">
-                  Expires
-                </th>
-
-                <th className="px-6 py-4 text-right">
-                  Actions
-                </th>
-
-              </tr>
-
-            </thead>
-
-            <tbody className="divide-y divide-white/5">
-
-              {coupons.map((coupon) => (
-
-                <tr
-                  key={coupon.id}
-                  className="
-                    transition
-                    hover:bg-white/[0.02]
-                  "
-                >
-
-                  {/* Coupon */}
-
-                  <td className="px-6 py-4">
-
-                    <div className="flex items-center gap-4">
-
-                      <div
-                        className="
-                          flex
-                          h-11
-                          w-11
-                          shrink-0
-                          items-center
-                          justify-center
-                          rounded-xl
-                          bg-violet-500/10
-                          text-violet-400
-                        "
-                      >
-                        <FiCopy size={18} />
-                      </div>
-
-                      <div>
-
-                        <div className="flex items-center gap-2">
-
-                          <p className="font-semibold text-white">
-                            {coupon.code}
-                          </p>
-
-                          <span className="text-xs text-gray-600">
-                            {coupon.id}
-                          </span>
-
-                        </div>
-
-                        <p className="mt-1 text-xs text-gray-500">
-                          {coupon.type}
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                  </td>
-
-                  {/* Discount */}
-
-                  <td className="px-6 py-4">
-
-                    <span className="font-semibold text-white">
-                      {coupon.value}
-                    </span>
-
-                  </td>
-
-                  {/* Minimum Order */}
-
-                  <td className="px-6 py-4 text-sm text-gray-400">
-                    {coupon.minOrder}
-                  </td>
-
-                  {/* Usage */}
-
-                  <td className="px-6 py-4">
-
-                    <div className="w-32">
-
-                      <div className="mb-1 flex justify-between text-xs">
-
-                        <span className="text-gray-400">
-                          {coupon.usage}
-                        </span>
-
-                        <span className="text-gray-600">
-                          {coupon.limit}
-                        </span>
-
-                      </div>
-
-                      <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
-
-                        <div
-                          className="h-full rounded-full bg-violet-500"
-                          style={{
-                            width: `${Math.min(
-                              (coupon.usage / coupon.limit) * 100,
-                              100
-                            )}%`,
-                          }}
-                        />
-
-                      </div>
-
-                    </div>
-
-                  </td>
-
-                  {/* Status */}
-
-                  <td className="px-6 py-4">
-
-                    <span
-                      className={`
-                        inline-flex
-                        rounded-full
-                        border
-                        px-3
-                        py-1
-                        text-xs
-                        font-medium
-                        ${statusStyles[coupon.status]}
-                      `}
-                    >
-                      {coupon.status}
-                    </span>
-
-                  </td>
-
-                  {/* Expires */}
-
-                  <td className="px-6 py-4 text-sm text-gray-400">
-                    {coupon.expires}
-                  </td>
-
-                  {/* Actions */}
-
-                  <td className="px-6 py-4">
-
-                    <div className="flex justify-end gap-2">
-
-                      <button
-                        type="button"
-                        title="View coupon"
-                        className="
-                          rounded-lg
-                          border
-                          border-white/10
-                          p-2
-                          text-gray-400
-                          transition
-                          hover:border-violet-500/30
-                          hover:bg-violet-500/10
-                          hover:text-violet-400
-                        "
-                      >
-                        <FiEye size={16} />
-                      </button>
-
-                      <button
-                        type="button"
-                        title="Edit coupon"
-                        className="
-                          rounded-lg
-                          border
-                          border-white/10
-                          p-2
-                          text-gray-400
-                          transition
-                          hover:border-blue-500/30
-                          hover:bg-blue-500/10
-                          hover:text-blue-400
-                        "
-                      >
-                        <FiEdit2 size={16} />
-                      </button>
-
-                      <button
-                        type="button"
-                        title="Delete coupon"
-                        className="
-                          rounded-lg
-                          border
-                          border-white/10
-                          p-2
-                          text-gray-400
-                          transition
-                          hover:border-red-500/30
-                          hover:bg-red-500/10
-                          hover:text-red-400
-                        "
-                      >
-                        <FiTrash2 size={16} />
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
-
+      )}
+
+      {isFormOpen && (
+        <CouponFormModal
+          key={`${formMode}-${selectedCoupon?._id ?? "new"}`}
+          isOpen={isFormOpen}
+          mode={formMode}
+          coupon={selectedCoupon}
+          isSubmitting={createCouponMutation.isPending || updateCouponMutation.isPending}
+          onClose={handleCloseForm}
+          onSubmit={handleFormSubmit}
+        />
+      )}
+
+      <CouponDetailsModal
+        isOpen={isDetailsOpen}
+        coupon={viewedCoupon ?? null}
+        isLoading={isDetailsLoading}
+        onClose={handleCloseDetails}
+      />
+
+      <DeleteCouponModal
+        isOpen={isDeleteOpen}
+        coupon={couponToDelete}
+        isDeleting={deleteCouponMutation.isPending}
+        onClose={handleCloseDelete}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

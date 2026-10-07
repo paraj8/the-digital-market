@@ -15,6 +15,19 @@ const couponSchema = new mongoose.Schema(
       default: "",
     },
 
+    scope: {
+      type: String,
+      enum: ["all", "products"],
+      default: "all",
+    },
+
+    products: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
+
     discountType: {
       type: String,
       enum: [

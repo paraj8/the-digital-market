@@ -11,6 +11,7 @@ VALIDATE & CALCULATE COUPON
 const validateCoupon = async ({
   couponCode,
   subtotal,
+  items = [],
 }) => {
   /*
   No coupon supplied.
@@ -40,6 +41,33 @@ const validateCoupon = async ({
     );
   }
 
+  let eligibleSubtotal = subtotal;
+
+  if (coupon.scope === "products") {
+    eligibleSubtotal = items.reduce((total, item) => {
+      const product = item.product;
+      const isEligible = coupon.products.some(
+        (productId) =>
+          String(productId) === String(product?._id || product)
+      );
+
+      if (!isEligible) {
+        return total;
+      }
+
+      const price = product.salePrice > 0
+        ? product.salePrice
+        : product.price;
+      return total + price * item.quantity;
+    }, 0);
+
+    if (eligibleSubtotal <= 0) {
+      throw new Error(
+        "Coupon does not apply to any products in this order"
+      );
+    }
+  }
+
   /*
   Validate coupon dates.
   */
@@ -60,7 +88,7 @@ const validateCoupon = async ({
   */
 
   if (
-    subtotal <
+    eligibleSubtotal <
     coupon.minimumOrderAmount
   ) {
     throw new Error(
@@ -79,7 +107,7 @@ const validateCoupon = async ({
     "percentage"
   ) {
     discount =
-      (subtotal *
+      (eligibleSubtotal *
         coupon.discountValue) /
       100;
 
@@ -110,7 +138,7 @@ const validateCoupon = async ({
 
   discount = Math.min(
     discount,
-    subtotal
+    eligibleSubtotal
   );
 
   return {

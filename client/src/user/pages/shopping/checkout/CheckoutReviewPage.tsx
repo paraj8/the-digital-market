@@ -13,6 +13,8 @@ import CheckoutReview from "../../../components/checkout/review/CheckoutReview";
 
 import { useCheckout } from "../../../features/checkout/hooks/useCheckout";
 import { useCashfree } from "../../../features/cashfree/hooks/useCashfree";
+import { useAvailableDiscounts } from "../../../features/discounts/hooks/useAvailableDiscounts";
+import { calculateDiscountEstimate } from "../../../features/discounts/utils/calculateDiscountEstimate";
 
 function CheckoutReviewPage() {
   const { state } = useLocation();
@@ -33,6 +35,21 @@ function CheckoutReviewPage() {
     creatingOrder,
     orderError,
   } = useCheckout(state);
+  const {
+    data: availableDiscounts = [],
+    isError: isDiscountQueryError,
+    error: discountQueryError,
+  } = useAvailableDiscounts();
+  const estimatedDiscount = calculateDiscountEstimate(
+    availableDiscounts,
+    items.map((item) => ({
+      productId: item.productId,
+      categoryId: item.categoryId,
+      sellingPrice: item.salePrice,
+      quantity: item.quantity,
+    })),
+    Math.max(0, summary.subtotal - (Number(state?.couponDiscount) || 0))
+  );
 
   /*
   ====================================
@@ -99,7 +116,11 @@ function CheckoutReviewPage() {
       */
 
       const order =
-        await placeOrder();
+        await placeOrder(
+          typeof state?.couponCode === "string"
+            ? state.couponCode.trim()
+            : undefined
+        );
 
       if (!order) {
         return;
@@ -380,6 +401,17 @@ function CheckoutReviewPage() {
           items={items}
           address={selectedAddress}
           summary={summary}
+          additionalDiscount={estimatedDiscount?.amount ?? 0}
+          additionalDiscountName={estimatedDiscount?.discount.name}
+          couponCode={typeof state?.couponCode === "string" ? state.couponCode : null}
+          couponDiscount={Number(state?.couponDiscount) || 0}
+          discountQueryError={
+            isDiscountQueryError
+              ? discountQueryError instanceof Error
+                ? discountQueryError.message
+                : "Promotional discounts could not be loaded."
+              : null
+          }
           onConfirm={handleConfirm}
           confirming={isPaymentLoading}
         />

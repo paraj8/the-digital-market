@@ -7,6 +7,7 @@ import {
   FiUsers,
   FiUserCheck,
   FiTag,
+  FiPercent,
   FiBarChart2,
   FiSettings,
   FiLogOut,
@@ -48,6 +49,11 @@ const menu = [
     title: "Coupons",
     icon: FiTag,
     href: "/admin/coupons",
+  },
+  {
+    title: "Discounts",
+    icon: FiPercent,
+    href: "/admin/discounts",
   },
   {
     title: "Analytics",

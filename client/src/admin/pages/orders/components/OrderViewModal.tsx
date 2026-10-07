@@ -550,7 +550,7 @@ function OrderViewModal({
 
                         <div className="flex justify-between">
                           <span className="text-gray-500">
-                            Discount
+                            Coupon Discount
                           </span>
 
                           <span className="text-green-400">
@@ -560,6 +560,20 @@ function OrderViewModal({
                             )}
                           </span>
                         </div>
+
+                        {(order.additionalDiscount ?? 0) > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">
+                              Additional Discount
+                            </span>
+                            <span className="text-green-400">
+                              - ₹
+                              {order.additionalDiscount?.toLocaleString(
+                                "en-IN"
+                              )}
+                            </span>
+                          </div>
+                        )}
 
                         <div className="flex justify-between">
                           <span className="text-gray-500">
