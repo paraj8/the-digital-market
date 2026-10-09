@@ -70,6 +70,11 @@ const userSchema = new mongoose.Schema(
       type: Date,
     },
 
+    lastSeenAt: {
+      type: Date,
+      default: null,
+    },
+
     wishlistCount: {
   type: Number,
   default: 0,

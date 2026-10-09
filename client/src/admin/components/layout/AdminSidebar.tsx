@@ -10,6 +10,7 @@ import {
   FiPercent,
   FiBarChart2,
   FiSettings,
+  FiMessageCircle,
   FiLogOut,
   FiX,
 } from "react-icons/fi";
@@ -54,6 +55,11 @@ const menu = [
     title: "Discounts",
     icon: FiPercent,
     href: "/admin/discounts",
+  },
+  {
+    title: "Messages",
+    icon: FiMessageCircle,
+    href: "/admin/messages",
   },
   {
     title: "Analytics",

@@ -20,6 +20,7 @@ import AdminCouponsPage from "../../admin/pages/coupons/AdminCouponsPage";
 import AdminDiscountsPage from "../../admin/pages/discounts/AdminDiscountsPage";
 import AdminAnalyticsPage from "../../admin/pages/analytics/AdminAnalyticsPage";
 import AdminSettingsPage from "../../admin/pages/settings/AdminSettingsPage";
+import AdminMessagesPage from "../../admin/pages/messages/AdminMessagesPage";
 
 // =====================================
 // CUSTOMER
@@ -131,6 +132,12 @@ function AppRoutes() {
           <Route
             path="settings"
             element={<AdminSettingsPage />}
+          />
+
+          {/* Customer support messages */}
+          <Route
+            path="messages"
+            element={<AdminMessagesPage />}
           />
         </Route>
       </Route>

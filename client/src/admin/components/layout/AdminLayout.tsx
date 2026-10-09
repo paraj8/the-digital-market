@@ -3,9 +3,11 @@ import { Outlet } from "react-router-dom";
 
 import AdminSidebar from "./AdminSidebar";
 import AdminTopbar from "./AdminTopbar";
+import { useConversationUpdates } from "../../../user/features/communication/hooks/useCommunication";
 
 function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useConversationUpdates(true);
 
   return (
     <div
