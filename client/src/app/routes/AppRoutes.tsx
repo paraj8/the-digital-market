@@ -17,8 +17,10 @@ import AdminCategoriesPage from "../../admin/pages/categories/AdminCategoriesPag
 import AdminCustomersPage from "../../admin/pages/customers/AdminCustomersPage";
 import AdminStaffPage from "../../admin/pages/staff/AdminStaffPage";
 import AdminCouponsPage from "../../admin/pages/coupons/AdminCouponsPage";
+import AdminDiscountsPage from "../../admin/pages/discounts/AdminDiscountsPage";
 import AdminAnalyticsPage from "../../admin/pages/analytics/AdminAnalyticsPage";
 import AdminSettingsPage from "../../admin/pages/settings/AdminSettingsPage";
+import AdminMessagesPage from "../../admin/pages/messages/AdminMessagesPage";
 
 // =====================================
 // CUSTOMER
@@ -114,6 +116,12 @@ function AppRoutes() {
             element={<AdminCouponsPage />}
           />
 
+          {/* Discounts */}
+          <Route
+            path="discounts"
+            element={<AdminDiscountsPage />}
+          />
+
           {/* Analytics */}
           <Route
             path="analytics"
@@ -124,6 +132,12 @@ function AppRoutes() {
           <Route
             path="settings"
             element={<AdminSettingsPage />}
+          />
+
+          {/* Customer support messages */}
+          <Route
+            path="messages"
+            element={<AdminMessagesPage />}
           />
         </Route>
       </Route>

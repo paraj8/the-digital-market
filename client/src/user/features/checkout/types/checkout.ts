@@ -20,6 +20,7 @@ export interface CheckoutAddress {
 
 export interface CheckoutItem {
   productId: string;
+  categoryId: string;
 
   title: string;
 

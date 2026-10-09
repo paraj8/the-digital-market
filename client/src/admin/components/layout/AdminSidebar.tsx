@@ -7,8 +7,10 @@ import {
   FiUsers,
   FiUserCheck,
   FiTag,
+  FiPercent,
   FiBarChart2,
   FiSettings,
+  FiMessageCircle,
   FiLogOut,
   FiX,
 } from "react-icons/fi";
@@ -48,6 +50,16 @@ const menu = [
     title: "Coupons",
     icon: FiTag,
     href: "/admin/coupons",
+  },
+  {
+    title: "Discounts",
+    icon: FiPercent,
+    href: "/admin/discounts",
+  },
+  {
+    title: "Messages",
+    icon: FiMessageCircle,
+    href: "/admin/messages",
   },
   {
     title: "Analytics",

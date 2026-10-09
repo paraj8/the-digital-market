@@ -16,6 +16,11 @@ interface CheckoutReviewProps {
   items: CheckoutItem[];
   address: CheckoutAddress | null;
   summary: CheckoutSummary;
+  additionalDiscount: number;
+  additionalDiscountName?: string;
+  couponCode: string | null;
+  couponDiscount: number;
+  discountQueryError: string | null;
   onConfirm: () => void | Promise<void>;
   confirming?: boolean;
 }
@@ -24,6 +29,11 @@ function CheckoutReview({
   items,
   address,
   summary,
+  additionalDiscount,
+  additionalDiscountName,
+  couponCode,
+  couponDiscount,
+  discountQueryError,
   onConfirm,
   confirming = false,
 }: CheckoutReviewProps) {
@@ -284,12 +294,9 @@ function CheckoutReview({
 
           {summary.discount > 0 && (
             <div className="flex justify-between">
-              <span className="text-slate-400">
-                Discount
-              </span>
+              <span className="text-slate-400">Product Savings (included)</span>
 
-              <span className="text-green-400">
-                - ₹
+              <span className="text-slate-300">
                 {summary.discount.toLocaleString(
                   "en-IN"
                 )}
@@ -297,7 +304,33 @@ function CheckoutReview({
             </div>
           )}
 
+          {additionalDiscount > 0 && (
+            <div className="flex justify-between">
+              <span className="text-slate-400">
+                Additional Discount{additionalDiscountName ? ` · ${additionalDiscountName}` : ""}
+              </span>
+              <span className="text-green-400">
+                - ₹{additionalDiscount.toLocaleString("en-IN")}
+              </span>
+            </div>
+          )}
+
+          {couponCode && couponDiscount > 0 && (
+            <div className="flex justify-between">
+              <span className="text-slate-400">Coupon Discount · {couponCode}</span>
+              <span className="text-green-400">
+                - ₹{couponDiscount.toLocaleString("en-IN")}
+              </span>
+            </div>
+          )}
+
           {/* GST */}
+
+          {discountQueryError && (
+            <p role="status" className="text-xs text-amber-300">
+              {discountQueryError} The payable amount will be recalculated when your order is placed.
+            </p>
+          )}
 
           <div className="flex justify-between">
             <span className="text-slate-400">
@@ -340,10 +373,7 @@ function CheckoutReview({
               </span>
 
               <span className="text-xl font-bold">
-                ₹
-                {summary.total.toLocaleString(
-                  "en-IN"
-                )}
+                ₹{Math.max(0, summary.total - additionalDiscount - couponDiscount).toLocaleString("en-IN")}
               </span>
             </div>
           </div>
@@ -393,4 +423,3 @@ function CheckoutReview({
 }
 
 export default CheckoutReview;
-

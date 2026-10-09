@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import {
   useLocation,
   useNavigate,
@@ -26,6 +27,15 @@ function CheckoutPage() {
     summary,
   } = useCheckout(state);
 
+  const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(
+    typeof state?.couponCode === "string" && state.couponCode.trim()
+      ? state.couponCode.trim()
+      : null
+  );
+  const [couponDiscount, setCouponDiscount] = useState(
+    typeof state?.couponDiscount === "number" ? state.couponDiscount : 0
+  );
+
   const handleContinueToReview = () => {
     if (!selectedAddressId) {
       return;
@@ -35,6 +45,8 @@ function CheckoutPage() {
       state: {
         ...state,
         selectedAddressId,
+        couponCode: appliedCouponCode || undefined,
+        couponDiscount,
       },
     });
   };
@@ -87,11 +99,21 @@ function CheckoutPage() {
           "
         >
           <CheckoutSummary
+            items={items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              categoryId: item.categoryId,
+              sellingPrice: item.salePrice,
+            }))}
             subtotal={summary.subtotal}
             shipping={summary.shipping}
             discount={summary.discount}
             tax={summary.tax}
             total={summary.total}
+            couponCode={appliedCouponCode}
+            initialCouponDiscount={couponDiscount}
+            onCouponChange={setAppliedCouponCode}
+            onCouponDiscountChange={setCouponDiscount}
             onPlaceOrder={
               handleContinueToReview
             }
@@ -103,4 +125,3 @@ function CheckoutPage() {
 }
 
 export default CheckoutPage;
-

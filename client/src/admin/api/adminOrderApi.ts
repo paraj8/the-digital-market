@@ -50,6 +50,7 @@ export interface AdminOrder {
 
   subtotal: number;
   discount: number;
+  additionalDiscount?: number;
   shippingCharge: number;
   tax: number;
   totalAmount: number;

@@ -74,6 +74,8 @@ export interface Order {
 
   discount: number;
 
+  additionalDiscount?: number;
+
   shippingCharge: number;
 
   tax: number;

@@ -22,6 +22,14 @@ import type {
   PaymentMethod,
 } from "../types/checkout";
 
+const getCategoryId = (category: unknown): string => {
+  if (typeof category === "string") return category;
+  if (category && typeof category === "object" && "_id" in category) {
+    return String(category._id);
+  }
+  return "";
+};
+
 interface CheckoutState {
   mode?: "buyNow" | "cart";
   productId?: string;
@@ -117,6 +125,9 @@ export function useCheckout(
               productId:
                 product._id,
 
+              categoryId:
+                getCategoryId(product.category),
+
               title:
                 product.title,
 
@@ -163,6 +174,9 @@ export function useCheckout(
             return {
               productId:
                 product._id,
+
+              categoryId:
+                getCategoryId(product.category),
 
               title:
                 product.title,
@@ -308,11 +322,12 @@ export function useCheckout(
 
         const discount =
           items.reduce(
-            (sum, item) =>
-              sum +
-              (item.price -
-                item.salePrice) *
-                item.quantity,
+            (sum, item) => {
+              const productSaving = item.price > item.salePrice
+                ? item.price - item.salePrice
+                : 0;
+              return sum + productSaving * item.quantity;
+            },
             0
           );
 
