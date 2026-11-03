@@ -35,6 +35,10 @@ export interface CheckoutItem {
   salePrice: number;
 
   quantity: number;
+
+  variantId?: string;
+  attributes?: Record<string, string>;
+  sku?: string;
 }
 
 export type PaymentMethod =

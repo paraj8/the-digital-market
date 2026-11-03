@@ -71,6 +71,17 @@ function CheckoutItem({
             {item.brand}
           </p>
         )}
+        {item.attributes &&
+          Object.entries(item.attributes).map(([name, value]) => (
+            <p key={name} className="mt-1 text-sm text-slate-300">
+              {name}: {value}
+            </p>
+          ))}
+        {item.sku && (
+          <p className="mt-1 text-xs text-slate-500">
+            SKU: {item.sku}
+          </p>
+        )}
 
         <div
           className="

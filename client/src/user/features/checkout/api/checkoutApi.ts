@@ -25,6 +25,8 @@ export interface CreateCheckoutOrderRequest {
 
   productId?: string;
 
+  variantId?: string;
+
   quantity?: number;
 }
 
@@ -41,6 +43,9 @@ export interface CheckoutOrder {
 
   items: {
     product: string;
+    variantId?: string | null;
+    attributes?: Record<string, string>;
+    sku?: string;
     title: string;
     image: string;
     price: number;

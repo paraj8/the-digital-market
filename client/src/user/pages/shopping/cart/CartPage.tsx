@@ -131,6 +131,28 @@ function CartPage() {
                   <p className="mt-1 text-sm text-slate-400">
                     {item.product.brand}
                   </p>
+                  {Object.entries(
+                    item.variantAttributes ??
+                      item.variant?.attributes ??
+                      {}
+                  ).map(([name, value]) => (
+                    <p
+                      key={name}
+                      className="mt-1 text-sm text-slate-300"
+                    >
+                      {name}: {value}
+                    </p>
+                  ))}
+                  {item.variant?.sku && (
+                    <p className="mt-1 text-xs text-slate-500">
+                      SKU: {item.variant.sku}
+                    </p>
+                  )}
+                  {item.variantUnavailable && (
+                    <p className="mt-2 text-sm text-red-400">
+                      This item is no longer available. Remove it to continue.
+                    </p>
+                  )}
 
                   {/* Bottom Row */}
 
@@ -158,7 +180,8 @@ function CartPage() {
                           })
                         }
                         disabled={
-                          updateMutation.isPending
+                          updateMutation.isPending ||
+                          Boolean(item.variantUnavailable)
                         }
                         className="
                           rounded-lg
@@ -186,7 +209,12 @@ function CartPage() {
                           })
                         }
                         disabled={
-                          updateMutation.isPending
+                          updateMutation.isPending ||
+                          Boolean(item.variantUnavailable) ||
+                          (item.product.trackInventory &&
+                            !item.product.allowBackorder &&
+                            item.quantity >=
+                              (item.variant?.stock ?? item.product.stock))
                         }
                         className="
                           rounded-lg
@@ -287,6 +315,9 @@ function CartPage() {
 
           <button
             type="button"
+            disabled={data.items.some(
+              (item) => item.variantUnavailable
+            )}
             onClick={() =>
               navigate("/checkout", {
                 state: {
@@ -305,9 +336,13 @@ function CartPage() {
               font-semibold
               transition
               hover:opacity-90
+              disabled:cursor-not-allowed
+              disabled:opacity-50
             "
           >
-            Proceed To Checkout
+            {data.items.some((item) => item.variantUnavailable)
+              ? "Remove Unavailable Items"
+              : "Proceed To Checkout"}
           </button>
         </div>
       </div>

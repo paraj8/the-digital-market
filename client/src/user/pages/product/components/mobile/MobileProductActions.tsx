@@ -8,6 +8,7 @@ interface MobileProductActionsProps {
   addingToCart: boolean;
   isWishlisted: boolean;
   wishlistPending: boolean;
+  canPurchase?: boolean;
 }
 
 function MobileProductActions({
@@ -17,13 +18,14 @@ function MobileProductActions({
   addingToCart,
   isWishlisted,
   wishlistPending,
+  canPurchase = true,
 }: MobileProductActionsProps) {
   return (
     <div className="mt-6 grid grid-cols-[1fr_1fr_auto] gap-2">
       <button
         type="button"
         onClick={onAddToCart}
-        disabled={addingToCart}
+        disabled={addingToCart || !canPurchase}
         className="min-h-12 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-3 text-sm font-semibold disabled:opacity-50"
       >
         {addingToCart ? "Adding..." : "Add To Cart"}
@@ -32,6 +34,7 @@ function MobileProductActions({
       <button
         type="button"
         onClick={onBuyNow}
+        disabled={!canPurchase}
         className="min-h-12 rounded-xl border border-white/10 bg-[#121826] px-3 text-sm font-semibold hover:border-violet-500/50"
       >
         Buy Now

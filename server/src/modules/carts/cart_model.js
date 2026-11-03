@@ -17,6 +17,17 @@ const cartSchema =
         required: true,
       },
 
+      variantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null,
+      },
+
+      variantAttributes: {
+        type: Map,
+        of: String,
+        default: {},
+      },
+
       quantity: {
         type: Number,
         required: true,
@@ -29,11 +40,12 @@ const cartSchema =
     }
   );
 
-// One product per user cart
+// One cart line per product and selected variant
 cartSchema.index(
   {
     user: 1,
     product: 1,
+    variantId: 1,
   },
   {
     unique: true,

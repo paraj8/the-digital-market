@@ -219,7 +219,14 @@ const calculateApplicableDiscount = async (items) => {
         || (rule.scope === "categories" && rule.categories.some((id) => String(id) === categoryId));
 
       if (eligible) {
-        const unitPrice = product.salePrice > 0 ? product.salePrice : product.price;
+        const variant = item.variant ||
+          (item.variantId && product.variants?.id
+            ? product.variants.id(item.variantId)
+            : null);
+        const priceSource = variant || product;
+        const unitPrice = priceSource.salePrice > 0
+          ? priceSource.salePrice
+          : priceSource.price;
         eligibleSubtotal += unitPrice * item.quantity;
       }
     }

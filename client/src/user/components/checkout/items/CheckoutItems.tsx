@@ -25,7 +25,7 @@ function CheckoutItems({
       <div className="space-y-4">
         {items.map((item) => (
           <CheckoutItem
-            key={item.productId}
+            key={`${item.productId}-${item.variantId ?? "default"}`}
             item={item}
           />
         ))}

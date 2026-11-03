@@ -19,13 +19,16 @@ export const useAddToCart =
       mutationFn: ({
         productId,
         quantity,
+        variantId,
       }: {
         productId: string;
         quantity: number;
+        variantId?: string;
       }) =>
         addToCart(
           productId,
-          quantity
+          quantity,
+          variantId
         ),
 
       onSuccess: () => {

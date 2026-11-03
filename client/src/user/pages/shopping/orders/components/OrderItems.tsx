@@ -34,6 +34,17 @@ function OrderItems({
             <h3 className="line-clamp-2 text-sm font-medium text-white">
               {item.title}
             </h3>
+            {item.attributes &&
+              Object.entries(item.attributes).map(([name, value]) => (
+                <p key={name} className="mt-1 text-xs text-slate-400">
+                  {name}: {value}
+                </p>
+              ))}
+            {item.sku && (
+              <p className="mt-1 text-xs text-slate-500">
+                SKU: {item.sku}
+              </p>
+            )}
 
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
               <span>

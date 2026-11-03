@@ -23,7 +23,8 @@ export const getCart =
 
 export const addToCart = async (
   productId: string,
-  quantity = 1
+  quantity = 1,
+  variantId?: string
 ) => {
   const response =
     await api.post(
@@ -31,6 +32,7 @@ export const addToCart = async (
       {
         productId,
         quantity,
+        ...(variantId ? { variantId } : {}),
       },
       {
         headers:

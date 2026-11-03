@@ -8,6 +8,7 @@ export interface ProductActionsProps {
   addingToCart: boolean;
   isWishlisted: boolean;
   wishlistPending: boolean;
+  canPurchase?: boolean;
 }
 
 function ProductActions({
@@ -17,13 +18,14 @@ function ProductActions({
   addingToCart,
   isWishlisted,
   wishlistPending,
+  canPurchase = true,
 }: ProductActionsProps) {
   return (
     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
       <button
         type="button"
         onClick={onAddToCart}
-        disabled={addingToCart}
+        disabled={addingToCart || !canPurchase}
         className="flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 py-3 font-semibold transition hover:scale-[1.02] disabled:opacity-50"
       >
         {addingToCart ? "Adding..." : "Add To Cart"}
@@ -32,6 +34,7 @@ function ProductActions({
       <button
         type="button"
         onClick={onBuyNow}
+        disabled={!canPurchase}
         className="flex-1 rounded-xl border border-white/10 bg-[#121826] py-3 font-semibold transition hover:border-violet-500/50 hover:scale-[1.02]"
       >
         Buy Now

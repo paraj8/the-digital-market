@@ -37,6 +37,211 @@ const generateSKU = async () => {
   return sku;
 };
 
+const parseArrayField = (data, fieldName) => {
+  if (typeof data[fieldName] === "string") {
+    try {
+      data[fieldName] = JSON.parse(data[fieldName]);
+    } catch {
+      throw new Error(`Invalid ${fieldName} data`);
+    }
+  }
+
+  if (
+    data[fieldName] !== undefined &&
+    !Array.isArray(data[fieldName])
+  ) {
+    throw new Error(`Invalid ${fieldName} data`);
+  }
+};
+
+const normalizeVariantData = async (
+  data,
+  productSku,
+  productId
+) => {
+  if (data.hasVariants !== undefined) {
+    if (typeof data.hasVariants === "string") {
+      if (!["true", "false"].includes(data.hasVariants)) {
+        throw new Error("Invalid hasVariants value");
+      }
+      data.hasVariants = data.hasVariants === "true";
+    } else if (typeof data.hasVariants !== "boolean") {
+      throw new Error("Invalid hasVariants value");
+    }
+  }
+
+  parseArrayField(data, "variantAttributes");
+  parseArrayField(data, "variants");
+
+  if (data.variantAttributes === undefined && data.variants === undefined) {
+    if (data.hasVariants) {
+      throw new Error("Variant attributes and variants are required");
+    }
+    return;
+  }
+
+  const attributes = data.variantAttributes ?? [];
+  const variants = data.variants ?? [];
+  const currentProduct = productId
+    ? await Product.findById(productId).select("variants._id")
+    : null;
+  const currentVariantIds = new Set(
+    (currentProduct?.variants ?? []).map((variant) =>
+      String(variant._id)
+    )
+  );
+  const normalizedAttributes = attributes.map((attribute) => ({
+    name: String(attribute?.name ?? "").trim(),
+    values: Array.isArray(attribute?.values)
+      ? attribute.values.map((value) => String(value).trim()).filter(Boolean)
+      : [],
+  }));
+  const names = normalizedAttributes.map((attribute) =>
+    attribute.name.toLowerCase()
+  );
+
+  if (
+    normalizedAttributes.some(
+      (attribute) => !attribute.name || attribute.values.length === 0
+    ) ||
+    new Set(names).size !== names.length
+  ) {
+    throw new Error("Variant attributes must have unique names and values");
+  }
+
+  for (const attribute of normalizedAttributes) {
+    const values = attribute.values.map((value) => value.toLowerCase());
+    if (new Set(values).size !== values.length) {
+      throw new Error(`Duplicate values for variant attribute ${attribute.name}`);
+    }
+  }
+
+  if (data.hasVariants && normalizedAttributes.length === 0) {
+    throw new Error("Add at least one product variant attribute");
+  }
+  if (data.hasVariants && variants.length === 0) {
+    throw new Error("Generate at least one product variant");
+  }
+
+  const normalizedVariants = variants.map((variant, index) => {
+    if (variant._id && !currentVariantIds.has(String(variant._id))) {
+      throw new Error("Variant ID does not belong to this product");
+    }
+
+    const variantAttributes =
+      variant?.attributes && typeof variant.attributes === "object"
+        ? Object.fromEntries(
+            Object.entries(variant.attributes).map(([name, value]) => [
+              name.trim(),
+              String(value).trim(),
+            ])
+          )
+        : {};
+    const expectedNames = normalizedAttributes.map(
+      (attribute) => attribute.name
+    );
+
+    if (
+      variantAttributes &&
+      (Object.keys(variantAttributes).length !== expectedNames.length ||
+        expectedNames.some(
+          (name) =>
+            !normalizedAttributes
+              .find((attribute) => attribute.name === name)
+              ?.values.includes(variantAttributes[name])
+        ))
+    ) {
+      throw new Error("Every variant must use a valid value for each attribute");
+    }
+
+    const price = Number(variant.price);
+    const salePrice = Number(variant.salePrice ?? 0);
+    const costPrice = Number(variant.costPrice ?? 0);
+    const stock = Number(variant.stock ?? 0);
+    if (
+      variant.isActive !== undefined &&
+      typeof variant.isActive !== "boolean"
+    ) {
+      throw new Error("Variant active status must be a boolean");
+    }
+    const isActive = variant.isActive !== false;
+
+    if (
+      !Number.isFinite(price) ||
+      price < 0 ||
+      (data.hasVariants && isActive && price <= 0) ||
+      !Number.isFinite(salePrice) ||
+      salePrice < 0 ||
+      (salePrice > 0 && salePrice > price) ||
+      !Number.isFinite(costPrice) ||
+      costPrice < 0 ||
+      !Number.isInteger(stock) ||
+      stock < 0
+    ) {
+      throw new Error("Variant pricing or stock is invalid");
+    }
+
+    return {
+      ...(variant._id ? { _id: variant._id } : {}),
+      attributes: variantAttributes,
+      sku: String(variant.sku ?? "").trim().toUpperCase() ||
+        `${productSku}-V${index + 1}`,
+      costPrice,
+      price,
+      salePrice,
+      stock,
+      isActive,
+    };
+  });
+
+  if (
+    data.hasVariants &&
+    !normalizedVariants.some((variant) => variant.isActive)
+  ) {
+    throw new Error("At least one product variant must be active");
+  }
+
+  const combinations = normalizedVariants.map((variant) =>
+    JSON.stringify(
+      normalizedAttributes.map((attribute) => [
+        attribute.name,
+        variant.attributes[attribute.name] ?? "",
+      ])
+    )
+  );
+  const skuValues = normalizedVariants.map((variant) => variant.sku);
+  if (
+    new Set(combinations).size !== combinations.length ||
+    new Set(skuValues).size !== skuValues.length
+  ) {
+    throw new Error("Variant combinations and SKUs must be unique");
+  }
+
+  const skuConflictQuery = {
+    $or: [
+      { sku: { $in: skuValues } },
+      { "variants.sku": { $in: skuValues } },
+    ],
+  };
+  if (productId) {
+    skuConflictQuery._id = { $ne: productId };
+  }
+  const conflictingProduct = await Product.findOne(skuConflictQuery);
+  if (
+    conflictingProduct ||
+    skuValues.includes(String(productSku).toUpperCase())
+  ) {
+    throw new Error("A product or variant already uses one of these SKUs");
+  }
+
+  if (data.variantAttributes !== undefined) {
+    data.variantAttributes = normalizedAttributes;
+  }
+  if (data.variants !== undefined) {
+    data.variants = normalizedVariants;
+  }
+};
+
 /* =========================================
    CREATE PRODUCT
 ========================================= */
@@ -85,6 +290,8 @@ const createProduct = async (
 
   const sku =
     await generateSKU();
+
+  await normalizeVariantData(data, sku);
 
   const product =
     await Product.create({
@@ -268,6 +475,12 @@ const updateProduct = async (
       "Product not found"
     );
   }
+
+  await normalizeVariantData(
+    data,
+    product.sku,
+    product._id
+  );
 
   /* =======================================
      SLUG

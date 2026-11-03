@@ -12,5 +12,9 @@ export type AdminProduct = Partial<
     | "ratingsCount"
     | "createdAt"
     | "updatedAt"
-  >
+  > & {
+    hasVariants?: boolean;
+    variantAttributes?: Product["variantAttributes"];
+    variants?: Product["variants"];
+  }
 >;
