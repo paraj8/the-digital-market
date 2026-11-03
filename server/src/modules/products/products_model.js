@@ -46,6 +46,65 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
+    hasVariants: {
+      type: Boolean,
+      default: false,
+    },
+
+    variantAttributes: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        values: {
+          type: [String],
+          default: [],
+        },
+      },
+    ],
+
+    variants: [
+      {
+        attributes: {
+          type: Map,
+          of: String,
+          required: true,
+        },
+        sku: {
+          type: String,
+          required: true,
+          uppercase: true,
+          trim: true,
+        },
+        costPrice: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        salePrice: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+        stock: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+        isActive: {
+          type: Boolean,
+          default: true,
+        },
+      },
+    ],
+
     images: [
       {
         url: {

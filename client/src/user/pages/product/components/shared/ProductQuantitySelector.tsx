@@ -2,12 +2,14 @@ interface ProductQuantitySelectorProps {
   quantity: number;
   onQuantityChange: (quantity: number) => void;
   className?: string;
+  max?: number;
 }
 
 function ProductQuantitySelector({
   quantity,
   onQuantityChange,
   className = "",
+  max,
 }: ProductQuantitySelectorProps) {
   return (
     <div className={`mt-6 ${className}`}>
@@ -31,7 +33,8 @@ function ProductQuantitySelector({
         <button
           type="button"
           onClick={() => onQuantityChange(quantity + 1)}
-          className="px-4 py-2"
+          disabled={max !== undefined && quantity >= max}
+          className="px-4 py-2 disabled:cursor-not-allowed disabled:opacity-40"
         >
           +
         </button>

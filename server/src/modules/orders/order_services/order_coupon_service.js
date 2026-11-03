@@ -55,9 +55,12 @@ const validateCoupon = async ({
         return total;
       }
 
-      const price = product.salePrice > 0
-        ? product.salePrice
-        : product.price;
+      const variant = item.variant ||
+        (item.variantId ? product.variants.id(item.variantId) : null);
+      const priceSource = variant || product;
+      const price = priceSource.salePrice > 0
+        ? priceSource.salePrice
+        : priceSource.price;
       return total + price * item.quantity;
     }, 0);
 

@@ -4,6 +4,22 @@ export interface ProductImage {
   publicId: string;
 }
 
+export interface ProductVariantAttribute {
+  name: string;
+  values: string[];
+}
+
+export interface ProductVariant {
+  _id?: string;
+  attributes: Record<string, string>;
+  sku: string;
+  costPrice: number;
+  price: number;
+  salePrice: number;
+  stock: number;
+  isActive: boolean;
+}
+
 export interface Product {
   _id: string;
   title: string;
@@ -20,6 +36,9 @@ export interface Product {
 
   sku: string;
   brand: string;
+  hasVariants?: boolean;
+  variantAttributes?: ProductVariantAttribute[];
+  variants?: ProductVariant[];
 
   images: ProductImage[];
 

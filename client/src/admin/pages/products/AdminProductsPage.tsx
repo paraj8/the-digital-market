@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { FiPlus } from "react-icons/fi";
+import { isAxiosError } from "axios";
+import { toast } from "react-toastify";
 import AdminProductsMobile from "./AdminProductsMobile";
 
 import { useAdminProduct } from "../../hooks/useAdminProduct";
@@ -404,13 +406,14 @@ const [viewProductId, setViewProductId] =
 
       setIsProductModalOpen(false);
       setSelectedProduct(null);
-    } catch {
-      /*
-       * React Query handles the mutation error.
-       *
-       * Keep the modal open so the user can
-       * correct the form and try again.
-       */
+    } catch (error: unknown) {
+      const message = isAxiosError<{ message?: string }>(error)
+        ? error.response?.data?.message ||
+          "Failed to save product. Please try again."
+        : error instanceof Error
+          ? error.message
+          : "Failed to save product. Please try again.";
+      toast.error(message);
     }
   };
 

@@ -362,6 +362,24 @@ function OrderViewModal({
                               {item.title}
                             </h4>
 
+                            {item.attributes &&
+                              Object.entries(item.attributes).map(
+                                ([name, value]) => (
+                                  <p
+                                    key={name}
+                                    className="mt-1 text-xs text-gray-500"
+                                  >
+                                    {name}: {value}
+                                  </p>
+                                )
+                              )}
+
+                            {item.sku && (
+                              <p className="mt-1 text-xs text-gray-500">
+                                SKU: {item.sku}
+                              </p>
+                            )}
+
                             <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-500">
                               <span>
                                 Price: ₹

@@ -41,9 +41,9 @@ export const getProducts = async (
 };
 
 export const getProductBySlug =
-  async (slug: string) => {
+  async (slug: string): Promise<Product> => {
     const response =
-      await api.get(
+      await api.get<{ data: Product }>(
         `/products/slug/${slug}`
       );
 

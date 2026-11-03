@@ -33,6 +33,7 @@ const getCategoryId = (category: unknown): string => {
 interface CheckoutState {
   mode?: "buyNow" | "cart";
   productId?: string;
+  variantId?: string;
   productSlug?: string;
   quantity?: number;
 }
@@ -48,6 +49,8 @@ export function useCheckout(
 
   const isBuyNow =
     state?.mode === "buyNow";
+  const buyNowVariantId = state?.variantId;
+  const buyNowQuantity = state?.quantity;
 
   /*
   ====================================
@@ -109,16 +112,28 @@ export function useCheckout(
             return [];
           }
 
+          const variant = buyNowVariantId
+            ? product.variants?.find(
+                (candidate) =>
+                  candidate._id === buyNowVariantId &&
+                  candidate.isActive
+              )
+            : null;
+          if (product.hasVariants && !variant) {
+            return [];
+          }
+
           const quantity =
-            state?.quantity &&
-            state.quantity > 0
-              ? state.quantity
+            buyNowQuantity &&
+            buyNowQuantity > 0
+              ? buyNowQuantity
               : 1;
 
+          const priceSource = variant ?? product;
           const salePrice =
-            product.salePrice > 0
-              ? product.salePrice
-              : product.price;
+            priceSource.salePrice > 0
+              ? priceSource.salePrice
+              : priceSource.price;
 
           return [
             {
@@ -142,11 +157,18 @@ export function useCheckout(
                 product.brand,
 
               price:
-                product.price,
+                priceSource.price,
 
               salePrice,
 
               quantity,
+              ...(variant
+                ? {
+                    variantId: variant._id,
+                    attributes: variant.attributes,
+                    sku: variant.sku,
+                  }
+                : {}),
             },
           ];
         }
@@ -165,11 +187,13 @@ export function useCheckout(
           (item) => {
             const product =
               item.product;
+            const variant = item.variant;
+            const priceSource = variant ?? product;
 
             const salePrice =
-              product.salePrice > 0
-                ? product.salePrice
-                : product.price;
+              priceSource.salePrice > 0
+                ? priceSource.salePrice
+                : priceSource.price;
 
             return {
               productId:
@@ -192,12 +216,19 @@ export function useCheckout(
                 product.brand,
 
               price:
-                product.price,
+                priceSource.price,
 
               salePrice,
 
               quantity:
                 item.quantity,
+              ...(variant
+                ? {
+                    variantId: variant._id,
+                    attributes: variant.attributes,
+                    sku: variant.sku,
+                  }
+                : {}),
             };
           }
         );
@@ -206,7 +237,8 @@ export function useCheckout(
         isBuyNow,
         product,
         cart,
-        state?.quantity,
+        buyNowQuantity,
+        buyNowVariantId,
       ]
     );
 
@@ -481,6 +513,10 @@ export function useCheckout(
               ? {
                   productId:
                     items[0].productId,
+
+                  ...(items[0].variantId
+                    ? { variantId: items[0].variantId }
+                    : {}),
 
                   quantity:
                     items[0].quantity,

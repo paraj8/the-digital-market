@@ -54,6 +54,7 @@ const createPendingOrder =
       paymentMethod,
       mode = "cart",
       productId,
+      variantId,
       quantity = 1,
     }
   ) => {
@@ -180,6 +181,13 @@ const createPendingOrder =
         );
       }
 
+      const variant = variantId
+        ? product.variants.id(variantId)
+        : null;
+      if (variantId && !variant) {
+        throw new Error("Product variant not found");
+      }
+
       /*
       Convert Buy Now product
       into cart-like structure.
@@ -188,6 +196,8 @@ const createPendingOrder =
       checkoutItems = [
         {
           product,
+          variantId: variant?._id ?? null,
+          variant,
           quantity,
         },
       ];

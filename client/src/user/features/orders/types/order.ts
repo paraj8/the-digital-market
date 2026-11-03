@@ -21,6 +21,9 @@ export type PaymentMethod =
 
 export interface OrderItem {
   product: string;
+  variantId?: string | null;
+  attributes?: Record<string, string>;
+  sku?: string;
 
   title: string;
 

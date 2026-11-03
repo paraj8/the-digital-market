@@ -1,4 +1,7 @@
-import type { Product } from "../../../../shared/types/product";
+import type {
+  Product,
+  ProductVariant,
+} from "../../../../shared/types/product";
 
 export interface CartItem {
   _id: string;
@@ -8,6 +11,11 @@ export interface CartItem {
   subtotal: number;
 
   product: Product;
+
+  variantId?: string | null;
+  variantAttributes?: Record<string, string>;
+  variant?: ProductVariant | null;
+  variantUnavailable?: boolean;
 }
 
 export interface CartResponse {

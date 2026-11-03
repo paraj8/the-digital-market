@@ -10,6 +10,22 @@ const orderItemSchema =
         required: true,
       },
 
+      variantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null,
+      },
+
+      attributes: {
+        type: Map,
+        of: String,
+        default: {},
+      },
+
+      sku: {
+        type: String,
+        default: "",
+      },
+
       title: {
         type: String,
         required: true,

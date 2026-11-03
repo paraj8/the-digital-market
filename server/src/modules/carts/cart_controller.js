@@ -10,7 +10,8 @@ const addToCart = async (
       await cartService.addToCart(
         req.user.id,
         req.body.productId,
-        req.body.quantity
+        req.body.quantity,
+        req.body.variantId || null
       );
 
     res.status(201).json({

@@ -14,11 +14,17 @@ const buildOrderItems = (
       (item) => {
         const product =
           item.product;
+        const variant =
+          item.variant ||
+          (item.variantId
+            ? product.variants.id(item.variantId)
+            : null);
+        const priceSource = variant || product;
 
         const price =
-          product.salePrice > 0
-            ? product.salePrice
-            : product.price;
+          priceSource.salePrice > 0
+            ? priceSource.salePrice
+            : priceSource.price;
 
         const itemSubtotal =
           price * item.quantity;
@@ -28,6 +34,16 @@ const buildOrderItems = (
         return {
           product:
             product._id,
+
+          ...(variant
+            ? {
+                variantId: variant._id,
+                attributes: Object.fromEntries(variant.attributes),
+                sku: variant.sku,
+              }
+            : {
+                sku: product.sku,
+              }),
 
           title:
             product.title,

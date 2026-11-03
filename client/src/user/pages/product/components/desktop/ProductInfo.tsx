@@ -1,7 +1,9 @@
 import type { Product } from "../../../../../shared/types/product";
 
 import ProductActions from "./ProductActions";
-import ProductPrice from "../shared/ProductPrice";
+import type { ProductVariant } from "../../../../../shared/types/product";
+import ProductVariantPrice from "../shared/ProductVariantPrice";
+import ProductVariantSelector from "../shared/ProductVariantSelector";
 import ProductQuantitySelector from "../shared/ProductQuantitySelector";
 import ProductStock from "../shared/ProductStock";
 
@@ -15,6 +17,10 @@ interface ProductInfoProps {
   addingToCart: boolean;
   isWishlisted: boolean;
   wishlistPending: boolean;
+  selectedAttributes: Record<string, string>;
+  selectedVariant: ProductVariant | null;
+  onAttributeChange: (name: string, value: string) => void;
+  canPurchase: boolean;
 }
 
 function ProductInfo({
@@ -27,6 +33,10 @@ function ProductInfo({
   addingToCart,
   isWishlisted,
   wishlistPending,
+  selectedAttributes,
+  selectedVariant,
+  onAttributeChange,
+  canPurchase,
 }: ProductInfoProps) {
   return (
     <div>
@@ -38,11 +48,48 @@ function ProductInfo({
         {product.title}
       </h1>
 
-      <ProductPrice price={product.price} salePrice={product.salePrice} />
-      <ProductStock stock={product.stock} />
+      {product.hasVariants && (
+        <ProductVariantSelector
+          product={product}
+          selectedAttributes={selectedAttributes}
+          selectedVariant={selectedVariant}
+          onAttributeChange={onAttributeChange}
+        />
+      )}
+      <ProductVariantPrice
+        product={product}
+        selectedVariant={selectedVariant}
+      />
+      {selectedVariant ? (
+        <ProductStock
+          stock={selectedVariant.stock}
+          available={
+            !product.trackInventory ||
+            product.allowBackorder ||
+            selectedVariant.stock > 0
+          }
+          showCount={product.trackInventory && !product.allowBackorder}
+          availableLabel={
+            product.allowBackorder && selectedVariant.stock === 0
+              ? "Available on backorder"
+              : "Available"
+          }
+        />
+      ) : product.hasVariants ? (
+        <p className="mt-6 text-sm text-slate-400">
+          Select a variant to check availability.
+        </p>
+      ) : (
+        <ProductStock stock={product.stock} />
+      )}
       <ProductQuantitySelector
         quantity={quantity}
         onQuantityChange={onQuantityChange}
+        max={
+          product.trackInventory && !product.allowBackorder
+            ? selectedVariant?.stock ?? (!product.hasVariants ? product.stock : undefined)
+            : undefined
+        }
       />
       <ProductActions
         onAddToCart={onAddToCart}
@@ -51,6 +98,7 @@ function ProductInfo({
         addingToCart={addingToCart}
         isWishlisted={isWishlisted}
         wishlistPending={wishlistPending}
+        canPurchase={canPurchase}
       />
     </div>
   );
