@@ -5,7 +5,10 @@ import ProductCardSkeleton from "../../../../components/common/ProductCardSkelet
 import { useProducts } from "../../../../features/products/hooks/useProducts";
 import type { Product } from "../../../../../shared/types/product";
 
+import { useNavigate } from "react-router-dom";
+
 function FeaturedProducts() {
+  const navigate = useNavigate();
   const {
     data,
     isLoading,
@@ -57,6 +60,7 @@ function FeaturedProducts() {
         title="Featured Products"
         subtitle="Popular products for you"
         actionText="View All"
+        onAction={() => navigate("/products")}
       />
 
       <div

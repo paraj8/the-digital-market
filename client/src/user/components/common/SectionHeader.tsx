@@ -2,12 +2,14 @@ interface SectionHeaderProps {
   title: string;
   subtitle?: string;
   actionText?: string;
+  onAction?:() => void;
 }
 
 function SectionHeader({
   title,
   subtitle,
   actionText,
+  onAction,
 }: SectionHeaderProps) {
   return (
     <div className="mb-6 flex items-end justify-between">
@@ -25,12 +27,14 @@ function SectionHeader({
 
       {actionText && (
         <button
+        type="button"
           className="
             text-sm
             font-medium
             text-violet-400
             hover:text-violet-300
           "
+          onClick={onAction}
         >
           {actionText}
         </button>
