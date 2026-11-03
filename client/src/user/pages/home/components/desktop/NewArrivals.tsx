@@ -5,8 +5,10 @@ import ProductCardSkeleton from "../../../../components/common/ProductCardSkelet
 
 import { useProducts } from "../../../../features/products/hooks/useProducts";
 import type { Product } from "../../../../../shared/types/product";
+import { useNavigate } from "react-router-dom";
 
 function NewArrivals() {
+  const navigate = useNavigate();
   const {
     data,
     isLoading,
@@ -65,6 +67,7 @@ function NewArrivals() {
         title="New Arrivals"
         subtitle="Fresh products just added"
         actionText="View All"
+        onAction={() => navigate("/products")}
       />
 
       <div
