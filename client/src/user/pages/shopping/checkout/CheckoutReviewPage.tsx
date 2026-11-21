@@ -13,6 +13,8 @@ import CheckoutReview from "../../../components/checkout/review/CheckoutReview";
 
 import { useCheckout } from "../../../features/checkout/hooks/useCheckout";
 import { useCashfree } from "../../../features/cashfree/hooks/useCashfree";
+import { useRazorpay } from "../../../features/razorpay/hooks/useRazorpay";
+import { openRazorpayCheckout } from "../../../features/razorpay/utils/razorpay";
 import { useAvailableDiscounts } from "../../../features/discounts/hooks/useAvailableDiscounts";
 import { calculateDiscountEstimate } from "../../../features/discounts/utils/calculateDiscountEstimate";
 
@@ -34,6 +36,7 @@ function CheckoutReviewPage() {
     isLoading,
     creatingOrder,
     orderError,
+    paymentMethod,
   } = useCheckout(state);
   const {
     data: availableDiscounts = [],
@@ -65,6 +68,15 @@ function CheckoutReviewPage() {
     createError:
       cashfreeError,
   } = useCashfree();
+  const {
+    createPaymentOrder: createRazorpayPaymentOrder,
+    verifyPayment: verifyRazorpayPayment,
+    markPaymentFailed: markRazorpayPaymentFailed,
+    creatingOrder: creatingRazorpayOrder,
+    verifyingPayment: verifyingRazorpayPayment,
+    createError: razorpayCreateError,
+    verifyError: razorpayVerifyError,
+  } = useRazorpay();
 
   /*
   ====================================
@@ -90,7 +102,9 @@ function CheckoutReviewPage() {
 
   const isPaymentLoading =
     creatingOrder ||
-    creatingCashfreeOrder;
+    creatingCashfreeOrder ||
+    creatingRazorpayOrder ||
+    verifyingRazorpayPayment;
 
   /*
   ====================================
@@ -182,11 +196,57 @@ function CheckoutReviewPage() {
         );
       }
 
+      if (paymentMethod === "Razorpay") {
+        const razorpayResponse =
+          await createRazorpayPaymentOrder({
+            orderId: order._id,
+          });
+
+        const payment =
+          razorpayResponse.data;
+        if (!payment?.razorpayOrderId || !payment.keyId) {
+          throw new Error(
+            "Razorpay payment order could not be created."
+          );
+        }
+
+        await openRazorpayCheckout({
+          keyId: payment.keyId,
+          razorpayOrderId: payment.razorpayOrderId,
+          amount: payment.amount,
+          currency: payment.currency,
+          name:
+            user.fullName ||
+            user.name ||
+            "Customer",
+          email: user.email,
+          phone: user.phone || selectedAddress?.phone,
+          onSuccess: async (response) => {
+            await verifyRazorpayPayment({
+              orderId: order._id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+            navigate(
+              `/checkout/payment-status?orderId=${order._id}&provider=Razorpay`
+            );
+          },
+          onFailure: async () => {
+            await markRazorpayPaymentFailed(
+              order._id,
+              "Razorpay payment window closed or payment cancelled"
+            );
+            navigate(
+              `/checkout/payment-status?orderId=${order._id}&provider=Razorpay`
+            );
+          },
+        });
+        return;
+      }
+
       /*
-      --------------------------------
-      STEP 3
-      Create Cashfree payment order
-      --------------------------------
+      STEP 3 - Create Cashfree payment order
       */
 
       const cashfreeResponse =
@@ -329,7 +389,9 @@ function CheckoutReviewPage() {
 
   const displayError =
     orderError ||
-    cashfreeError;
+    cashfreeError ||
+    razorpayCreateError ||
+    razorpayVerifyError;
 
   /*
   ====================================
@@ -412,6 +474,7 @@ function CheckoutReviewPage() {
                 : "Promotional discounts could not be loaded."
               : null
           }
+          paymentMethod={paymentMethod}
           onConfirm={handleConfirm}
           confirming={isPaymentLoading}
         />

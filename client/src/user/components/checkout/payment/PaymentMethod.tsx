@@ -26,6 +26,16 @@ function PaymentMethod({
         onSelect={onChange}
       />
 
+      <PaymentOption
+        title="Razorpay"
+        description="Pay securely using UPI, Cards, Net Banking, EMI or Wallets."
+        value="Razorpay"
+        selected={
+          selected === "Razorpay"
+        }
+        onSelect={onChange}
+      />
+
     </div>
   );
 }

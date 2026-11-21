@@ -36,6 +36,7 @@ interface CheckoutState {
   variantId?: string;
   productSlug?: string;
   quantity?: number;
+  paymentMethod?: PaymentMethod;
 }
 
 export function useCheckout(
@@ -331,7 +332,9 @@ export function useCheckout(
     setPaymentMethod,
   ] =
     useState<PaymentMethod>(
-      "CashFree"
+      state?.paymentMethod === "Razorpay"
+        ? "Razorpay"
+        : "CashFree"
     );
 
   /*

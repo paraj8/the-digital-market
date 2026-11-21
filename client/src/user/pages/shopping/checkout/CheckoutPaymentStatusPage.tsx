@@ -8,6 +8,7 @@ import {
 import PaymentStatusCard from "../../../components/checkout/payment_status/PaymentStatusCard";
 
 import { useCashfreePaymentStatus } from "../../../features/cashfree/hooks/useCashfreePaymentStatus";
+import { useRazorpayPaymentStatus } from "../../../features/razorpay/hooks/useRazorpay";
 
 function CheckoutPaymentStatusPage() {
   const navigate = useNavigate();
@@ -23,6 +24,10 @@ function CheckoutPaymentStatusPage() {
 
   const orderId =
     searchParams.get("orderId");
+  const provider =
+    searchParams.get("provider");
+  const isRazorpay =
+    provider === "Razorpay";
 
   /*
   ====================================
@@ -43,8 +48,55 @@ function CheckoutPaymentStatusPage() {
     refetch,
   } =
     useCashfreePaymentStatus(
-      orderId ?? undefined
+      orderId ?? undefined,
+      !isRazorpay
     );
+
+  const razorpayStatus =
+    useRazorpayPaymentStatus(
+      orderId ?? undefined,
+      isRazorpay
+    );
+
+  const activePayment =
+    isRazorpay
+      ? razorpayStatus.payment
+        ? {
+            order_id:
+              razorpayStatus.payment.razorpay_order_id ??
+              orderId ??
+              undefined,
+          }
+        : null
+      : payment;
+  const activePending =
+    isRazorpay
+      ? razorpayStatus.isPending
+      : isPending;
+  const activePaid =
+    isRazorpay
+      ? razorpayStatus.isPaid
+      : isPaid;
+  const activeFailed =
+    isRazorpay
+      ? razorpayStatus.isFailed
+      : isFailed;
+  const activeCancelled =
+    isRazorpay ? false : isCancelled;
+  const activeExpired =
+    isRazorpay ? false : isExpired;
+  const activeLoading =
+    isRazorpay
+      ? razorpayStatus.loading
+      : loading;
+  const activeFetching =
+    isRazorpay
+      ? razorpayStatus.fetching
+      : fetching;
+  const activeError =
+    isRazorpay
+      ? razorpayStatus.error
+      : error;
 
   /*
   ====================================
@@ -59,7 +111,11 @@ function CheckoutPaymentStatusPage() {
       }
 
       try {
-        await refetch();
+        await (
+          isRazorpay
+            ? razorpayStatus.refetch()
+            : refetch()
+        );
       } catch (error) {
         console.error(
           "Failed to check payment status:",
@@ -69,6 +125,8 @@ function CheckoutPaymentStatusPage() {
     }, [
       orderId,
       refetch,
+      isRazorpay,
+      razorpayStatus,
     ]);
 
   /*
@@ -169,7 +227,7 @@ function CheckoutPaymentStatusPage() {
   ====================================
   */
 
-  if (error && !payment) {
+  if (activeError && !activePayment) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8">
         <div
@@ -223,7 +281,7 @@ function CheckoutPaymentStatusPage() {
             <button
               type="button"
               onClick={handleRetry}
-              disabled={fetching}
+              disabled={activeFetching}
               className="
                 rounded-xl
                 bg-gradient-to-r
@@ -238,7 +296,7 @@ function CheckoutPaymentStatusPage() {
                 disabled:opacity-50
               "
             >
-              {fetching
+              {activeFetching
                 ? "Checking..."
                 : "Try Again"}
             </button>
@@ -275,15 +333,15 @@ function CheckoutPaymentStatusPage() {
   */
 
   const normalizedStatus =
-    isPaid
+    activePaid
       ? "paid"
-      : isFailed
+      : activeFailed
         ? "failed"
-        : isCancelled
+        : activeCancelled
           ? "cancelled"
-          : isExpired
+          : activeExpired
             ? "expired"
-            : isPending
+            : activePending
               ? "pending"
               : "pending";
 
@@ -305,9 +363,9 @@ function CheckoutPaymentStatusPage() {
       <PaymentStatusCard
         orderId={orderId}
         status={normalizedStatus}
-        payment={payment}
-        loading={loading}
-        fetching={fetching}
+        payment={activePayment}
+        loading={activeLoading}
+        fetching={activeFetching}
         onRetry={handleRetry}
         onContinue={handleContinue}
         onBackToOrders={handleViewOrder}

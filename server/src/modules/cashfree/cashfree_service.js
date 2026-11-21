@@ -86,6 +86,14 @@ const createCashfreeOrder = async ({
         }
       );
 
+    await Order.findByIdAndUpdate(orderId, {
+      $set: {
+        paymentProvider: "CashFree",
+        cashfreeOrderId: orderId,
+        paymentTransactionId: orderId,
+      },
+    });
+
     return response.data;
   } catch (error) {
     console.error(
@@ -185,7 +193,14 @@ const getCashfreePaymentStatus =
         paymentStatus === "SUCCESS"
       ) {
         await orderService.completePaidOrder(
-          orderId
+          orderId,
+          {
+            provider: "CashFree",
+            transactionId: latestPayment?.cf_payment_id
+              ? String(latestPayment.cf_payment_id)
+              : orderId,
+            cashfreeOrderId: orderId,
+          }
         );
       }
 

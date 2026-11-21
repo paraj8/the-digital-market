@@ -10,6 +10,7 @@ import type {
   CheckoutAddress,
   CheckoutItem,
   CheckoutSummary,
+  PaymentMethod,
 } from "../../../features/checkout/types/checkout";
 
 interface CheckoutReviewProps {
@@ -21,6 +22,7 @@ interface CheckoutReviewProps {
   couponCode: string | null;
   couponDiscount: number;
   discountQueryError: string | null;
+  paymentMethod: PaymentMethod;
   onConfirm: () => void | Promise<void>;
   confirming?: boolean;
 }
@@ -34,6 +36,7 @@ function CheckoutReview({
   couponCode,
   couponDiscount,
   discountQueryError,
+  paymentMethod,
   onConfirm,
   confirming = false,
 }: CheckoutReviewProps) {
@@ -249,7 +252,7 @@ function CheckoutReview({
           "
         >
           <p className="font-medium">
-            Cashfree
+            {paymentMethod === "Razorpay" ? "Razorpay" : "Cashfree"}
           </p>
 
           <p className="mt-1 text-sm text-slate-400">
