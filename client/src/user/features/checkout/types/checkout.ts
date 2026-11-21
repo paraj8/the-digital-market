@@ -42,8 +42,8 @@ export interface CheckoutItem {
 }
 
 export type PaymentMethod =
-  | "CashFree"
-  | "Razorpay";
+  | "Razorpay"
+  | "CashFree";
 
 export interface CheckoutSummary {
   subtotal: number;

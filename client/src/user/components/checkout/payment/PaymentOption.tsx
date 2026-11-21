@@ -3,12 +3,10 @@ import type { PaymentMethod } from "../../../features/checkout/types/checkout";
 interface PaymentOptionProps {
   title: string;
   description: string;
-
   value: PaymentMethod;
-
   selected: boolean;
-
   onSelect: (value: PaymentMethod) => void;
+  disabled?: boolean;
 }
 
 function PaymentOption({
@@ -17,10 +15,12 @@ function PaymentOption({
   value,
   selected,
   onSelect,
+  disabled = false,
 }: PaymentOptionProps) {
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={() => onSelect(value)}
       className={`
         w-full
@@ -31,9 +31,21 @@ function PaymentOption({
         transition
 
         ${
+          disabled
+            ? "cursor-not-allowed opacity-50"
+            : "cursor-pointer"
+        }
+
+        ${
           selected
             ? "border-violet-500 bg-violet-500/10"
-            : "border-white/10 bg-[#121826] hover:border-violet-400"
+            : "border-white/10 bg-[#121826]"
+        }
+
+        ${
+          !disabled && !selected
+            ? "hover:border-violet-400"
+            : ""
         }
       `}
     >

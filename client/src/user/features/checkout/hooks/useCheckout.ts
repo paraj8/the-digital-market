@@ -332,9 +332,9 @@ export function useCheckout(
     setPaymentMethod,
   ] =
     useState<PaymentMethod>(
-      state?.paymentMethod === "Razorpay"
-        ? "Razorpay"
-        : "CashFree"
+      state?.paymentMethod === "CashFree"
+        ? "CashFree"
+        : "Razorpay"
     );
 
   /*
