@@ -63,7 +63,7 @@ successful payment.
 */
 
 const completePaidOrder =
-  async (orderId) => {
+  async (orderId, paymentDetails = {}) => {
     /*
     ====================================
     GET ORDER
@@ -87,12 +87,47 @@ const completePaidOrder =
     ====================================
     */
 
-    if (
-      order.paymentStatus ===
-      "paid"
-    ) {
+    if (order.paymentStatus === "paid") {
       return order;
     }
+
+    const lockedOrder =
+      await Order.findOneAndUpdate(
+        {
+          _id: orderId,
+          paymentStatus: { $ne: "paid" },
+          paymentProcessing: { $ne: true },
+        },
+        {
+          $set: {
+            paymentProcessing: true,
+            ...(paymentDetails.provider
+              ? { paymentProvider: paymentDetails.provider }
+              : {}),
+            ...(paymentDetails.transactionId
+              ? { paymentTransactionId: paymentDetails.transactionId }
+              : {}),
+            ...(paymentDetails.razorpayOrderId
+              ? { razorpayOrderId: paymentDetails.razorpayOrderId }
+              : {}),
+            ...(paymentDetails.razorpayPaymentId
+              ? { razorpayPaymentId: paymentDetails.razorpayPaymentId }
+              : {}),
+            ...(paymentDetails.cashfreeOrderId
+              ? { cashfreeOrderId: paymentDetails.cashfreeOrderId }
+              : {}),
+          },
+        },
+        { new: true }
+      );
+
+    if (!lockedOrder) {
+      const existing =
+        await Order.findById(orderId);
+      return existing;
+    }
+
+    try {
 
     /*
     ====================================
@@ -104,7 +139,7 @@ const completePaidOrder =
     */
 
     await validateOrderInventory(
-      order
+      lockedOrder
     );
 
     /*
@@ -114,7 +149,7 @@ const completePaidOrder =
     */
 
     await reduceOrderStock(
-      order
+      lockedOrder
     );
 
     /*
@@ -123,9 +158,9 @@ const completePaidOrder =
     ====================================
     */
 
-    if (order.coupon) {
+    if (lockedOrder.coupon) {
       await incrementCouponUsage(
-        order.coupon
+        lockedOrder.coupon
       );
     }
 
@@ -136,7 +171,7 @@ const completePaidOrder =
     */
 
     await cleanupCartAfterOrder(
-      order
+      lockedOrder
     );
 
     /*
@@ -145,15 +180,25 @@ const completePaidOrder =
     ====================================
     */
 
-    order.paymentStatus =
+      lockedOrder.paymentStatus =
       "paid";
 
-    order.orderStatus =
+      lockedOrder.orderStatus =
       "confirmed";
 
-    await order.save();
+      lockedOrder.paymentProcessing =
+        false;
 
-    return order;
+      await lockedOrder.save();
+
+      return lockedOrder;
+    } catch (error) {
+      await Order.updateOne(
+        { _id: orderId },
+        { $set: { paymentProcessing: false } }
+      );
+      throw error;
+    }
   };
 
 /*

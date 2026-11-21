@@ -16,14 +16,25 @@ function PaymentMethod({
 }: PaymentMethodProps) {
   return (
     <div className="space-y-4">
+      
       <PaymentOption
-        title="CashFree"
-        description="Pay securely using UPI, Cards, Net Banking or Wallets."
-        value="CashFree"
+        title="Razorpay"
+        description="Pay securely using UPI, Cards, Net Banking, EMI or Wallets."
+        value="Razorpay"
         selected={
-          selected === "CashFree"
+          selected === "Razorpay"
         }
         onSelect={onChange}
+      />
+
+      <PaymentOption
+        title="CashFree"
+        description="Currently unavailable."
+        value="CashFree"
+        selected={false}
+        onSelect={onChange}
+        disabled
+
       />
 
     </div>

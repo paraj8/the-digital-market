@@ -2,10 +2,6 @@ import PaymentStatusIcon from "./PaymentStatusIcon";
 import PaymentStatusDetails from "./PaymentStatusDetails";
 import PaymentStatusActions from "./PaymentStatusActions";
 
-import type {
-  CashfreePaymentStatus,
-} from "../../../features/cashfree/types/cashfree";
-
 /*
 ====================================
 NORMALIZED PAYMENT STATUS
@@ -31,7 +27,12 @@ interface PaymentStatusCardProps {
 
   status: string | null;
 
-  payment: CashfreePaymentStatus | null;
+  payment:
+    | {
+        order_id?: string;
+        order_amount?: number;
+      }
+    | null;
 
   loading?: boolean;
 

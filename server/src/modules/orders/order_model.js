@@ -175,8 +175,39 @@ const orderSchema =
 
       paymentMethod: {
         type: String,
-        enum: ["CashFree"],
+        enum: ["CashFree", "Razorpay"],
         default: "CashFree",
+      },
+
+      paymentProvider: {
+        type: String,
+        enum: ["CashFree", "Razorpay"],
+        default: null,
+      },
+
+      razorpayOrderId: {
+        type: String,
+        default: null,
+      },
+
+      razorpayPaymentId: {
+        type: String,
+        default: null,
+      },
+
+      cashfreeOrderId: {
+        type: String,
+        default: null,
+      },
+
+      paymentTransactionId: {
+        type: String,
+        default: null,
+      },
+
+      paymentProcessing: {
+        type: Boolean,
+        default: false,
       },
 
       /*

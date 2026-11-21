@@ -42,6 +42,7 @@ export interface CheckoutItem {
 }
 
 export type PaymentMethod =
+  | "Razorpay"
   | "CashFree";
 
 export interface CheckoutSummary {

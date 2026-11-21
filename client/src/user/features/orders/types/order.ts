@@ -17,7 +17,8 @@ export type CheckoutMode =
   | "buyNow";
 
 export type PaymentMethod =
-  | "CashFree";
+  | "CashFree"
+  | "Razorpay";
 
 export interface OrderItem {
   product: string;

@@ -9,6 +9,7 @@ import CheckoutHeader from "../../../components/checkout/CheckoutHeader";
 import CheckoutItems from "../../../components/checkout/items/CheckoutItems";
 import CheckoutAddress from "../../../components/checkout/CheckoutAddress";
 import CheckoutDelivery from "../../../components/checkout/CheckoutDelivery";
+import CheckoutPayment from "../../../components/checkout/CheckoutPayment";
 import CheckoutSummary from "../../../components/checkout/CheckoutSummary";
 
 import { useCheckout } from "../../../features/checkout/hooks/useCheckout";
@@ -25,6 +26,8 @@ function CheckoutPage() {
     setSelectedAddressId,
 
     summary,
+    paymentMethod,
+    setPaymentMethod,
   } = useCheckout(state);
 
   const [appliedCouponCode, setAppliedCouponCode] = useState<string | null>(
@@ -47,6 +50,7 @@ function CheckoutPage() {
         selectedAddressId,
         couponCode: appliedCouponCode || undefined,
         couponDiscount,
+        paymentMethod,
       },
     });
   };
@@ -87,6 +91,11 @@ function CheckoutPage() {
           />
 
           <CheckoutDelivery />
+
+          <CheckoutPayment
+            paymentMethod={paymentMethod}
+            onChange={setPaymentMethod}
+          />
         </div>
 
         {/* RIGHT */}

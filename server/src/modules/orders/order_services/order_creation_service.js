@@ -80,11 +80,11 @@ const createPendingOrder =
     */
 
     if (
-      paymentMethod !==
-      "CashFree"
+      paymentMethod !== "CashFree" &&
+      paymentMethod !== "Razorpay"
     ) {
       throw new Error(
-        "Only CashFree payment is supported"
+        "Unsupported payment method"
       );
     }
 
@@ -315,7 +315,10 @@ const createPendingOrder =
           mode,
 
         paymentMethod:
-          "CashFree",
+          paymentMethod,
+
+        paymentProvider:
+          paymentMethod,
 
         paymentStatus:
           "pending",
